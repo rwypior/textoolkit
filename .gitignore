@@ -1,0 +1,9 @@
+CMakeSettings.json
+CMakeUserPresets.json
+*.swp
+*.swo
+
+.vs/
+.cache/
+out/
+build/
