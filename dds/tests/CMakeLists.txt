@@ -20,8 +20,8 @@ target_compile_definitions(ddstest
         $<$<CONFIG:Debug>:DEBUG>
 )
 
-target_link_libraries(ddstest PRIVATE texutil::dds)
-target_link_libraries(ddstest PRIVATE texutil::bmp)
+target_link_libraries(ddstest PRIVATE textoolkit::dds)
+target_link_libraries(ddstest PRIVATE textoolkit::bmp)
 
 target_link_libraries(ddstest PRIVATE glm::glm)
 target_link_libraries(ddstest PRIVATE Catch2::Catch2WithMain)

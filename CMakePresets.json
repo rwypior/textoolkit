@@ -25,6 +25,24 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "windows-debug",
+      "displayName": "x64 debug",
+      "inherits": "debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "APP_PLATFORM": "windows"
+      }
+    },
+    {
+      "name": "windows-release",
+      "displayName": "x64 release",
+      "inherits": "release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "APP_PLATFORM": "windows"
+      }
     }
   ],
 

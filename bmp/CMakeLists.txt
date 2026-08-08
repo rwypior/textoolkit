@@ -6,7 +6,7 @@ if (POLICY CMP0141)
 endif()
 
 add_library(bmp ${OPTIONS})
-add_library(texutil::bmp ALIAS bmp)
+add_library(textoolkit::bmp ALIAS bmp)
 
 target_compile_definitions(bmp
     PRIVATE 

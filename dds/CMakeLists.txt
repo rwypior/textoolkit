@@ -6,7 +6,7 @@ if (POLICY CMP0141)
 endif()
 
 add_library(dds ${OPTIONS})
-add_library(texutil::dds ALIAS dds)
+add_library(textoolkit::dds ALIAS dds)
 
 target_compile_definitions(dds
     PRIVATE 

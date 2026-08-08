@@ -20,7 +20,7 @@ target_compile_definitions(bmptest
         $<$<CONFIG:Debug>:DEBUG>
 )
 
-target_link_libraries(bmptest PRIVATE texutil::bmp)
+target_link_libraries(bmptest PRIVATE textoolkit::bmp)
 
 target_link_libraries(bmptest PRIVATE glm::glm)
 target_link_libraries(bmptest PRIVATE Catch2::Catch2WithMain)

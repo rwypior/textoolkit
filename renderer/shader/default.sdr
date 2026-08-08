@@ -1,0 +1,4 @@
+[shader]
+name = default
+fragment = default.frag
+vertex = default.vert

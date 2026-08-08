@@ -11,6 +11,7 @@ namespace textoolkit
 		enum class Code
 		{
 			Ok,
+			Failure,
 			FileInaccessible,
 			InvalidMagic
 		};

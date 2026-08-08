@@ -7,7 +7,7 @@ endif()
 
 set(CMAKE_DEBUG_POSTFIX "d")
 
-if(${GAME_WINDOWS})
+if(${APP_PLATFORM} STREQUAL "windows")
     message("Configuring for Windows platform")
 endif()
 
@@ -16,8 +16,14 @@ project ("textoolkit")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Find packages
+find_package(events REQUIRED)
+find_package(iniparser REQUIRED)
+
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(gli CONFIG REQUIRED)
+find_package(wxWidgets CONFIG REQUIRED COMPONENTS core base html propgrid xml aui gl)
 
 # Unit tests
 if(${BUILD_TESTING})
@@ -31,6 +37,10 @@ add_subdirectory("common")
 add_subdirectory("operator")
 add_subdirectory("dds")
 add_subdirectory("bmp")
+add_subdirectory("gui")
+add_subdirectory("renderer")
+
+set(VS_STARTUP_PROJECT textoolkit)
 
 # Graphviz
 find_program(GRAPHVIZ dot)

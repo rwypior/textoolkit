@@ -1,0 +1,5 @@
+[shader]
+name = compass
+fragment = compass.frag
+geometry = compass.geom
+vertex = compass.vert
