@@ -1,3 +1,5 @@
 target_sources(textoolkit PRIVATE
-	"main.cpp" "mainwindow.cpp" "textoolkitmainwindow.cpp" "textoolkittextureview.cpp" "canvas.cpp"
+	"mainwindow.cpp" "textoolkitmainwindow.cpp" "textoolkittextureview.cpp" "textoolkitaboutwindow.cpp"
+	"textoolkitnewbmppanel.cpp" "textoolkitnewddspanel.cpp" "textoolkitnewdialog.cpp" "textoolkitsubimageentry.cpp"
+	"main.cpp" "canvas.cpp" "texture.cpp"
 )

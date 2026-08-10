@@ -3,12 +3,20 @@
 
 #include "mainwindow.h"
 
+#include <memory>
+
 namespace textoolkit
 {
+	class Texture;
+
 	class TexToolkitTextureView : public TextureView
 	{
 	public:
-		TexToolkitTextureView(wxWindow* parent);
+		TexToolkitTextureView(std::unique_ptr<Texture>&& texture, wxWindow* parent);
+		~TexToolkitTextureView();
+
+	private:
+		std::unique_ptr<Texture> texture;
 	};
 }
 

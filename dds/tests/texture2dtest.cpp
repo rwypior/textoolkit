@@ -10,18 +10,33 @@
 
 TEST_CASE("DDS::Texture2D::Create from scratch", "[DDS][texture2d]")
 {
-	glm::u8vec3 expected(0, 128, 255);
-	gli::texture2d tex = textoolkit::DDS::create2D(16, 16, textoolkit::Pixel(expected.r, expected.g, expected.b));
+	textoolkit::Pixel expected(0, 128, 255);
+	textoolkit::DDS dds = textoolkit::DDS::create2D(16, 16, textoolkit::Pixel(expected.r, expected.g, expected.b));
 
-	auto a = tex.load<glm::u8vec3>(gli::texture2d::extent_type(0, 0), gli::texture::size_type(0));
-	auto b = tex.load<glm::u8vec3>(gli::texture2d::extent_type(0, 15), gli::texture::size_type(0));
-	auto c = tex.load<glm::u8vec3>(gli::texture2d::extent_type(15, 0), gli::texture::size_type(0));
-	auto d = tex.load<glm::u8vec3>(gli::texture2d::extent_type(15, 15), gli::texture::size_type(0));
+	auto a = dds.Image::getPixel(0, 0);
+	auto b = dds.Image::getPixel(0, 15);
+	auto c = dds.Image::getPixel(15, 0);
+	auto d = dds.Image::getPixel(15, 15);
 
 	REQUIRE(a == expected);
 	REQUIRE(b == expected);
 	REQUIRE(c == expected);
 	REQUIRE(d == expected);
+
+	// glm::u8vec3 expected(0, 128, 255);
+
+	//auto& tex = dds.getTexture();
+	//gli::texture2d tex = textoolkit::DDS::create2D(16, 16, textoolkit::Pixel(expected.r, expected.g, expected.b));
+
+	/*auto a = tex.load<glm::u8vec3>(gli::texture::extent_type(0, 0, 0), gli::texture::size_type(0));
+	auto b = tex.load<glm::u8vec3>(gli::texture::extent_type(0, 15), gli::texture::size_type(0));
+	auto c = tex.load<glm::u8vec3>(gli::texture::extent_type(15, 0), gli::texture::size_type(0));
+	auto d = tex.load<glm::u8vec3>(gli::texture::extent_type(15, 15), gli::texture::size_type(0));
+
+	REQUIRE(a == expected);
+	REQUIRE(b == expected);
+	REQUIRE(c == expected);
+	REQUIRE(d == expected);*/
 }
 
 
@@ -66,12 +81,26 @@ TEST_CASE("DDS::Texture2D::Sanity test", "[DDS][texture2d]")
 
 TEST_CASE("DDS::Texture2D::Create from BMP", "[DDS][texture2d]")
 {
-	auto bmpres = textoolkit::bmp::Bmp::fromString(std::string(resx::utest_img_bmp, resx::utest_img_bmp_size));
+	auto bmpres = textoolkit::Bmp::fromString(std::string(resx::utest_img_bmp, resx::utest_img_bmp_size));
 	REQUIRE(bmpres);
 
-	gli::texture2d tex = textoolkit::DDS::create2D(*bmpres);
+	textoolkit::DDS tex = textoolkit::DDS::create2D(*bmpres);
 
-	gli::save_dds(tex, "F:/test/test2.dds");
+	auto a = tex.Image::getPixel(0, 0);
+	auto b = tex.Image::getPixel(8, 0);
+	auto c = tex.Image::getPixel(15, 0);
+	auto d = tex.Image::getPixel(0, 15);
+	auto e = tex.Image::getPixel(15, 15);
+
+	REQUIRE(a == textoolkit::Pixel(0.0f, 0.0f, 255.0f));
+	REQUIRE(b == textoolkit::Pixel(255.0f, 255.0f, 255.0f));
+	REQUIRE(c == textoolkit::Pixel(0.0f, 0.0f, 0.0f));
+	REQUIRE(d == textoolkit::Pixel(255.0f, 0.0f, 0.0f));
+	REQUIRE(e == textoolkit::Pixel(0.0f, 255.0f, 0.0f));
+
+	//gli::texture2d tex = textoolkit::DDS::create2D(*bmpres);
+
+	//gli::save_dds(tex, "F:/test/test2.dds");
 	//return;
 	//for (unsigned int x = 0; x < bmpres->getWidth(); x++)
 	//{
@@ -84,15 +113,15 @@ TEST_CASE("DDS::Texture2D::Create from BMP", "[DDS][texture2d]")
 	//	}
 	//}
 
-	auto a = tex.load<glm::u8vec3>(gli::texture2d::extent_type(0, 0), gli::texture::size_type(0));
-	auto b = tex.load<glm::u8vec3>(gli::texture2d::extent_type(8, 0), gli::texture::size_type(0));
-	auto c = tex.load<glm::u8vec3>(gli::texture2d::extent_type(15, 0), gli::texture::size_type(0));
-	auto d = tex.load<glm::u8vec3>(gli::texture2d::extent_type(0, 15), gli::texture::size_type(0));
-	auto e = tex.load<glm::u8vec3>(gli::texture2d::extent_type(15, 15), gli::texture::size_type(0));
-	
-	REQUIRE(a == glm::u8vec3(0.0f, 0.0f, 255.0f));
-	REQUIRE(b == glm::u8vec3(255.0f, 255.0f, 255.0f));
-	REQUIRE(c == glm::u8vec3(0.0f, 0.0f, 0.0f));
-	REQUIRE(d == glm::u8vec3(255.0f, 0.0f, 0.0f));
-	REQUIRE(e == glm::u8vec3(0.0f, 255.0f, 0.0f));
+	//auto a = tex.load<glm::u8vec3>(gli::texture2d::extent_type(0, 0), gli::texture::size_type(0));
+	//auto b = tex.load<glm::u8vec3>(gli::texture2d::extent_type(8, 0), gli::texture::size_type(0));
+	//auto c = tex.load<glm::u8vec3>(gli::texture2d::extent_type(15, 0), gli::texture::size_type(0));
+	//auto d = tex.load<glm::u8vec3>(gli::texture2d::extent_type(0, 15), gli::texture::size_type(0));
+	//auto e = tex.load<glm::u8vec3>(gli::texture2d::extent_type(15, 15), gli::texture::size_type(0));
+	//
+	//REQUIRE(a == glm::u8vec3(0.0f, 0.0f, 255.0f));
+	//REQUIRE(b == glm::u8vec3(255.0f, 255.0f, 255.0f));
+	//REQUIRE(c == glm::u8vec3(0.0f, 0.0f, 0.0f));
+	//REQUIRE(d == glm::u8vec3(255.0f, 0.0f, 0.0f));
+	//REQUIRE(e == glm::u8vec3(0.0f, 255.0f, 0.0f));
 }

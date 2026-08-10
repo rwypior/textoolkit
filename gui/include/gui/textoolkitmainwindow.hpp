@@ -3,12 +3,23 @@
 
 #include "mainwindow.h"
 
+#include <memory>
+
 namespace textoolkit
 {
+	class Texture;
+
 	class TexToolkitMainWindow : public MainWindow
 	{
 	public:
 		TexToolkitMainWindow(wxWindow* parent);
+
+		void openNewTexture(std::unique_ptr<Texture>&& texture);
+
+	private:
+		void eventNew(wxCommandEvent& event);
+		void eventOpen(wxCommandEvent& event);
+		void eventAbout(wxCommandEvent& event);
 	};
 }
 

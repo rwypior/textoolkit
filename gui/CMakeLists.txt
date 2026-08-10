@@ -43,6 +43,13 @@ target_link_libraries(textoolkit PRIVATE wx::core wx::base wx::html wx::propgrid
 add_subdirectory("include/gui")
 add_subdirectory("src")
 
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.h")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.h" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/include/gui")
+endif()
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp"  DESTINATION"${CMAKE_CURRENT_SOURCE_DIR}/src")
+endif()
+
 # Copy DLLs to exe directory
 add_custom_command(TARGET textoolkit POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:textoolkit> $<TARGET_RUNTIME_DLLS:textoolkit>

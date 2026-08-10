@@ -6,14 +6,14 @@
 
 TEST_CASE("BMP::BMP::Basic loading", "[bmp]")
 {
-	auto result = textoolkit::bmp::Bmp::fromString(std::string(resx::utest_img_bmp, resx::utest_img_bmp_size));
+	auto result = textoolkit::Bmp::fromString(std::string(resx::utest_img_bmp, resx::utest_img_bmp_size));
 	REQUIRE(result);
 
 	auto expectedBegin = std::begin(resx::utest_img_bmp) + 138;
 	auto expectedEnd = std::begin(resx::utest_img_bmp) + resx::utest_img_bmp_size;
 	std::vector<unsigned char> expected(expectedBegin, expectedEnd);
 
-	textoolkit::bmp::Bmp bmp = std::move(result);
+	textoolkit::Bmp bmp = std::move(result);
 	const auto& bytes = bmp.Image::getBytes();
 
 	REQUIRE(bmp.getWidth() == 16);
@@ -24,10 +24,10 @@ TEST_CASE("BMP::BMP::Basic loading", "[bmp]")
 
 TEST_CASE("BMP::BMP::Getting pixels", "[bmp]")
 {
-	auto result = textoolkit::bmp::Bmp::fromString(std::string(resx::utest_img_bmp, resx::utest_img_bmp_size));
+	auto result = textoolkit::Bmp::fromString(std::string(resx::utest_img_bmp, resx::utest_img_bmp_size));
 	REQUIRE(result);
 
-	textoolkit::bmp::Bmp bmp = std::move(result);
+	textoolkit::Bmp bmp = std::move(result);
 	REQUIRE(*bmp.Image::getPixel(0, 0) == textoolkit::Pixel(0, 0, 255));
 	REQUIRE(*bmp.Image::getPixel(8, 0) == textoolkit::Pixel(255, 255, 255));
 	REQUIRE(*bmp.Image::getPixel(15, 0) == textoolkit::Pixel(0, 0, 0));
@@ -37,10 +37,10 @@ TEST_CASE("BMP::BMP::Getting pixels", "[bmp]")
 
 TEST_CASE("BMP::BMP::Getting pixels inverted Y", "[bmp]")
 {
-	auto result = textoolkit::bmp::Bmp::fromString(std::string(resx::utest_img_bmp, resx::utest_img_bmp_size));
+	auto result = textoolkit::Bmp::fromString(std::string(resx::utest_img_bmp, resx::utest_img_bmp_size));
 	REQUIRE(result);
 
-	textoolkit::bmp::Bmp bmp = std::move(result);
+	textoolkit::Bmp bmp = std::move(result);
 
 	auto inv = textoolkit::DataOption::InvertY;
 	REQUIRE(*bmp.Image::getPixel(0, 0, inv) == textoolkit::Pixel(255, 0, 0));
@@ -52,10 +52,10 @@ TEST_CASE("BMP::BMP::Getting pixels inverted Y", "[bmp]")
 
 TEST_CASE("BMP::BMP::Basic saving", "[bmp]")
 {
-	auto result = textoolkit::bmp::Bmp::fromString(std::string(resx::utest_img_bmp, resx::utest_img_bmp_size));
+	auto result = textoolkit::Bmp::fromString(std::string(resx::utest_img_bmp, resx::utest_img_bmp_size));
 	REQUIRE(result);
 
-	textoolkit::bmp::Bmp bmp = std::move(result);
+	textoolkit::Bmp bmp = std::move(result);
 
 	std::ostringstream stream(std::ios_base::out);
 	bmp.save(stream);

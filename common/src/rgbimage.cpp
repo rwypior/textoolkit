@@ -11,6 +11,17 @@ namespace textoolkit
 		this->allocate(baseWidth, baseHeight, layers, faces, levels, baseColor);
 	}
 
+	RgbImage::Type RgbImage::getType() const
+	{
+		return Type::RgbImage;
+	}
+
+	bool RgbImage::save(std::ostream& stream) const
+	{
+		assert(!"Unsupported, first convert to another format");
+		return false;
+	}
+
 	void RgbImage::allocate(unsigned int baseWidth, unsigned int baseHeight, unsigned int layers, unsigned int faces, unsigned int levels, const Pixel& baseColor)
 	{
 		this->baseWidth = baseWidth;

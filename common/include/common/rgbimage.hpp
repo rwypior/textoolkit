@@ -24,6 +24,10 @@ namespace textoolkit
 	public:
 		RgbImage(unsigned int baseWidth, unsigned int baseHeight, unsigned int layers = 1, unsigned int faces = 1, unsigned int levels = 1, const Pixel& baseColor = Pixel::white());
 
+		virtual Type getType() const override;
+
+		virtual bool save(std::ostream& stream) const override;
+
 		void allocate(unsigned int baseWidth, unsigned int baseHeight, unsigned int layers = 1, unsigned int faces = 1, unsigned int levels = 1, const Pixel& baseColor = Pixel::white());
 		/// Fill whole image with given color
 		void fill(const Pixel& baseColor);

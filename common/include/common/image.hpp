@@ -3,6 +3,7 @@
 
 #include "common/pixel.hpp"
 
+#include <string>
 #include <memory>
 #include <vector>
 #include <optional>
@@ -18,7 +19,20 @@ namespace textoolkit
 	class Image
 	{
 	public:
+		enum class Type
+		{
+			RgbImage,
+			BMP,
+			DDS
+		};
+
+	public:
 		virtual ~Image() = default;
+
+		virtual Type getType() const = 0;
+
+		virtual bool save(const std::string& path) const;
+		virtual bool save(std::ostream& stream) const = 0;
 
 		virtual std::optional<unsigned char> getByte(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const = 0;
 		virtual std::optional<unsigned char> getByte(unsigned int x, unsigned int y, DataOption mode = DataOption::Normal) const
