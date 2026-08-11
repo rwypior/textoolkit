@@ -1,3 +1,11 @@
 set(TEXTOOLKIT_VERSION_MAJOR 1)
 set(TEXTOOLKIT_VERSION_MINOR 0)
 set(TEXTOOLKIT_VERSION_PATCH 0)
+
+if("${APP_PLATFORM}" STREQUAL "windows")
+    message("Configuring for Windows platform")
+    set(EXE_OPTIONS WIN32)
+    set(TEXTOOLKIT_WINDOWS 1)
+else()
+    set(TEXTOOLKIT_LINUX 1)
+endif()

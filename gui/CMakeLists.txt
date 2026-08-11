@@ -7,24 +7,13 @@ endif()
 
 include("${CMAKE_SOURCE_DIR}/cmake/version.cmake")
 
-if(${APP_PLATFORM} STREQUAL "windows")
-    message("Configuring for Windows platform")
-    set(OPTIONS WIN32)
-    set(TEXTOOLKIT_WINDOWS 1)
-else()
-    set(TEXTOOLKIT_LINUX 1)
-endif()
-
-add_executable(textoolkit ${OPTIONS})
+add_executable(textoolkit ${EXE_OPTIONS})
 
 target_compile_definitions(textoolkit
     PRIVATE 
         GLM_ENABLE_EXPERIMENTAL=1
         $<$<CONFIG:Debug>:DEBUG>
 )
-
-configure_file("${CMAKE_SOURCE_DIR}/cmake/textoolkit.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/include/gui/textoolkit.h" @ONLY)
-target_sources(textoolkit PUBLIC "include/gui/textoolkit.h")
 
 set_target_properties(textoolkit PROPERTIES CXX_STANDARD 17)
 

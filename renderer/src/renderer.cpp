@@ -5,6 +5,7 @@
 #include "common/result.hpp"
 #include "common/util.hpp"
 #include "common/logger.hpp"
+#include "common/textoolkit.hpp"
 
 #include <iniparser/iniparser.hpp>
 

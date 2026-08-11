@@ -56,7 +56,7 @@ namespace textoolkit
 
 	void TexToolkitMainWindow::eventAbout(wxCommandEvent& event)
 	{
-		TexToolkitAboutWindow about(this);
-		about.Show();
+		auto about = new TexToolkitAboutWindow(this);
+		about->Show();
 	}
 }

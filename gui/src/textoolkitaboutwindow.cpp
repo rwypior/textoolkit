@@ -1,4 +1,6 @@
 #include "gui/textoolkitaboutwindow.hpp"
+#include "common/textoolkit.hpp"
+#include "common/util.hpp"
 
 namespace textoolkit
 {
@@ -6,6 +8,13 @@ namespace textoolkit
 		:
 		AboutWindow(parent)
 	{
+		auto label = this->infoLabel->GetLabel();
+		label.Replace("%ver.major%", STRINGIFY(TEXTOOLKIT_VERSION_MAJOR));
+		label.Replace("%ver.minor%", STRINGIFY(TEXTOOLKIT_VERSION_MINOR));
+		label.Replace("%ver.patch%", STRINGIFY(TEXTOOLKIT_VERSION_PATCH));
+		label.Replace("%reldate%", TEXTOOLKIT_COMPILATION_DATE " " TEXTOOLKIT_COMPILATION_TIME);
+		this->infoLabel->SetLabel(label);
+
 		this->Bind(wxEVT_BUTTON, &TexToolkitAboutWindow::eventOk, this);
 	}
 

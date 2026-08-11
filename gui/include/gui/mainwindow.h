@@ -21,10 +21,10 @@
 #include <wx/settings.h>
 #include <wx/aui/auibook.h>
 #include <wx/sizer.h>
+#include <wx/panel.h>
 #include <wx/frame.h>
 #include "gui/canvas.hpp"
 #include <wx/combobox.h>
-#include <wx/panel.h>
 #include <wx/statbmp.h>
 #include <wx/bmpbuttn.h>
 #include <wx/button.h>
@@ -70,6 +70,7 @@ namespace textoolkit
 			wxMenu* file;
 			wxMenu* edit;
 			wxMenu* help;
+			wxPanel* m_panel27;
 			wxAuiNotebook* notebook;
 
 		public:
@@ -163,7 +164,7 @@ namespace textoolkit
 
 		public:
 
-			NewDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 480,346 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
+			NewDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 667,391 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
 
 			~NewDialog();
 
@@ -236,6 +237,7 @@ namespace textoolkit
 		private:
 
 		protected:
+			wxPanel* m_panel28;
 			wxPanel* m_panel18;
 			wxStaticText* nameLabel;
 			wxStaticText* infoLabel;

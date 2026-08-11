@@ -1,5 +1,5 @@
 #include "gui/textoolkitmainwindow.hpp"
-#include "gui/textoolkit.h"
+#include "common/textoolkit.hpp"
 
 #include "logo.xpm"
 

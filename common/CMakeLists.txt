@@ -5,7 +5,9 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-add_library(common ${OPTIONS})
+include("${CMAKE_SOURCE_DIR}/cmake/version.cmake")
+
+add_library(common)
 add_library(textoolkit::common ALIAS common)
 
 target_compile_definitions(common
@@ -13,6 +15,9 @@ target_compile_definitions(common
         GLM_ENABLE_EXPERIMENTAL=1
         $<$<CONFIG:Debug>:DEBUG>
 )
+
+configure_file("${CMAKE_SOURCE_DIR}/cmake/textoolkit.h.in" "${CMAKE_CURRENT_SOURCE_DIR}/include/common/textoolkit.hpp" @ONLY)
+target_sources(common PUBLIC "include/common/textoolkit.hpp")
 
 set_target_properties(common PROPERTIES CXX_STANDARD 17)
 
