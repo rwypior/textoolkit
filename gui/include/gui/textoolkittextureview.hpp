@@ -3,6 +3,8 @@
 
 #include "mainwindow.h"
 
+#include <wx/bitmap.h>
+
 #include <memory>
 
 namespace textoolkit
@@ -15,8 +17,12 @@ namespace textoolkit
 		TexToolkitTextureView(std::unique_ptr<Texture>&& texture, wxWindow* parent);
 		~TexToolkitTextureView();
 
+		void updateFlatView();
+
 	private:
 		std::unique_ptr<Texture> texture;
+		wxBitmap flatViewBitmap;
+		wxBitmap editorBitmap;
 	};
 }
 

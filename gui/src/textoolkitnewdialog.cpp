@@ -122,11 +122,11 @@ namespace textoolkit
 
 	void TexToolkitNewDialog::okEvent(wxCommandEvent& event)
 	{
-		this->EndModal(wxOK);
+		this->EndModal(wxID_OK);
 	}
 
 	void TexToolkitNewDialog::cancelEvent(wxCommandEvent& event)
 	{
-		this->EndModal(wxCANCEL);
+		this->EndModal(wxID_CANCEL);
 	}
 }

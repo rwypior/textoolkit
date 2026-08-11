@@ -26,6 +26,7 @@ namespace textoolkit
 		wxBitmap& getBitmap();
 
 		bool save(const std::string& path); // Save current image to file
+		void updateBitmap(); // Update wxBitmap with data from texture
 		void commit(); // Copy data from bitmap to image
 		bool commitAndSave(const std::string& path);
 

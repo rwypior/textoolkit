@@ -14,7 +14,7 @@ namespace textoolkit
 	public:
 		TexToolkitMainWindow(wxWindow* parent);
 
-		void openNewTexture(std::unique_ptr<Texture>&& texture);
+		void openTexture(std::unique_ptr<Texture>&& texture);
 
 	private:
 		void eventNew(wxCommandEvent& event);

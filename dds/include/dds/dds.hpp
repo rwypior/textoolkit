@@ -3,7 +3,9 @@
 
 #include "common/image.hpp"
 #include "common/pixel.hpp"
+#include "common/result.hpp"
 
+#include <gli/gli.hpp>
 #include <gli/texture.hpp>
 #include <gli/texture_cube.hpp>
 
@@ -12,17 +14,22 @@
 
 namespace textoolkit
 {
+	class DDS;
+
+	using DDSLoadResult = Result<DDS>;
+
 	class DDS : public Image
 	{
-	public:
-		static constexpr unsigned int bytesPerPixel = 3;
-
 	public:
 		DDS();
 		DDS(const gli::texture& dds);
 		DDS(gli::texture&& dds);
 
 		virtual Type getType() const override;
+
+		static DDSLoadResult load(std::istream& stream);
+		static DDSLoadResult load(const std::string& path);
+		static DDSLoadResult fromString(const std::string& data);
 
 		bool save(std::ostream& stream) const override;
 
@@ -45,9 +52,13 @@ namespace textoolkit
 		static DDS create2D(const Image& image);
 
 	private:
+		void updateInfo();
 		std::optional<size_t> getIndex(unsigned int x, unsigned int y, unsigned int level) const;
 
+		gli::gl::swizzles swizzles;
+		gli::format originalForamt;
 		gli::texture dds;
+		unsigned int bytesPerPixel = 0;
 	};
 }
 

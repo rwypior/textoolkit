@@ -1,5 +1,13 @@
 #include "dds/dds.hpp"
 
+#include <gli/gli.hpp>
+#include <gli/load_dds.hpp>
+#include <gli/convert.hpp>
+#include <gli/format.hpp>
+
+#include <fstream>
+#include <sstream>
+
 namespace textoolkit
 {
 	// TODO:
@@ -9,13 +17,53 @@ namespace textoolkit
 	DDS::DDS() = default;
 
 	DDS::DDS(const gli::texture& dds)
-		: dds(dds)
+		: originalForamt(dds.format())
+		, dds(gli::convert(dds, gli::format::FORMAT_RGBA8_UNORM_PACK8))
 	{
+		this->updateInfo();
 	}
 
 	DDS::DDS(gli::texture&& dds)
-		: dds(std::move(dds))
+		: originalForamt(dds.format())
+		, dds(gli::convert(std::move(dds), gli::format::FORMAT_RGBA8_UNORM_PACK8))
 	{
+		this->updateInfo();
+	}
+
+	void DDS::updateInfo()
+	{
+		static gli::gl gl = gli::gl(gli::gl::profile::PROFILE_GL33);
+		auto format = gl.translate(this->dds.format(), this->dds.swizzles());
+		this->swizzles = format.Swizzles;
+		auto formatInfo = gli::detail::get_format_info(this->dds.format());
+		this->bytesPerPixel = formatInfo.BlockSize;
+	}
+
+	DDSLoadResult DDS::load(std::istream& stream)
+	{
+		stream.seekg(0, std::ios_base::end);
+		unsigned int size = stream.tellg();
+		stream.seekg(0, std::ios_base::beg);
+
+		std::string data(size, 0);
+		stream.read(&data[0], size);
+
+		auto dds = gli::load_dds(&data[0], size);
+		return DDS(std::move(dds));
+	}
+
+	DDSLoadResult DDS::load(const std::string& path)
+	{
+		std::ifstream stream(path, std::ios_base::in | std::ios_base::binary);
+		if (!stream.is_open())
+			return DDSLoadResult::Code::FileInaccessible;
+		return DDS::load(stream);
+	}
+
+	DDSLoadResult DDS::fromString(const std::string& data)
+	{
+		std::stringstream stream(data, std::ios_base::in | std::ios_base::binary);
+		return DDS::load(stream);
 	}
 
 	DDS::Type DDS::getType() const
@@ -55,9 +103,10 @@ namespace textoolkit
 		{
 			unsigned int idx = *opt;
 			Pixel pixel;
-			pixel.r = data[0];
-			pixel.g = data[0];
-			pixel.b = data[0];
+			pixel.r = data[idx + 0];
+			pixel.g = data[idx + 1];
+			pixel.b = data[idx + 2];
+			pixel.a = this->swizzles[3] == 1 ? 255 : data[3];
 			return pixel;
 		}
 
@@ -177,6 +226,8 @@ namespace textoolkit
 			for (unsigned int x = 0; x < image.getWidth(); x++)
 			{
 				auto pixel = image.getPixel(x, y);
+				auto zxc = pixel->toVec3<glm::u8vec3>();
+
 				result.store(gli::texture2d::extent_type(x, y), 0, pixel->toVec3<glm::u8vec3>());
 			}
 		}

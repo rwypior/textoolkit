@@ -3,6 +3,7 @@
 #include "bmp/bmp.hpp"
 
 #include "utest_img.bmp.hpp"
+#include "utest_img.dds.hpp"
 
 #include <catch2/catch_all.hpp>
 
@@ -22,21 +23,6 @@ TEST_CASE("DDS::Texture2D::Create from scratch", "[DDS][texture2d]")
 	REQUIRE(b == expected);
 	REQUIRE(c == expected);
 	REQUIRE(d == expected);
-
-	// glm::u8vec3 expected(0, 128, 255);
-
-	//auto& tex = dds.getTexture();
-	//gli::texture2d tex = textoolkit::DDS::create2D(16, 16, textoolkit::Pixel(expected.r, expected.g, expected.b));
-
-	/*auto a = tex.load<glm::u8vec3>(gli::texture::extent_type(0, 0, 0), gli::texture::size_type(0));
-	auto b = tex.load<glm::u8vec3>(gli::texture::extent_type(0, 15), gli::texture::size_type(0));
-	auto c = tex.load<glm::u8vec3>(gli::texture::extent_type(15, 0), gli::texture::size_type(0));
-	auto d = tex.load<glm::u8vec3>(gli::texture::extent_type(15, 15), gli::texture::size_type(0));
-
-	REQUIRE(a == expected);
-	REQUIRE(b == expected);
-	REQUIRE(c == expected);
-	REQUIRE(d == expected);*/
 }
 
 
@@ -97,31 +83,22 @@ TEST_CASE("DDS::Texture2D::Create from BMP", "[DDS][texture2d]")
 	REQUIRE(c == textoolkit::Pixel(0.0f, 0.0f, 0.0f));
 	REQUIRE(d == textoolkit::Pixel(255.0f, 0.0f, 0.0f));
 	REQUIRE(e == textoolkit::Pixel(0.0f, 255.0f, 0.0f));
+}
 
-	//gli::texture2d tex = textoolkit::DDS::create2D(*bmpres);
+TEST_CASE("DDS::Texture2D::Load from file", "[DDS][texture2d]")
+{
+	auto res = textoolkit::DDS::fromString(std::string(resx::utest_img_dds, resx::utest_img_dds_size));
+	auto& tex = *res;
 
-	//gli::save_dds(tex, "F:/test/test2.dds");
-	//return;
-	//for (unsigned int x = 0; x < bmpres->getWidth(); x++)
-	//{
-	//	for (unsigned int y = 0; y < bmpres->getHeight(); y++)
-	//	{
-	//		INFO(std::string("x=") + std::to_string(x) + "; y=" + std::to_string(y));
-	//		auto pixelDds = tex.load<glm::u8vec3>(gli::texture2d::extent_type(x, y), gli::texture::size_type(0));
-	//		auto pixelBmp = bmpres->Image::getPixel(x, y);
-	//		REQUIRE(pixelDds == pixelBmp->toVec3<glm::u8vec3>());
-	//	}
-	//}
+	auto a = tex.Image::getPixel(0, 0);
+	auto b = tex.Image::getPixel(15, 0);
+	auto c = tex.Image::getPixel(0, 15);
+	auto d = tex.Image::getPixel(8, 15);
+	auto e = tex.Image::getPixel(15, 15);
 
-	//auto a = tex.load<glm::u8vec3>(gli::texture2d::extent_type(0, 0), gli::texture::size_type(0));
-	//auto b = tex.load<glm::u8vec3>(gli::texture2d::extent_type(8, 0), gli::texture::size_type(0));
-	//auto c = tex.load<glm::u8vec3>(gli::texture2d::extent_type(15, 0), gli::texture::size_type(0));
-	//auto d = tex.load<glm::u8vec3>(gli::texture2d::extent_type(0, 15), gli::texture::size_type(0));
-	//auto e = tex.load<glm::u8vec3>(gli::texture2d::extent_type(15, 15), gli::texture::size_type(0));
-	//
-	//REQUIRE(a == glm::u8vec3(0.0f, 0.0f, 255.0f));
-	//REQUIRE(b == glm::u8vec3(255.0f, 255.0f, 255.0f));
-	//REQUIRE(c == glm::u8vec3(0.0f, 0.0f, 0.0f));
-	//REQUIRE(d == glm::u8vec3(255.0f, 0.0f, 0.0f));
-	//REQUIRE(e == glm::u8vec3(0.0f, 255.0f, 0.0f));
+	REQUIRE(a == textoolkit::Pixel(255.0f, 0.0f, 0.0f));
+	REQUIRE(b == textoolkit::Pixel(0.0f, 255.0f, 0.0f));
+	REQUIRE(c == textoolkit::Pixel(0.0f, 0.0f, 255.0f));
+	REQUIRE(d == textoolkit::Pixel(255.0f, 255.0f, 255.0f));
+	REQUIRE(e == textoolkit::Pixel(0.0f, 0.0f, 0.0f));
 }
