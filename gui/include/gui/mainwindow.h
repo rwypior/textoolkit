@@ -42,6 +42,7 @@
 #include <wx/checkbox.h>
 #include <wx/choice.h>
 #include <wx/hyperlink.h>
+#include <wx/statline.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -135,7 +136,7 @@ namespace textoolkit
 
 			void m_splitter1OnIdle( wxIdleEvent& )
 			{
-				m_splitter1->SetSashPosition( 0 );
+				m_splitter1->SetSashPosition( 421 );
 				m_splitter1->Disconnect( wxEVT_IDLE, wxIdleEventHandler( TextureView::m_splitter1OnIdle ), NULL, this );
 			}
 
@@ -261,13 +262,16 @@ namespace textoolkit
 		private:
 
 		protected:
+			wxPanel* m_panel29;
 			wxStaticBitmap* previewImage;
 			wxPanel* m_panel32;
 			wxStaticText* nameLabel;
+			wxStaticText* measurementsLabel;
+			wxStaticLine* m_staticline1;
 
 		public:
 
-			SubimageEntry( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 337,79 ), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString );
+			SubimageEntry( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 337,71 ), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString );
 
 			~SubimageEntry();
 

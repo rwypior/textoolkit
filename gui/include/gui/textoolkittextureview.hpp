@@ -18,6 +18,7 @@ namespace textoolkit
 		~TexToolkitTextureView();
 
 		void updateFlatView();
+		void updateLevels();
 
 	private:
 		std::unique_ptr<Texture> texture;

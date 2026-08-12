@@ -216,6 +216,8 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	m_splitter1 = new wxSplitterWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_3D );
 	m_splitter1->Connect( wxEVT_IDLE, wxIdleEventHandler( TextureView::m_splitter1OnIdle ), NULL, this );
 
+	m_splitter1->SetMaxSize( wxSize( 250,-1 ) );
+
 	m_panel25 = new wxPanel( m_splitter1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer32;
 	bSizer32 = new wxBoxSizer( wxVERTICAL );
@@ -227,7 +229,14 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	bSizer5 = new wxBoxSizer( wxVERTICAL );
 
 	layerFaceScroller = new wxScrolledWindow( sbSizer1->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL|wxVSCROLL );
-	layerFaceScroller->SetScrollRate( 5, 5 );
+	layerFaceScroller->SetScrollRate( 0, 5 );
+	wxBoxSizer* bSizer321;
+	bSizer321 = new wxBoxSizer( wxVERTICAL );
+
+
+	layerFaceScroller->SetSizer( bSizer321 );
+	layerFaceScroller->Layout();
+	bSizer321->Fit( layerFaceScroller );
 	bSizer5->Add( layerFaceScroller, 1, wxEXPAND | wxALL, 0 );
 
 	m_panel251 = new wxPanel( sbSizer1->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
@@ -267,8 +276,15 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( m_panel31, wxID_ANY, _("Levels") ), wxVERTICAL );
 
 	levelScroller = new wxScrolledWindow( sbSizer2->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL|wxVSCROLL );
-	levelScroller->SetScrollRate( 5, 5 );
-	sbSizer2->Add( levelScroller, 1, wxEXPAND | wxALL, 5 );
+	levelScroller->SetScrollRate( 0, 5 );
+	wxBoxSizer* bSizer33;
+	bSizer33 = new wxBoxSizer( wxVERTICAL );
+
+
+	levelScroller->SetSizer( bSizer33 );
+	levelScroller->Layout();
+	bSizer33->Fit( levelScroller );
+	sbSizer2->Add( levelScroller, 1, wxBOTTOM|wxEXPAND|wxTOP, 5 );
 
 	m_panel261 = new wxPanel( sbSizer2->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer28;
@@ -317,7 +333,7 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	m_panel26->SetSizer( sbSizer4 );
 	m_panel26->Layout();
 	sbSizer4->Fit( m_panel26 );
-	m_splitter1->SplitHorizontally( m_panel25, m_panel26, 0 );
+	m_splitter1->SplitHorizontally( m_panel25, m_panel26, 421 );
 	bSizer3->Add( m_splitter1, 0, wxEXPAND, 0 );
 
 
@@ -652,12 +668,18 @@ AboutWindow::~AboutWindow()
 SubimageEntry::SubimageEntry( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name ) : wxPanel( parent, id, pos, size, style, name )
 {
 	wxBoxSizer* bSizer40;
-	bSizer40 = new wxBoxSizer( wxHORIZONTAL );
+	bSizer40 = new wxBoxSizer( wxVERTICAL );
 
-	previewImage = new wxStaticBitmap( this, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer40->Add( previewImage, 0, wxALL|wxEXPAND|wxSHAPED, 5 );
+	m_panel29 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	m_panel29->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_BTNFACE ) );
 
-	m_panel32 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer31;
+	bSizer31 = new wxBoxSizer( wxHORIZONTAL );
+
+	previewImage = new wxStaticBitmap( m_panel29, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer31->Add( previewImage, 0, wxALL|wxEXPAND|wxSHAPED, 5 );
+
+	m_panel32 = new wxPanel( m_panel29, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer41;
 	bSizer41 = new wxBoxSizer( wxVERTICAL );
 
@@ -666,7 +688,11 @@ SubimageEntry::SubimageEntry( wxWindow* parent, wxWindowID id, const wxPoint& po
 
 	nameLabel = new wxStaticText( m_panel32, wxID_ANY, _("Layer / face ID"), wxDefaultPosition, wxDefaultSize, 0 );
 	nameLabel->Wrap( -1 );
-	bSizer41->Add( nameLabel, 0, wxALL, 5 );
+	bSizer41->Add( nameLabel, 0, wxLEFT|wxRIGHT, 5 );
+
+	measurementsLabel = new wxStaticText( m_panel32, wxID_ANY, _("00px x 00px"), wxDefaultPosition, wxDefaultSize, 0 );
+	measurementsLabel->Wrap( -1 );
+	bSizer41->Add( measurementsLabel, 0, wxLEFT|wxRIGHT|wxTOP, 5 );
 
 
 	bSizer41->Add( 0, 0, 1, wxEXPAND, 5 );
@@ -675,7 +701,18 @@ SubimageEntry::SubimageEntry( wxWindow* parent, wxWindowID id, const wxPoint& po
 	m_panel32->SetSizer( bSizer41 );
 	m_panel32->Layout();
 	bSizer41->Fit( m_panel32 );
-	bSizer40->Add( m_panel32, 1, wxEXPAND | wxALL, 0 );
+	bSizer31->Add( m_panel32, 1, wxEXPAND | wxALL, 0 );
+
+
+	m_panel29->SetSizer( bSizer31 );
+	m_panel29->Layout();
+	bSizer31->Fit( m_panel29 );
+	bSizer40->Add( m_panel29, 1, wxEXPAND | wxALL, 0 );
+
+	m_staticline1 = new wxStaticLine( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
+	m_staticline1->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_BTNFACE ) );
+
+	bSizer40->Add( m_staticline1, 0, wxEXPAND | wxALL, 5 );
 
 
 	this->SetSizer( bSizer40 );

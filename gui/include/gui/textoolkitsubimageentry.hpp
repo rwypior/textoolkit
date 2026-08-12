@@ -6,22 +6,32 @@
 
 #include <wx/bitmap.h>
 
+#include <optional>
+
 namespace textoolkit
 {
 	class TexToolkitSubimageEntry : public SubimageEntry
 	{
 	public:
-		TexToolkitSubimageEntry(wxWindow* parent);
+		TexToolkitSubimageEntry(std::unique_ptr<SubTexture>&& texture, wxWindow* parent);
 
-		void setTexture(Texture* texture);
+		void setTexture(std::unique_ptr<SubTexture>&& texture);
+		void setLineVisibility(bool visible);
+
+		std::string getSubtextureName() const;
+		std::string getSubtextureSize() const;
 
 	private:
 		void updatePreview();
 
 		void sizeEvent(wxSizeEvent& ev);
+		void mouseEnterEvent(wxMouseEvent& ev);
+		void mouseLeaveEvent(wxMouseEvent& ev);
 
-		Texture* texture = nullptr;
+		std::unique_ptr<SubTexture> texture = nullptr;
 		wxBitmap bitmap;
+
+		std::optional<wxColour> backgroundColor;
 	};
 }
 

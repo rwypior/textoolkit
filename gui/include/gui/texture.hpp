@@ -3,6 +3,8 @@
 
 #include "common/image.hpp"
 
+#include <glm/vec2.hpp>
+
 #include <wx/bitmap.h>
 
 #include <memory>
@@ -12,10 +14,12 @@ namespace textoolkit
 {
 	class Texture
 	{
+		friend class SubTexture;
+
 	public:
 		Texture(std::shared_ptr<Image>&& image, const std::string& name);
 		Texture(std::shared_ptr<Image>&& image, const std::string& path, const std::string& name);
-		~Texture();
+		virtual ~Texture();
 
 		std::string getName() const;
 		void setName(const std::string& name);
@@ -25,12 +29,14 @@ namespace textoolkit
 		Image& getImage();
 		wxBitmap& getBitmap();
 
-		bool save(const std::string& path); // Save current image to file
-		void updateBitmap(); // Update wxBitmap with data from texture
-		void commit(); // Copy data from bitmap to image
-		bool commitAndSave(const std::string& path);
+		virtual bool save(const std::string& path); // Save current image to file
+		virtual void updateBitmap(); // Update wxBitmap with data from texture
+		virtual void commit(); // Copy data from bitmap to image
+		virtual bool commitAndSave(const std::string& path);
 
-	private:
+	protected:
+		void setBitmapData(wxBitmap& bmp, unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0);
+
 		std::shared_ptr<Image> image;
 		std::string name;
 		std::string path;
@@ -42,13 +48,23 @@ namespace textoolkit
 	public:
 		enum class Type
 		{
+			Base,
+			Layer,
 			Face,
-			Layer
+			Level
 		};
 
 	public:
-		SubTexture(Type type, unsigned int index, std::shared_ptr<Image>&& image, const std::string& name);
-		SubTexture(Type type, unsigned int index, std::shared_ptr<Image>&& image, const std::string& path, const std::string& name);
+		SubTexture(Type type, unsigned int index, std::shared_ptr<Image> image, const std::string& name);
+		SubTexture(Type type, unsigned int index, std::shared_ptr<Image> image, const std::string& path, const std::string& name);
+
+		static SubTexture createLayer(Texture& texture, unsigned int layer);
+		static SubTexture createFace(Texture& texture, unsigned int face);
+		static SubTexture createLevel(Texture& texture, unsigned int level);
+
+		glm::uvec2 getSize() const;
+
+		virtual void updateBitmap() override;
 
 		Type getType() const;
 		unsigned int getIndex() const;

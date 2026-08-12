@@ -74,14 +74,19 @@ namespace textoolkit
 		if (bitmapsize.x != this->image->getWidth() || bitmapsize.y != this->image->getHeight())
 			this->bitmap = wxBitmap(this->image->getWidth(), this->image->getHeight(), 32);
 
-		wxAlphaPixelData data(this->bitmap);
+		this->setBitmapData(this->bitmap);
+	}
+
+	void Texture::setBitmapData(wxBitmap& bmp, unsigned int layer, unsigned int face, unsigned int level)
+	{
+		wxAlphaPixelData data(bmp);
 		wxAlphaPixelData::Iterator datait(data);
 
-		for (unsigned int x = 0; x < this->bitmap.GetWidth(); x++)
+		for (unsigned int x = 0; x < bmp.GetWidth(); x++)
 		{
-			for (unsigned int y = 0; y < this->bitmap.GetHeight(); y++)
+			for (unsigned int y = 0; y < bmp.GetHeight(); y++)
 			{
-				auto color = this->image->getPixel(x, y, textoolkit::DataOption::InvertY);
+				auto color = this->image->getPixel(x, y, layer, face, level, textoolkit::DataOption::InvertY);
 
 				datait.MoveTo(data, x, y);
 				datait.Red() = color->r;
@@ -90,8 +95,6 @@ namespace textoolkit
 				datait.Alpha() = color->a;
 			}
 		}
-
-		this->bitmap.SaveFile("F:/test/asdasdasd.bmp", wxBitmapType::wxBITMAP_TYPE_BMP);
 	}
 
 	void Texture::commit()
@@ -123,18 +126,67 @@ namespace textoolkit
 
 	// Sub texture
 
-	SubTexture::SubTexture(Type type, unsigned int index, std::shared_ptr<Image>&& image, const std::string& name)
+	SubTexture::SubTexture(Type type, unsigned int index, std::shared_ptr<Image> image, const std::string& name)
 		: Texture(std::move(image), name)
 		, type(type)
 		, index(index)
 	{
 	}
 
-	SubTexture::SubTexture(Type type, unsigned int index, std::shared_ptr<Image>&& image, const std::string& path, const std::string& name)
+	SubTexture::SubTexture(Type type, unsigned int index, std::shared_ptr<Image> image, const std::string& path, const std::string& name)
 		: Texture(std::move(image), path, name)
 		, type(type)
 		, index(index)
 	{
+	}
+
+	SubTexture SubTexture::createLayer(Texture& texture, unsigned int layer)
+	{
+		return SubTexture(Type::Layer, layer, texture.image, texture.name);
+	}
+
+	SubTexture SubTexture::createFace(Texture& texture, unsigned int face)
+	{
+		return SubTexture(Type::Face, face, texture.image, texture.name);
+	}
+
+	SubTexture SubTexture::createLevel(Texture& texture, unsigned int level)
+	{
+		return SubTexture(Type::Level, level, texture.image, texture.name);
+	}
+
+	glm::uvec2 SubTexture::getSize() const
+	{
+		return glm::uvec2(
+			this->image->getWidth(this->index),
+			this->image->getHeight(this->index)
+		);
+	}
+
+	void SubTexture::updateBitmap()
+	{
+		if (!this->image)
+			return;
+
+		auto bitmapsize = this->bitmap.GetSize();
+		if (bitmapsize.x != this->image->getWidth() || bitmapsize.y != this->image->getHeight())
+			this->bitmap = wxBitmap(this->image->getWidth(), this->image->getHeight(), 32);
+
+		switch (this->type)
+		{
+		case Type::Base:
+			this->setBitmapData(this->bitmap);
+			break;
+		case Type::Face:
+			this->setBitmapData(this->bitmap, 0, this->index, 0);
+			break;
+		case Type::Layer:
+			this->setBitmapData(this->bitmap, this->index, 0, 0);
+			break;
+		case Type::Level:
+			this->setBitmapData(this->bitmap, 0, 0, this->index);
+			break;
+		}
 	}
 
 	SubTexture::Type SubTexture::getType() const
