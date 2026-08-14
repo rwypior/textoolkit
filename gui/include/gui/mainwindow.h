@@ -26,6 +26,8 @@
 #include "gui/canvas.hpp"
 #include <wx/combobox.h>
 #include <wx/statbmp.h>
+#include <wx/stattext.h>
+#include <wx/hyperlink.h>
 #include <wx/bmpbuttn.h>
 #include <wx/button.h>
 #include <wx/notebook.h>
@@ -36,13 +38,12 @@
 #include <wx/propgrid/advprops.h>
 #include <wx/listbox.h>
 #include <wx/dialog.h>
-#include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/spinctrl.h>
 #include <wx/checkbox.h>
 #include <wx/choice.h>
-#include <wx/hyperlink.h>
 #include <wx/statline.h>
+#include <wx/gauge.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -64,19 +65,21 @@ namespace textoolkit
 				ID_SAVE,
 				ID_SAVE_AS,
 				ID_EXIT,
+				ID_CREATE_CUBEMAP,
 				ID_ABOUT,
 			};
 
 			wxMenuBar* mainmenu;
 			wxMenu* file;
 			wxMenu* edit;
+			wxMenu* tools;
 			wxMenu* help;
 			wxPanel* m_panel27;
 			wxAuiNotebook* notebook;
 
 		public:
 
-			MainWindow( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("TexToolkit"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 734,587 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+			MainWindow( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("TexToolkit"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 909,710 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 
 			~MainWindow();
 
@@ -98,7 +101,11 @@ namespace textoolkit
 			wxComboBox* displaymode;
 			wxPanel* pageflat;
 			wxStaticBitmap* flatView;
+			wxPanel* m_panel45;
+			wxStaticText* flatViewImageDetails;
+			wxHyperlinkCtrl* selectBaseLink;
 			wxPanel* pageEdit;
+			wxPanel* m_panel43;
 			wxPanel* m_panel21;
 			wxBitmapButton* m_bpButton1;
 			wxBitmapButton* m_bpButton2;
@@ -113,37 +120,47 @@ namespace textoolkit
 			wxStaticBitmap* m_bitmap2;
 			wxPanel* m_panel23;
 			wxPanel* m_panel22;
+			wxPanel* m_panel44;
+			wxStaticText* editorImageDetails;
+			wxNotebook* m_notebook21;
+			wxPanel* subImagesTab;
 			wxSplitterWindow* m_splitter1;
-			wxPanel* m_panel25;
-			wxScrolledWindow* layerFaceScroller;
+			wxPanel* m_panel35;
+			wxScrolledWindow* layerScroller;
 			wxPanel* m_panel251;
-			wxBitmapButton* addLayerFaceButton;
-			wxBitmapButton* removeLayerFaceButton;
-			wxSplitterWindow* m_splitter3;
-			wxPanel* m_panel31;
+			wxBitmapButton* addLayerButton;
+			wxBitmapButton* removeLayerButton;
+			wxPanel* m_panel36;
+			wxSplitterWindow* m_splitter5;
+			wxPanel* m_panel37;
+			wxScrolledWindow* faceScroller;
+			wxPanel* m_panel2611;
+			wxBitmapButton* addFaceButton;
+			wxBitmapButton* removeFaceButton;
+			wxPanel* m_panel38;
 			wxScrolledWindow* levelScroller;
 			wxPanel* m_panel261;
 			wxBitmapButton* addLevelButton;
 			wxBitmapButton* removeLevelButton;
-			wxPanel* m_panel26;
+			wxPanel* propertiesTab;
 			wxPropertyGrid* propertyGrid;
 
 		public:
 
-			TextureView( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 826,631 ), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString );
+			TextureView( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 804,631 ), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString );
 
 			~TextureView();
 
 			void m_splitter1OnIdle( wxIdleEvent& )
 			{
-				m_splitter1->SetSashPosition( 421 );
+				m_splitter1->SetSashPosition( 200 );
 				m_splitter1->Disconnect( wxEVT_IDLE, wxIdleEventHandler( TextureView::m_splitter1OnIdle ), NULL, this );
 			}
 
-			void m_splitter3OnIdle( wxIdleEvent& )
+			void m_splitter5OnIdle( wxIdleEvent& )
 			{
-				m_splitter3->SetSashPosition( 0 );
-				m_splitter3->Disconnect( wxEVT_IDLE, wxIdleEventHandler( TextureView::m_splitter3OnIdle ), NULL, this );
+				m_splitter5->SetSashPosition( 0 );
+				m_splitter5->Disconnect( wxEVT_IDLE, wxIdleEventHandler( TextureView::m_splitter5OnIdle ), NULL, this );
 			}
 
 	};
@@ -274,6 +291,26 @@ namespace textoolkit
 			SubimageEntry( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 337,71 ), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString );
 
 			~SubimageEntry();
+
+	};
+
+	///////////////////////////////////////////////////////////////////////////////
+	/// Class ProgressDialog
+	///////////////////////////////////////////////////////////////////////////////
+	class ProgressDialog : public wxDialog
+	{
+		private:
+
+		protected:
+			wxGauge* progressBar;
+			wxPanel* m_panel30;
+			wxButton* cancelButton;
+
+		public:
+
+			ProgressDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Loading..."), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 377,111 ), long style = wxDEFAULT_DIALOG_STYLE );
+
+			~ProgressDialog();
 
 	};
 

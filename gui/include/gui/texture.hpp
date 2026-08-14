@@ -17,6 +17,7 @@ namespace textoolkit
 		friend class SubTexture;
 
 	public:
+		Texture();
 		Texture(std::shared_ptr<Image>&& image, const std::string& name);
 		Texture(std::shared_ptr<Image>&& image, const std::string& path, const std::string& name);
 		virtual ~Texture();
@@ -35,6 +36,10 @@ namespace textoolkit
 		virtual bool commitAndSave(const std::string& path);
 
 	protected:
+		using NoUpdateTag = std::nullptr_t;
+		Texture(std::shared_ptr<Image>&& image, const std::string& name, NoUpdateTag);
+		Texture(std::shared_ptr<Image>&& image, const std::string& path, const std::string& name, NoUpdateTag);
+
 		void setBitmapData(wxBitmap& bmp, unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0);
 
 		std::shared_ptr<Image> image;
@@ -55,23 +60,28 @@ namespace textoolkit
 		};
 
 	public:
-		SubTexture(Type type, unsigned int index, std::shared_ptr<Image> image, const std::string& name);
-		SubTexture(Type type, unsigned int index, std::shared_ptr<Image> image, const std::string& path, const std::string& name);
+		SubTexture();
+		SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& name);
+		SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& path, const std::string& name);
 
 		static SubTexture createLayer(Texture& texture, unsigned int layer);
-		static SubTexture createFace(Texture& texture, unsigned int face);
-		static SubTexture createLevel(Texture& texture, unsigned int level);
+		static SubTexture createFace(Texture& texture, unsigned int layer, unsigned int face);
+		static SubTexture createLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level);
 
 		glm::uvec2 getSize() const;
 
 		virtual void updateBitmap() override;
 
 		Type getType() const;
-		unsigned int getIndex() const;
+		unsigned int getLayer() const;
+		unsigned int getFace() const;
+		unsigned int getLevel() const;
 
 	private:
 		Type type = Type::Face;
-		unsigned int index = 0;
+		unsigned int layer = 0;
+		unsigned int face = 0;
+		unsigned int level = 0;
 	};
 }
 

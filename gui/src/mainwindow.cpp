@@ -47,6 +47,13 @@ MainWindow::MainWindow( wxWindow* parent, wxWindowID id, const wxString& title, 
 	edit = new wxMenu();
 	mainmenu->Append( edit, _("Edit") );
 
+	tools = new wxMenu();
+	wxMenuItem* createCubemap;
+	createCubemap = new wxMenuItem( tools, ID_CREATE_CUBEMAP, wxString( _("Create cubemap") ) , wxEmptyString, wxITEM_NORMAL );
+	tools->Append( createCubemap );
+
+	mainmenu->Append( tools, _("Tools") );
+
 	help = new wxMenu();
 	wxMenuItem* about;
 	about = new wxMenuItem( help, ID_ABOUT, wxString( _("About") ) + wxT('\t') + wxT("F1"), wxEmptyString, wxITEM_NORMAL );
@@ -129,8 +136,38 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	wxBoxSizer* bSizer29;
 	bSizer29 = new wxBoxSizer( wxVERTICAL );
 
+
+	bSizer29->Add( 0, 0, 1, wxEXPAND, 5 );
+
 	flatView = new wxStaticBitmap( pageflat, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer29->Add( flatView, 1, wxALL|wxEXPAND, 5 );
+	bSizer29->Add( flatView, 0, wxALIGN_CENTER|wxALL, 5 );
+
+
+	bSizer29->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	m_panel45 = new wxPanel( pageflat, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer47;
+	bSizer47 = new wxBoxSizer( wxHORIZONTAL );
+
+	flatViewImageDetails = new wxStaticText( m_panel45, wxID_ANY, _("Layer %layer%; Face %face%; Level %level%; %width%x%height%"), wxDefaultPosition, wxDefaultSize, 0 );
+	flatViewImageDetails->Wrap( -1 );
+	flatViewImageDetails->SetFont( wxFont( 7, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxEmptyString ) );
+
+	bSizer47->Add( flatViewImageDetails, 0, wxALL, 3 );
+
+
+	bSizer47->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	selectBaseLink = new wxHyperlinkCtrl( m_panel45, wxID_ANY, _("Select base"), wxEmptyString, wxDefaultPosition, wxDefaultSize, wxHL_DEFAULT_STYLE );
+	selectBaseLink->SetToolTip( _("Selected layer 0, face 0 and level 0 ") );
+
+	bSizer47->Add( selectBaseLink, 0, wxALL, 3 );
+
+
+	m_panel45->SetSizer( bSizer47 );
+	m_panel45->Layout();
+	bSizer47->Fit( m_panel45 );
+	bSizer29->Add( m_panel45, 0, wxEXPAND | wxALL, 0 );
 
 
 	pageflat->SetSizer( bSizer29 );
@@ -138,6 +175,10 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	bSizer29->Fit( pageflat );
 	m_notebook2->AddPage( pageflat, _("Flat view"), false );
 	pageEdit = new wxPanel( m_notebook2, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer45;
+	bSizer45 = new wxBoxSizer( wxVERTICAL );
+
+	m_panel43 = new wxPanel( pageEdit, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxFlexGridSizer* fgSizer3;
 	fgSizer3 = new wxFlexGridSizer( 2, 2, 0, 0 );
 	fgSizer3->AddGrowableCol( 1 );
@@ -145,7 +186,7 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	fgSizer3->SetFlexibleDirection( wxBOTH );
 	fgSizer3->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
-	m_panel21 = new wxPanel( pageEdit, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	m_panel21 = new wxPanel( m_panel43, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxGridSizer* gSizer4;
 	gSizer4 = new wxGridSizer( 0, 2, 0, 0 );
 
@@ -190,19 +231,41 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	gSizer4->Fit( m_panel21 );
 	fgSizer3->Add( m_panel21, 0, wxALL, 0 );
 
-	m_bitmap2 = new wxStaticBitmap( pageEdit, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, 0 );
+	m_bitmap2 = new wxStaticBitmap( m_panel43, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, 0 );
 	fgSizer3->Add( m_bitmap2, 1, wxALL|wxEXPAND, 5 );
 
-	m_panel23 = new wxPanel( pageEdit, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	m_panel23 = new wxPanel( m_panel43, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	fgSizer3->Add( m_panel23, 0, wxALL, 5 );
 
-	m_panel22 = new wxPanel( pageEdit, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	m_panel22 = new wxPanel( m_panel43, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	fgSizer3->Add( m_panel22, 0, wxALL, 5 );
 
 
-	pageEdit->SetSizer( fgSizer3 );
+	m_panel43->SetSizer( fgSizer3 );
+	m_panel43->Layout();
+	fgSizer3->Fit( m_panel43 );
+	bSizer45->Add( m_panel43, 1, wxEXPAND | wxALL, 0 );
+
+	m_panel44 = new wxPanel( pageEdit, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer46;
+	bSizer46 = new wxBoxSizer( wxVERTICAL );
+
+	editorImageDetails = new wxStaticText( m_panel44, wxID_ANY, _("Layer %layer%; Face %face%; Level %level%; %width%x%height%"), wxDefaultPosition, wxDefaultSize, 0 );
+	editorImageDetails->Wrap( -1 );
+	editorImageDetails->SetFont( wxFont( 7, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxEmptyString ) );
+
+	bSizer46->Add( editorImageDetails, 0, wxALL, 3 );
+
+
+	m_panel44->SetSizer( bSizer46 );
+	m_panel44->Layout();
+	bSizer46->Fit( m_panel44 );
+	bSizer45->Add( m_panel44, 0, wxEXPAND | wxALL, 0 );
+
+
+	pageEdit->SetSizer( bSizer45 );
 	pageEdit->Layout();
-	fgSizer3->Fit( pageEdit );
+	bSizer45->Fit( pageEdit );
 	m_notebook2->AddPage( pageEdit, _("Editor"), false );
 
 	bSizer4->Add( m_notebook2, 1, wxEXPAND | wxALL, 5 );
@@ -213,69 +276,120 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	bSizer4->Fit( renderPanel );
 	bSizer3->Add( renderPanel, 1, wxEXPAND | wxALL, 0 );
 
-	m_splitter1 = new wxSplitterWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_3D );
+	m_notebook21 = new wxNotebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_BOTTOM );
+	m_notebook21->SetMaxSize( wxSize( 250,-1 ) );
+
+	subImagesTab = new wxPanel( m_notebook21, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer36;
+	bSizer36 = new wxBoxSizer( wxVERTICAL );
+
+	m_splitter1 = new wxSplitterWindow( subImagesTab, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_3D );
 	m_splitter1->Connect( wxEVT_IDLE, wxIdleEventHandler( TextureView::m_splitter1OnIdle ), NULL, this );
 
-	m_splitter1->SetMaxSize( wxSize( 250,-1 ) );
+	m_panel35 = new wxPanel( m_splitter1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxStaticBoxSizer* sbSizer4;
+	sbSizer4 = new wxStaticBoxSizer( new wxStaticBox( m_panel35, wxID_ANY, _("Layers") ), wxVERTICAL );
 
-	m_panel25 = new wxPanel( m_splitter1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
-	wxBoxSizer* bSizer32;
-	bSizer32 = new wxBoxSizer( wxVERTICAL );
-
-	wxStaticBoxSizer* sbSizer1;
-	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( m_panel25, wxID_ANY, _("Layers / faces") ), wxVERTICAL );
-
-	wxBoxSizer* bSizer5;
-	bSizer5 = new wxBoxSizer( wxVERTICAL );
-
-	layerFaceScroller = new wxScrolledWindow( sbSizer1->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL|wxVSCROLL );
-	layerFaceScroller->SetScrollRate( 0, 5 );
+	layerScroller = new wxScrolledWindow( sbSizer4->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL|wxVSCROLL );
+	layerScroller->SetScrollRate( 0, 5 );
 	wxBoxSizer* bSizer321;
 	bSizer321 = new wxBoxSizer( wxVERTICAL );
 
 
-	layerFaceScroller->SetSizer( bSizer321 );
-	layerFaceScroller->Layout();
-	bSizer321->Fit( layerFaceScroller );
-	bSizer5->Add( layerFaceScroller, 1, wxEXPAND | wxALL, 0 );
+	layerScroller->SetSizer( bSizer321 );
+	layerScroller->Layout();
+	bSizer321->Fit( layerScroller );
+	sbSizer4->Add( layerScroller, 1, wxEXPAND | wxALL, 0 );
 
-	m_panel251 = new wxPanel( sbSizer1->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	m_panel251 = new wxPanel( sbSizer4->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer27;
 	bSizer27 = new wxBoxSizer( wxHORIZONTAL );
 
 
 	bSizer27->Add( 0, 0, 1, wxEXPAND, 5 );
 
-	addLayerFaceButton = new wxBitmapButton( m_panel251, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|0 );
+	addLayerButton = new wxBitmapButton( m_panel251, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|0 );
 
-	addLayerFaceButton->SetBitmap( wxArtProvider::GetBitmap( wxASCII_STR(wxART_PLUS), wxASCII_STR(wxART_BUTTON) ) );
-	bSizer27->Add( addLayerFaceButton, 0, wxTOP, 5 );
+	addLayerButton->SetBitmap( wxArtProvider::GetBitmap( wxASCII_STR(wxART_PLUS), wxASCII_STR(wxART_BUTTON) ) );
+	addLayerButton->SetToolTip( _("Add new layer") );
 
-	removeLayerFaceButton = new wxBitmapButton( m_panel251, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|0 );
+	bSizer27->Add( addLayerButton, 0, wxTOP, 5 );
 
-	removeLayerFaceButton->SetBitmap( wxArtProvider::GetBitmap( wxASCII_STR(wxART_MINUS), wxASCII_STR(wxART_BUTTON) ) );
-	bSizer27->Add( removeLayerFaceButton, 0, wxLEFT|wxTOP, 5 );
+	removeLayerButton = new wxBitmapButton( m_panel251, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|0 );
+
+	removeLayerButton->SetBitmap( wxArtProvider::GetBitmap( wxASCII_STR(wxART_MINUS), wxASCII_STR(wxART_BUTTON) ) );
+	removeLayerButton->SetToolTip( _("Remove selected layer") );
+
+	bSizer27->Add( removeLayerButton, 0, wxLEFT|wxTOP, 5 );
 
 
 	m_panel251->SetSizer( bSizer27 );
 	m_panel251->Layout();
 	bSizer27->Fit( m_panel251 );
-	bSizer5->Add( m_panel251, 0, wxEXPAND | wxALL, 0 );
+	sbSizer4->Add( m_panel251, 0, wxEXPAND | wxALL, 0 );
 
 
-	sbSizer1->Add( bSizer5, 1, wxEXPAND, 5 );
+	m_panel35->SetSizer( sbSizer4 );
+	m_panel35->Layout();
+	sbSizer4->Fit( m_panel35 );
+	m_panel36 = new wxPanel( m_splitter1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer39;
+	bSizer39 = new wxBoxSizer( wxVERTICAL );
+
+	m_splitter5 = new wxSplitterWindow( m_panel36, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_3D );
+	m_splitter5->Connect( wxEVT_IDLE, wxIdleEventHandler( TextureView::m_splitter5OnIdle ), NULL, this );
+
+	m_panel37 = new wxPanel( m_splitter5, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxStaticBoxSizer* sbSizer5;
+	sbSizer5 = new wxStaticBoxSizer( new wxStaticBox( m_panel37, wxID_ANY, _("Faces") ), wxVERTICAL );
+
+	faceScroller = new wxScrolledWindow( sbSizer5->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL|wxVSCROLL );
+	faceScroller->SetScrollRate( 0, 5 );
+	wxBoxSizer* bSizer331;
+	bSizer331 = new wxBoxSizer( wxVERTICAL );
 
 
-	bSizer32->Add( sbSizer1, 1, wxEXPAND, 5 );
+	faceScroller->SetSizer( bSizer331 );
+	faceScroller->Layout();
+	bSizer331->Fit( faceScroller );
+	sbSizer5->Add( faceScroller, 1, wxALL|wxEXPAND, 0 );
 
-	m_splitter3 = new wxSplitterWindow( m_panel25, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_3D );
-	m_splitter3->Connect( wxEVT_IDLE, wxIdleEventHandler( TextureView::m_splitter3OnIdle ), NULL, this );
+	m_panel2611 = new wxPanel( sbSizer5->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer281;
+	bSizer281 = new wxBoxSizer( wxHORIZONTAL );
 
-	m_panel31 = new wxPanel( m_splitter3, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
-	wxStaticBoxSizer* sbSizer2;
-	sbSizer2 = new wxStaticBoxSizer( new wxStaticBox( m_panel31, wxID_ANY, _("Levels") ), wxVERTICAL );
 
-	levelScroller = new wxScrolledWindow( sbSizer2->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL|wxVSCROLL );
+	bSizer281->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	addFaceButton = new wxBitmapButton( m_panel2611, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|0 );
+
+	addFaceButton->SetBitmap( wxArtProvider::GetBitmap( wxASCII_STR(wxART_PLUS), wxASCII_STR(wxART_BUTTON) ) );
+	addFaceButton->SetToolTip( _("Add new face") );
+
+	bSizer281->Add( addFaceButton, 0, wxTOP, 5 );
+
+	removeFaceButton = new wxBitmapButton( m_panel2611, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|0 );
+
+	removeFaceButton->SetBitmap( wxArtProvider::GetBitmap( wxASCII_STR(wxART_MINUS), wxASCII_STR(wxART_BUTTON) ) );
+	removeFaceButton->SetToolTip( _("Remove selected face") );
+
+	bSizer281->Add( removeFaceButton, 0, wxLEFT|wxTOP, 5 );
+
+
+	m_panel2611->SetSizer( bSizer281 );
+	m_panel2611->Layout();
+	bSizer281->Fit( m_panel2611 );
+	sbSizer5->Add( m_panel2611, 0, wxALL|wxEXPAND, 0 );
+
+
+	m_panel37->SetSizer( sbSizer5 );
+	m_panel37->Layout();
+	sbSizer5->Fit( m_panel37 );
+	m_panel38 = new wxPanel( m_splitter5, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxStaticBoxSizer* sbSizer6;
+	sbSizer6 = new wxStaticBoxSizer( new wxStaticBox( m_panel38, wxID_ANY, _("Levels") ), wxVERTICAL );
+
+	levelScroller = new wxScrolledWindow( sbSizer6->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHSCROLL|wxVSCROLL );
 	levelScroller->SetScrollRate( 0, 5 );
 	wxBoxSizer* bSizer33;
 	bSizer33 = new wxBoxSizer( wxVERTICAL );
@@ -284,9 +398,9 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	levelScroller->SetSizer( bSizer33 );
 	levelScroller->Layout();
 	bSizer33->Fit( levelScroller );
-	sbSizer2->Add( levelScroller, 1, wxBOTTOM|wxEXPAND|wxTOP, 5 );
+	sbSizer6->Add( levelScroller, 1, wxALL|wxEXPAND, 5 );
 
-	m_panel261 = new wxPanel( sbSizer2->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	m_panel261 = new wxPanel( sbSizer6->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer28;
 	bSizer28 = new wxBoxSizer( wxHORIZONTAL );
 
@@ -296,45 +410,58 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	addLevelButton = new wxBitmapButton( m_panel261, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|0 );
 
 	addLevelButton->SetBitmap( wxArtProvider::GetBitmap( wxASCII_STR(wxART_PLUS), wxASCII_STR(wxART_BUTTON) ) );
+	addLevelButton->SetToolTip( _("Add new level") );
+
 	bSizer28->Add( addLevelButton, 0, wxTOP, 5 );
 
 	removeLevelButton = new wxBitmapButton( m_panel261, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|0 );
 
 	removeLevelButton->SetBitmap( wxArtProvider::GetBitmap( wxASCII_STR(wxART_MINUS), wxASCII_STR(wxART_BUTTON) ) );
+	removeLevelButton->SetToolTip( _("Remove selected level") );
+
 	bSizer28->Add( removeLevelButton, 0, wxLEFT|wxTOP, 5 );
 
 
 	m_panel261->SetSizer( bSizer28 );
 	m_panel261->Layout();
 	bSizer28->Fit( m_panel261 );
-	sbSizer2->Add( m_panel261, 0, wxEXPAND | wxALL, 0 );
+	sbSizer6->Add( m_panel261, 0, wxEXPAND | wxALL, 0 );
 
 
-	m_panel31->SetSizer( sbSizer2 );
-	m_panel31->Layout();
-	sbSizer2->Fit( m_panel31 );
-	m_splitter3->Initialize( m_panel31 );
-	bSizer32->Add( m_splitter3, 1, wxEXPAND, 5 );
+	m_panel38->SetSizer( sbSizer6 );
+	m_panel38->Layout();
+	sbSizer6->Fit( m_panel38 );
+	m_splitter5->SplitHorizontally( m_panel37, m_panel38, 0 );
+	bSizer39->Add( m_splitter5, 1, wxEXPAND, 5 );
 
 
-	m_panel25->SetSizer( bSizer32 );
-	m_panel25->Layout();
-	bSizer32->Fit( m_panel25 );
-	m_panel26 = new wxPanel( m_splitter1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
-	wxStaticBoxSizer* sbSizer4;
-	sbSizer4 = new wxStaticBoxSizer( new wxStaticBox( m_panel26, wxID_ANY, _("Properties") ), wxVERTICAL );
+	m_panel36->SetSizer( bSizer39 );
+	m_panel36->Layout();
+	bSizer39->Fit( m_panel36 );
+	m_splitter1->SplitHorizontally( m_panel35, m_panel36, 200 );
+	bSizer36->Add( m_splitter1, 1, wxEXPAND, 0 );
 
-	propertyGrid = new wxPropertyGrid(sbSizer4->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxPG_DEFAULT_STYLE);
+
+	subImagesTab->SetSizer( bSizer36 );
+	subImagesTab->Layout();
+	bSizer36->Fit( subImagesTab );
+	m_notebook21->AddPage( subImagesTab, _("Subimages"), false );
+	propertiesTab = new wxPanel( m_notebook21, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer37;
+	bSizer37 = new wxBoxSizer( wxVERTICAL );
+
+	propertyGrid = new wxPropertyGrid(propertiesTab, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxPG_DEFAULT_STYLE);
 	propertyGrid->SetMinSize( wxSize( 250,-1 ) );
 
-	sbSizer4->Add( propertyGrid, 1, wxALL|wxEXPAND, 0 );
+	bSizer37->Add( propertyGrid, 1, wxALL|wxEXPAND, 0 );
 
 
-	m_panel26->SetSizer( sbSizer4 );
-	m_panel26->Layout();
-	sbSizer4->Fit( m_panel26 );
-	m_splitter1->SplitHorizontally( m_panel25, m_panel26, 421 );
-	bSizer3->Add( m_splitter1, 0, wxEXPAND, 0 );
+	propertiesTab->SetSizer( bSizer37 );
+	propertiesTab->Layout();
+	bSizer37->Fit( propertiesTab );
+	m_notebook21->AddPage( propertiesTab, _("Properties"), false );
+
+	bSizer3->Add( m_notebook21, 0, wxEXPAND | wxALL, 5 );
 
 
 	this->SetSizer( bSizer3 );
@@ -720,5 +847,46 @@ SubimageEntry::SubimageEntry( wxWindow* parent, wxWindowID id, const wxPoint& po
 }
 
 SubimageEntry::~SubimageEntry()
+{
+}
+
+ProgressDialog::ProgressDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+
+	wxBoxSizer* bSizer34;
+	bSizer34 = new wxBoxSizer( wxVERTICAL );
+
+	progressBar = new wxGauge( this, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL );
+	progressBar->SetValue( 0 );
+	bSizer34->Add( progressBar, 0, wxALL|wxEXPAND, 16 );
+
+	m_panel30 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer35;
+	bSizer35 = new wxBoxSizer( wxHORIZONTAL );
+
+
+	bSizer35->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	cancelButton = new wxButton( m_panel30, wxID_ANY, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer35->Add( cancelButton, 0, wxALL, 5 );
+
+
+	bSizer35->Add( 0, 0, 1, wxEXPAND, 5 );
+
+
+	m_panel30->SetSizer( bSizer35 );
+	m_panel30->Layout();
+	bSizer35->Fit( m_panel30 );
+	bSizer34->Add( m_panel30, 0, wxEXPAND | wxALL, 0 );
+
+
+	this->SetSizer( bSizer34 );
+	this->Layout();
+
+	this->Centre( wxBOTH );
+}
+
+ProgressDialog::~ProgressDialog()
 {
 }

@@ -43,6 +43,8 @@ namespace textoolkit
 			SetVendorName("TexToolkit");
 			SetAppName("TexToolkit");
 
+			this->SetAppearance(Appearance::System);
+
 			wxStandardPaths& sp = wxStandardPaths::Get();
 			sp.UseAppInfo(wxStandardPaths::AppInfo_AppName);
 		}

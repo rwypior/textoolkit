@@ -10,10 +10,26 @@
 
 namespace textoolkit
 {
+	class TexToolkitSubimageEntry;
+
+	class TexToolkitSubimageEvent : public wxCommandEvent
+	{
+	public:
+		TexToolkitSubimageEntry* entry;
+
+		TexToolkitSubimageEvent(wxEventType eventType, TexToolkitSubimageEntry* entry);
+		TexToolkitSubimageEvent* Clone() const;
+	};
+	wxDECLARE_EVENT(texEVT_SUBIMAGE_SELECTED, TexToolkitSubimageEvent);
+	wxDECLARE_EVENT(texEVT_SUBIMAGE_DESELECTED, TexToolkitSubimageEvent);
+
 	class TexToolkitSubimageEntry : public SubimageEntry
 	{
 	public:
-		TexToolkitSubimageEntry(std::unique_ptr<SubTexture>&& texture, wxWindow* parent);
+		TexToolkitSubimageEntry(wxWindow* parent, std::unique_ptr<SubTexture>&& texture, bool initiallySelected = false);
+
+		void deselect(bool sendEvent = true);
+		void select(bool sendEvent = true);
 
 		void setTexture(std::unique_ptr<SubTexture>&& texture);
 		void setLineVisibility(bool visible);
@@ -21,17 +37,25 @@ namespace textoolkit
 		std::string getSubtextureName() const;
 		std::string getSubtextureSize() const;
 
+		SubTexture* getTexture();
+
 	private:
+		void setColor(const wxColour& color);
+
 		void updatePreview();
 
 		void sizeEvent(wxSizeEvent& ev);
 		void mouseEnterEvent(wxMouseEvent& ev);
 		void mouseLeaveEvent(wxMouseEvent& ev);
+		void mouseClickEvent(wxMouseEvent& ev);
 
 		std::unique_ptr<SubTexture> texture = nullptr;
 		wxBitmap bitmap;
 
-		std::optional<wxColour> backgroundColor;
+		wxColour originalColor;
+		wxColour highlightColor;
+		wxColour activeColor;
+		bool isSelected = false;
 	};
 }
 

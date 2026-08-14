@@ -5,6 +5,7 @@
 
 namespace textoolkit
 {
+	/// Bind an event to given class and all of it's children recursively
 	template <typename EventTag, typename Class, typename EventArg, typename EventHandler>
 	void bindRecursively(
 		wxWindow& wnd,

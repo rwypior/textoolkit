@@ -22,7 +22,7 @@ namespace textoolkit
 	void TexToolkitMainWindow::openTexture(std::unique_ptr<Texture>&& texture)
 	{
 		this->notebook->Freeze();
-		this->notebook->AddPage(new TexToolkitTextureView(std::move(texture), this->notebook), "New texture", true);
+		this->notebook->AddPage(new TexToolkitTextureView(this->notebook, std::move(texture)), "New texture", true);
 		this->notebook->Thaw();
 		this->notebook->Layout();
 	}
@@ -33,7 +33,7 @@ namespace textoolkit
 		if (newdialog.ShowModal() == wxID_OK)
 		{
 			this->openTexture(newdialog.createTexture());
-		}		
+		}
 	}
 
 	void TexToolkitMainWindow::eventOpen(wxCommandEvent& event)
