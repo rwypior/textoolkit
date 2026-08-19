@@ -11,14 +11,7 @@
 
 namespace textoolkit::renderer
 {
-	using RenderProperty = std::variant<bool, float, glm::vec3, glm::mat3, glm::mat4>;
-	using RenderProperties = std::map<std::string, RenderProperty>;
 
-	enum class RenderMode
-	{
-		Solid,
-		Lines
-	};
 }
 
 #endif

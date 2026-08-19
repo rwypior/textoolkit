@@ -1,7 +1,7 @@
 #ifndef _h_textoolkit_renderer_renderer
 #define _h_textoolkit_renderer_renderer
 
-#include "renderer/util.hpp"
+#include "renderer/api.hpp"
 #include "renderer/camera.hpp"
 #include "renderer/light.hpp"
 
@@ -58,7 +58,25 @@ namespace textoolkit::renderer
 			}
 
 			template<>
+			void operator()(const bool& val)
+			{
+				uniform.set(val);
+			}
+
+			template<>
 			void operator()(const glm::vec3& vec)
+			{
+				uniform.set(vec);
+			}
+
+			template<>
+			void operator()(const glm::mat3& vec)
+			{
+				uniform.set(vec);
+			}
+
+			template<>
+			void operator()(const glm::mat4& vec)
 			{
 				uniform.set(vec);
 			}
@@ -71,7 +89,10 @@ namespace textoolkit::renderer
 		Uniform(const UniformData& data);
 
 		void set(float val);
+		void set(bool val);
 		void set(const glm::vec3& vec);
+		void set(const glm::mat3& mtx);
+		void set(const glm::mat4& mtx);
 		Visitor getSetter();
 
 	private:
@@ -126,6 +147,8 @@ namespace textoolkit::renderer
 	public:
 		static constexpr char propertyView[] = "viewmatrix";
 		static constexpr char propertyProjection[] = "projectionmatrix";
+		static constexpr char propertyPerspective[] = "perspectivematrix";
+		static constexpr char propertyOrtho[] = "orthomatrix";
 		static constexpr char propertyGlobalLightColor[] = "globallightcolor";
 		static constexpr char propertyLightColor[] = "lightcolor";
 		static constexpr char propertyLightDirection[] = "lightdirection";
@@ -133,17 +156,16 @@ namespace textoolkit::renderer
 	public:
 		Event<Renderer&> rendererReady;
 
-		Renderer();
+		Renderer(std::shared_ptr<Context> context);
+		~Renderer();
 
+		bool loadShaders(const std::string& shadersDir);
 		bool loadShader(const std::string& sdrPath);
 
 		void render();
 		Shader* getShader(const std::string& name);
 
 		void enqueue(Object* object);
-
-		void initialize();
-		bool isInitialized() const;
 
 		void upload(Model& model) const;
 		void update(Model& model) const;
@@ -169,7 +191,7 @@ namespace textoolkit::renderer
 		void setLightDirection(const glm::vec3& direction);
 
 	private:
-		bool initialized = false;
+		std::shared_ptr<Context> context;
 		std::priority_queue<Object*, std::vector<Object*>, RendererPriorityHandler> renderQueue;
 		std::unordered_map<std::string, Shader> shaders;
 		RenderProperties properties{};
@@ -178,7 +200,7 @@ namespace textoolkit::renderer
 
 		float fov = 90.0f;
 		float nearPlane = 0.1f;
-		float farPlane = 10000.0f;
+		float farPlane = 100.0f;
 		float aspectRatio = 1.3f;
 		glm::uvec2 viewportSize = {800, 600};
 

@@ -1,0 +1,25 @@
+TODO list
+=========
+
+Support more formats:
+---------------------
+- dds
+	- add support for 3D textures
+	- add support for array textures
+- ktx
+- jpeg
+- png
+
+Improve GUI:
+------------
+- Make progress bar working
+- Make the editor working
+- Add basic navigation tools to flat view (panning, zooming, etc.)
+- Add settings
+- Make splitters have equal size (if checked in settings)
+	- Equal size on startup (regardless of settings)
+	- Equal size after resize
+
+General improvements:
+---------------------
+- Speed up DDS loading if possible

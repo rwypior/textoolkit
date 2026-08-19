@@ -11,7 +11,7 @@ add_library(common)
 add_library(textoolkit::common ALIAS common)
 
 target_compile_definitions(common
-    INTERFACE 
+    PUBLIC 
         GLM_ENABLE_EXPERIMENTAL=1
         $<$<CONFIG:Debug>:DEBUG>
 )

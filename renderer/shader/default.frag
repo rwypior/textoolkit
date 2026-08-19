@@ -5,7 +5,7 @@ in vec3 normal;
 
 out vec3 outColor;
 
-uniform bool useLight = true;
+uniform bool lightingenabled = true;
 uniform vec3 color = vec3(1.0f, 1.0f, 1.0f);
 uniform vec3 selectionColor = vec3(1.0f, 1.0f, 1.0f);
 
@@ -19,7 +19,7 @@ void main()
 	float reflection = max(dot(normal, lightDir), 0.0);
 	vec3 diffuse = lightColor * reflection;
 	
-	if (useLight)
+	if (lightingenabled)
 		outColor = globalLightColor + color * diffuse;
 	else
 		outColor = color;

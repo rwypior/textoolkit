@@ -4,11 +4,19 @@
 
 namespace textoolkit::renderer
 {
-	Object::Object()
+	Object::Object(const std::string& name)
+		: name(name)
 	{
 		this->properties[propertyLocation] = glm::vec3(0.0f);
 		this->properties[propertyModelMatrix] = glm::mat4(1.0f);
 		this->properties[propertyLightingEnabled] = true;
+	}
+
+	Object::~Object() = default;
+
+	const std::string& Object::getName() const
+	{
+		return this->name;
 	}
 
 	ObjectRenderData* Object::getData() const

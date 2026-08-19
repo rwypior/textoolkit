@@ -9,10 +9,15 @@ namespace textoolkit
 {
 	class Texture;
 
+	namespace renderer
+	{
+		class ModelDatabase;
+	}
+
 	class TexToolkitMainWindow : public MainWindow
 	{
 	public:
-		TexToolkitMainWindow(wxWindow* parent);
+		TexToolkitMainWindow(renderer::ModelDatabase& modelDatabase, wxWindow* parent);
 
 		void openTexture(std::unique_ptr<Texture>&& texture);
 
@@ -20,6 +25,8 @@ namespace textoolkit
 		void eventNew(wxCommandEvent& event);
 		void eventOpen(wxCommandEvent& event);
 		void eventAbout(wxCommandEvent& event);
+
+		renderer::ModelDatabase& modelDatabase;
 	};
 }
 

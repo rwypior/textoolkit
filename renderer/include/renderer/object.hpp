@@ -1,7 +1,7 @@
 #ifndef _h_textoolkit_renderer_renderobject
 #define _h_textoolkit_renderer_renderobject
 
-#include "renderer/util.hpp"
+#include "renderer/api.hpp"
 
 #include <events/events.h>
 
@@ -29,13 +29,16 @@ namespace textoolkit::renderer
 
 	public:
 		static constexpr char propertyLightingEnabled[] = "lightingenabled";
-		static constexpr char propertyLocation[] = "location";
+		static constexpr char propertyLocation[] = "position";
 		static constexpr char propertyModelMatrix[] = "modelmatrix";
 
 		Event<> modelChanged;
 		Event<> locationChanged;
 
-		Object();
+		Object(const std::string& name);
+		virtual ~Object();
+
+		const std::string& getName() const;
 
 		ObjectRenderData* getData() const;
 		void setData(std::unique_ptr<ObjectRenderData>&& data);
@@ -57,6 +60,8 @@ namespace textoolkit::renderer
 			return std::get<T>(it->second);
 		}
 
+		virtual void setProjectionInfo(const glm::vec2& viewport, float nearPlane, float farPlane) {};
+
 		const std::string& getShader() const;
 		void setShader(const std::string& shader);
 
@@ -67,6 +72,7 @@ namespace textoolkit::renderer
 		bool updateRequired() const;
 
 	protected:
+		std::string name;
 		std::unique_ptr<ObjectRenderData> data;
 		std::shared_ptr<Model> model = nullptr;
 		RenderProperties properties{};

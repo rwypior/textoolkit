@@ -1,5 +1,9 @@
 #include "gui/textoolkitmainwindow.hpp"
+#include "gui/util.hpp"
 #include "common/textoolkit.hpp"
+#include "common/logger.hpp"
+#include "renderer/modeldatabase.hpp"
+#include "renderer/model.hpp"
 
 #include "logo.xpm"
 
@@ -30,6 +34,14 @@ namespace
 
 		{ wxCMD_LINE_NONE }
 	};
+
+	static constexpr char logFileName[] = "textoolkit.log";
+
+	std::string getLogPath()
+	{
+		wxFileName path(wxStandardPaths::Get().GetUserLocalDataDir(), logFileName);
+		return path.GetFullPath().ToStdString();
+	}
 }
 
 namespace textoolkit
@@ -42,6 +54,8 @@ namespace textoolkit
 		{
 			SetVendorName("TexToolkit");
 			SetAppName("TexToolkit");
+
+			Logger::init(getLogPath());
 
 			this->SetAppearance(Appearance::System);
 
@@ -61,7 +75,7 @@ namespace textoolkit
 			wxFileName respath(apppath);
 			respath.AppendDir("res");
 
-			this->mainWindow = new TexToolkitMainWindow(nullptr);
+			this->mainWindow = new TexToolkitMainWindow(this->modelDatabase, nullptr);
 
 #ifdef TEXTOOLKIT_WINDOWS
 			wxFileName iconpath(respath.GetPath(), "logo.ico");
@@ -69,6 +83,8 @@ namespace textoolkit
 #else
 			this->mainWindow->SetIcon(logo_xpm);
 #endif
+
+			this->loadModels();
 
 			this->mainWindow->Show();
 
@@ -82,7 +98,15 @@ namespace textoolkit
 		}
 
 	private:
+		void loadModels()
+		{
+			auto modelPaths = getModels();
+			auto result = this->modelDatabase.loadModels(modelPaths);
+		}
+
+	private:
 		TexToolkitMainWindow* mainWindow = nullptr;
+		renderer::ModelDatabase modelDatabase;
 	};
 }
 

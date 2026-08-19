@@ -32,11 +32,12 @@ target_link_libraries(textoolkit PRIVATE wx::core wx::base wx::html wx::propgrid
 add_subdirectory("include/gui")
 add_subdirectory("src")
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.h")
-    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.h" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/include/gui")
+# Copy generated files
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.h")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.h" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/include/gui")
 endif()
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp")
-    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp"  DESTINATION"${CMAKE_CURRENT_SOURCE_DIR}/src")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.cpp")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.cpp"  DESTINATION"${CMAKE_CURRENT_SOURCE_DIR}/src")
 endif()
 
 # Copy DLLs to exe directory
@@ -49,4 +50,14 @@ add_custom_command(TARGET textoolkit POST_BUILD
 add_custom_command(
   TARGET textoolkit POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${CMAKE_CURRENT_SOURCE_DIR}/res" "${CMAKE_CURRENT_BINARY_DIR}/res"
+)
+
+add_custom_command(
+  TARGET textoolkit POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${CMAKE_SOURCE_DIR}/res/models" "${CMAKE_CURRENT_BINARY_DIR}/models"
+)
+
+add_custom_command(
+  TARGET textoolkit POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${TEXTOOLKIT_RENDERER_SHADERS_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/shaders"
 )

@@ -37,8 +37,8 @@ add_subdirectory("common")
 add_subdirectory("operator")
 add_subdirectory("dds")
 add_subdirectory("bmp")
-add_subdirectory("gui")
 add_subdirectory("renderer")
+add_subdirectory("gui")
 
 set(VS_STARTUP_PROJECT textoolkit)
 

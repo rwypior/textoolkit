@@ -1,13 +1,11 @@
 #version 330 core
 
-in GEOM_OUT
-{
-    vec3 color;
-} frag_in;
+out vec4 out_color;
 
-out vec4 FragColor;
+uniform mat3 colors;
 
 void main()
 {
-    FragColor = vec4(frag_in.color, 1.0);
+    vec3 color = colors[gl_PrimitiveID];
+    out_color = vec4(color, 1.0);
 }

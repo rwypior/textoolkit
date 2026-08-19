@@ -1,4 +1,5 @@
 #include "gui/canvas.hpp"
+#include "gui/util.hpp"
 
 #include "wx/wxprec.h"
 #include "wx/time.h"
@@ -21,19 +22,58 @@ namespace
 			.EndList();
 		return dispAttrs;
 	}
+
+	wxGLContextAttrs getContextAttribs()
+	{
+		wxGLContextAttrs ctxAttrs;
+		ctxAttrs.PlatformDefaults().OGLVersion(4, 0).EndList();
+		return ctxAttrs;
+	}
+
+	class wxOpenglContext : public textoolkit::renderer::Context
+	{
+	public:
+		wxOpenglContext(wxGLCanvas& canvas)
+			: canvas(canvas)
+			, contextAttrs(getContextAttribs())
+			, context(&canvas, nullptr, &contextAttrs)
+		{
+		}
+
+		~wxOpenglContext() = default;
+
+		virtual bool setCurrent() override
+		{
+			return this->canvas.SetCurrent(this->context);
+		}
+
+		virtual void swapBuffers() override
+		{
+			this->canvas.SwapBuffers();
+		}
+
+		virtual bool isOk() const override
+		{
+			return this->context.IsOK();
+		}
+
+	private:
+		wxGLCanvas& canvas;
+		wxGLContextAttrs contextAttrs;
+		wxGLContext context;
+	};
 }
 
 namespace textoolkit
 {
 	Canvas::Canvas(wxWindow* parent, wxWindowID id)
 		: wxGLCanvas(parent, getDefaultAttribs(), id)
+		, api(std::make_shared<wxOpenglContext>(*this))
+		, renderer(this->api.getContext())
 	{
-		wxGLContextAttrs ctxAttrs;
-		ctxAttrs.PlatformDefaults().OGLVersion(4, 0).EndList();
+		this->renderer.loadShaders(getShadersPath());
 
-		m_context = std::make_unique<wxGLContext>(this, nullptr, &ctxAttrs);
-
-		if (!m_context->IsOK())
+		if (!this->api.getContext()->isOk())
 			wxMessageBox("Unable to initialize drawing context", "Error - textoolkit", wxOK | wxCENTRE | wxICON_ERROR, this);
 
 		this->Bind(wxEVT_PAINT, &Canvas::onPaint, this);
@@ -47,12 +87,11 @@ namespace textoolkit
 
 	Canvas::~Canvas()
 	{
-		SetCurrent(*m_context);
+		this->api.getContext()->setCurrent();
 	}
 
 	void Canvas::update()
 	{
-
 		this->Refresh();
 
 		wxLongLong currentMillis = wxGetUTCTimeMillis();
@@ -98,6 +137,10 @@ namespace textoolkit
 
 		this->renderer.setCameraPosition(finalPosition);
 		this->lastMousePos = mousePos;
+
+		this->compass.setCameraDirection(lookDirection);
+
+		this->update();
 	}
 
 	void Canvas::cameraStrafe(wxMouseEvent& event)
@@ -123,25 +166,29 @@ namespace textoolkit
 		glm::vec3 newPosition = position + offset;
 		this->renderer.setCameraPosition(newPosition);
 
-		this->update();
-
 		this->lastMousePos = mousePos;
+
+		this->update();
 	}
 
 	void Canvas::onPaint(wxPaintEvent& event)
 	{
-		bool success = SetCurrent(*m_context);
+		bool success = this->api.getContext()->setCurrent();
 		assert(success && "Failed to set context");
 
-		this->renderer.render();
+		for (auto& obj : this->objects)
+			this->renderer.enqueue(obj);
+		this->renderer.enqueue(&this->compass);
 
-		SwapBuffers();
+		this->renderer.render();
 	}
 
 	void Canvas::onSize(wxSizeEvent& event)
 	{
 		glm::uvec2 size = this->getViewportSize();
 		this->renderer.setViewportSize(size);
+
+		this->update();
 	}
 
 	void Canvas::onMiddleButtonDown(wxMouseEvent& event)
@@ -178,12 +225,15 @@ namespace textoolkit
 		glm::vec3 lookDirection = glm::normalize(looktarget - position);
 		glm::vec3 newPosition = position + lookDirection * delta;
 		this->renderer.setCameraPosition(newPosition);
+
+		this->update();
 	}
 
 	void Canvas::addObject(renderer::Object* object)
 	{
 		this->objects.push_back(object);
-		this->Refresh();
+		
+		this->update();
 	}
 
 	renderer::Object* Canvas::getObject(unsigned int index)
@@ -212,7 +262,8 @@ namespace textoolkit
 	void Canvas::clearObjects()
 	{
 		this->objects.clear();
-		this->Refresh();
+		
+		this->update();
 	}
 
 	glm::uvec2 Canvas::getViewportSize() const

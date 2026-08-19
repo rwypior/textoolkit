@@ -1,6 +1,7 @@
 #ifndef _h_textoolkit_gui_canvas
 #define _h_textoolkit_gui_canvas
 
+#include "renderer/api.hpp"
 #include "renderer/object.hpp"
 #include "renderer/camera.hpp"
 #include "renderer/compass.hpp"
@@ -54,17 +55,16 @@ namespace textoolkit
         void onMouseMove(wxMouseEvent& event);
         void onMouseWheel(wxMouseEvent& event);
 
-        std::unique_ptr<wxGLContext> m_context;
+        renderer::Api api;
+        renderer::Renderer renderer;
 
         std::vector<renderer::Object*> objects;
 
         renderer::Compass compass;
 
         bool middleButtonDown = false;
-        glm::ivec2 lastMousePos;
+        glm::ivec2 lastMousePos{0};
         wxLongLong lastUpdateMillis = 0;
-
-        renderer::Renderer renderer;
     };
 }
 

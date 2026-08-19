@@ -16,9 +16,17 @@ namespace textoolkit
 	class Texture;
 	class SubTexture;
 
+	namespace renderer
+	{
+		class ModelDatabase;
+		class Object;
+	}
+
 	class TexToolkitTextureView : public TextureView
 	{
 	public:
+		static constexpr char mainObjectName[] = "mainobject";
+
 		using SubTextureContainer = std::vector<std::unique_ptr<SubTexture>>;
 
 		enum class UpdateTarget
@@ -30,7 +38,7 @@ namespace textoolkit
 		using UpdateTargets = EnumBitset<UpdateTarget, 3>;
 
 	public:
-		TexToolkitTextureView(wxWindow* parent, std::unique_ptr<Texture>&& texture);
+		TexToolkitTextureView(std::unique_ptr<Texture>&& texture, renderer::ModelDatabase& modelDatabase, wxWindow* parent);
 		~TexToolkitTextureView();
 
 		SubTextureContainer createLayers(ProgressNotifier progressNotifier = {}) const;
@@ -43,18 +51,27 @@ namespace textoolkit
 		void updateFaces(SubTextureContainer* subtextures = nullptr);
 		void updateLevels(SubTextureContainer* subtextures = nullptr);
 
+		void update3DView();
+		void updateModels();
+		void updateModelList();
+
 	private:
 		void deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry);
 
 		void layerSelected(TexToolkitSubimageEvent& event);
 		void faceSelected(TexToolkitSubimageEvent& event);
 		void levelSelected(TexToolkitSubimageEvent& event);
+		void modelUpdateButtonClicked(wxCommandEvent& event);
+		void modelSelected(wxCommandEvent& event);
 
 		std::unique_ptr<Texture> texture;
 		SubTexture mainTexture;
 		wxBitmap flatViewBitmap;
 		wxBitmap editorBitmap;
 		ProgressNotifier progressNotifier;
+		renderer::ModelDatabase& modelDatabase;
+
+		std::unique_ptr<renderer::Object> object;
 
 		unsigned int currentLayer = 0;
 		unsigned int currentFace = 0;

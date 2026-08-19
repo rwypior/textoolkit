@@ -14,6 +14,8 @@ target_compile_definitions(renderer
         $<$<CONFIG:Debug>:DEBUG>
 )
 
+set(TEXTOOLKIT_RENDERER_SHADERS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shader" CACHE STRING "Path to directory containing shaders")
+
 set_target_properties(renderer PROPERTIES CXX_STANDARD 17)
 
 target_include_directories(renderer PUBLIC "include")

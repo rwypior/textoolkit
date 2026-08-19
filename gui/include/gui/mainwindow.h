@@ -25,11 +25,11 @@
 #include <wx/frame.h>
 #include "gui/canvas.hpp"
 #include <wx/combobox.h>
+#include <wx/bmpbuttn.h>
+#include <wx/button.h>
 #include <wx/statbmp.h>
 #include <wx/stattext.h>
 #include <wx/hyperlink.h>
-#include <wx/bmpbuttn.h>
-#include <wx/button.h>
 #include <wx/notebook.h>
 #include <wx/scrolwin.h>
 #include <wx/statbox.h>
@@ -99,6 +99,7 @@ namespace textoolkit
 			Canvas* canvas;
 			wxPanel* m_panel24;
 			wxComboBox* displaymode;
+			wxBitmapButton* refreshModelListButton;
 			wxPanel* pageflat;
 			wxStaticBitmap* flatView;
 			wxPanel* m_panel45;

@@ -10,9 +10,9 @@
 
 namespace textoolkit
 {
-	TexToolkitMainWindow::TexToolkitMainWindow(wxWindow* parent)
-		:
-		MainWindow(parent)
+	TexToolkitMainWindow::TexToolkitMainWindow(renderer::ModelDatabase& modelDatabase, wxWindow* parent)
+		: MainWindow(parent)
+		, modelDatabase(modelDatabase)
 	{
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventNew, this, ID_NEW);
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventOpen, this, ID_OPEN);
@@ -22,7 +22,7 @@ namespace textoolkit
 	void TexToolkitMainWindow::openTexture(std::unique_ptr<Texture>&& texture)
 	{
 		this->notebook->Freeze();
-		this->notebook->AddPage(new TexToolkitTextureView(this->notebook, std::move(texture)), "New texture", true);
+		this->notebook->AddPage(new TexToolkitTextureView(std::move(texture), this->modelDatabase, this->notebook), "New texture", true);
 		this->notebook->Thaw();
 		this->notebook->Layout();
 	}

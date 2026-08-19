@@ -1,7 +1,7 @@
 #include "renderer/renderer.hpp"
 #include "renderer/model.hpp"
 #include "renderer/object.hpp"
-#include "renderer/util.hpp"
+#include "renderer/api.hpp"
 #include "common/result.hpp"
 #include "common/util.hpp"
 #include "common/logger.hpp"
@@ -17,67 +17,7 @@
 #include <fstream>
 #include <vector>
 #include <cassert>
-
-namespace
-{
-	inline std::string getErrorString(const unsigned int err)
-	{
-		switch (err)
-		{
-		case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
-		case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
-		case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
-		case GL_STACK_OVERFLOW: return "GL_STACK_OVERFLOW";
-		case GL_STACK_UNDERFLOW: return "GL_STACK_UNDERFLOW";
-		case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
-		case GL_INVALID_FRAMEBUFFER_OPERATION: return "GL_INVALID_FRAMEBUFFER_OPERATION";
-		case GL_TABLE_TOO_LARGE: return "GL_TABLE_TOO_LARGE";
-		}
-		return "UNKNOWN ERROR";
-	}
-
-	inline std::string getFramebufferError(const unsigned int code)
-	{
-		switch (code)
-		{
-		case GL_FRAMEBUFFER_COMPLETE: return "GL_FRAMEBUFFER_COMPLETE"; // 0X8CD5
-		case GL_FRAMEBUFFER_UNDEFINED: return "GL_FRAMEBUFFER_UNDEFINED"; // 0X8219
-		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT"; // 0X8CD6
-		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT"; // 0X8CD7
-		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: return "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER"; // 0X8CD8
-		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER"; // 0X8CDC
-		case GL_FRAMEBUFFER_UNSUPPORTED: return "GL_FRAMEBUFFER_UNSUPPORTED"; // 0X8CDD
-		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: return "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"; // 0X8D56
-		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: return "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS"; // 0X8DA8
-		}
-		return "UNKNOWN ERROR";
-	}
-
-	inline void glCheckError()
-	{
-		if (GLuint glerr = glGetError())
-		{
-			char msg[128];
-			unsigned int l = sprintf(msg, "OpenGL error %d - %s at %s:%d", glerr, getErrorString(glerr).c_str(), __FILE__, __LINE__);
-			textoolkit::Logger::getLogger() << std::string(msg, l) << "\n";
-			breakpoint();
-		}
-	}
-
-	GLenum translateRenderMode(textoolkit::renderer::RenderMode mode)
-	{
-		switch (mode)
-		{
-		case textoolkit::renderer::RenderMode::Lines:
-			return GL_LINES;
-		case textoolkit::renderer::RenderMode::Solid:
-			return GL_TRIANGLES;
-		}
-
-		assert(!"Invalid render mode");
-		return GL_TRIANGLES;
-	}
-}
+#include <filesystem>
 
 namespace textoolkit::renderer
 {
@@ -123,11 +63,31 @@ namespace textoolkit::renderer
 	void Uniform::set(float val)
 	{
 		glUniform1f(this->impl->getId(), val);
+		glCheckError();
+	}
+	
+	void Uniform::set(bool val)
+	{
+		glUniform1i(this->impl->getId(), val);
+		glCheckError();
 	}
 
 	void Uniform::set(const glm::vec3& vec)
 	{
 		glUniform3fv(this->impl->getId(), 1, &vec[0]);
+		glCheckError();
+	}
+
+	void Uniform::set(const glm::mat3& mtx)
+	{
+		glUniformMatrix3fv(this->impl->getId(), 1, false, &mtx[0][0]);
+		glCheckError();
+	}
+
+	void Uniform::set(const glm::mat4& mtx)
+	{
+		glUniformMatrix4fv(this->impl->getId(), 1, false, &mtx[0][0]);
+		glCheckError();
 	}
 
 	Uniform::Visitor Uniform::getSetter()
@@ -171,6 +131,7 @@ namespace textoolkit::renderer
 			const std::string& frag,
 			const std::string& geom = NoShader
 		)
+			: program(glCreateProgram())
 		{
 			glCheckError();
 
@@ -181,23 +142,25 @@ namespace textoolkit::renderer
 				this->load(GL_GEOMETRY_SHADER, geom);
 
 			glLinkProgram(this->program);
+			glCheckError();
 
 			GLint usedUniforms, usedAttributes;
 			glGetProgramiv(this->program, GL_ACTIVE_UNIFORMS, &usedUniforms);
 			glGetProgramiv(this->program, GL_ACTIVE_ATTRIBUTES, &usedAttributes);
-
 			glCheckError();
 
 			GLint loglength;
 
 			glValidateProgram(this->program);
 			glGetProgramiv(this->program, GL_INFO_LOG_LENGTH, &loglength);
+			glCheckError();
 
 			GLchar* buffer = new GLchar[loglength];
 			glGetProgramInfoLog(this->program, loglength, NULL, &buffer[0]);
-
+			glCheckError();
+			
 			if (loglength > 0)
-				textoolkit::Logger::getLogger() << std::string(buffer, loglength) << "\n";
+				textoolkit::Logger::getLogger() << std::string(buffer, loglength);
 
 			delete[] buffer;
 
@@ -211,14 +174,42 @@ namespace textoolkit::renderer
 				this->presentShaders |= static_cast<unsigned int>(ShaderTypes::Geometry);
 		}
 
+		~Impl()
+		{
+			GLsizei count = 0;
+			GLuint shaders[5];
+			glGetAttachedShaders(this->program, sizeof(shaders) / sizeof(shaders[0]), &count, &shaders[0]);
+			glCheckError();
+
+			for (GLsizei i = 0; i < count; i++)
+			{
+				const GLuint& shader = shaders[i];
+
+				glDetachShader(this->program, shader);
+				glCheckError();
+
+				glDeleteShader(shader);
+				glCheckError();
+			}
+
+			glDeleteProgram(this->program);
+			glCheckError();
+		}
+
 		LoadResult load(GLuint type, const std::string& path)
 		{
+			textoolkit::Logger::getLogger() << "Compiling " << path;
+
 			GLuint shader = glCreateShader(type);
+			glCheckError();
 
 			std::ifstream stream(path, std::ios_base::in | std::ios_base::binary | std::ios_base::ate);
 
 			if (!stream.is_open())
+			{
+				textoolkit::Logger::getLogger() << "Cannot open shader at " << path;
 				return LoadResult::CannotOpen;
+			}
 
 			std::streampos length = stream.tellg();
 			stream.seekg(0, std::ios_base::beg);
@@ -228,12 +219,29 @@ namespace textoolkit::renderer
 
 			const char* cSource = source.c_str();
 			glShaderSource(shader, 1, &cSource, NULL);
+			glCheckError();
 			glCompileShader(shader);
+			glCheckError();
+
+			GLint loglength;
+
+			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &loglength);
+			glCheckError();
+
+			GLchar* buffer = new GLchar[loglength];
+			glGetShaderInfoLog(shader, loglength, NULL, &buffer[0]);
+			glCheckError();
+
+			if (loglength > 0)
+			{
+				textoolkit::Logger::getLogger() << "Compilation finished with errors:";
+				textoolkit::Logger::getLogger() << std::string(buffer, loglength);
+			}
+
 			if (!this->checkCompileStatus(shader))
 				return LoadResult::CompilationFailure;
 
 			glAttachShader(this->program, shader);
-
 			glCheckError();
 
 			return LoadResult::Ok;
@@ -250,7 +258,9 @@ namespace textoolkit::renderer
 				GLenum type;
 				glGetActiveUniform(this->program, (GLuint)i, sizeof(name), NULL, &size, &type, name);
 				GLUniformData data(glGetUniformLocation(this->program, name));
-				this->uniforms[name] = std::make_unique<Uniform>(data);
+				std::string namelower = name;
+				std::transform(namelower.begin(), namelower.end(), namelower.begin(), [](const auto& c) { return std::tolower(c); });
+				this->uniforms[namelower] = std::make_unique<Uniform>(data);
 			}
 		}
 
@@ -316,8 +326,12 @@ namespace textoolkit::renderer
 
 	Uniform* Shader::getUniform(const std::string& name) const
 	{
-		if (this->impl->uniforms.find(name) != this->impl->uniforms.end())
-			return this->impl->uniforms.at(name).get();
+		std::string namelower = name;
+		std::transform(namelower.begin(), namelower.end(), namelower.begin(), [](const auto& c) { return std::tolower(c); });
+
+		auto it = this->impl->uniforms.find(name);
+		if (it != this->impl->uniforms.end())
+			return it->second.get();
 
 		return nullptr;
 	}
@@ -330,23 +344,48 @@ namespace textoolkit::renderer
 		OpenglModelData()
 		{
 			glGenBuffers(1, &this->vertexBuffer);
+			glGenBuffers(1, &this->uvBuffer);
+			glGenBuffers(1, &this->normalBuffer);
 			glGenBuffers(1, &this->indexBuffer);
 			glCheckError();
 		}
 
 		~OpenglModelData()
 		{
-			glDeleteBuffers(1, &this->vertexBuffer);
+			glCheckError();
 			glDeleteBuffers(1, &this->indexBuffer);
+			glDeleteBuffers(1, &this->normalBuffer);
+			glDeleteBuffers(1, &this->uvBuffer);
+			glDeleteBuffers(1, &this->vertexBuffer);
+			glCheckError();
 		}
 
-		void update(const std::vector<glm::vec3>& points, const std::vector<unsigned int>& indices) override
+		void update(
+			const std::vector<glm::vec3>& vertices, 
+			const std::vector<glm::vec2>& uvs,
+			const std::vector<glm::vec3>& normals,
+			const std::vector<unsigned int>& indices
+		) override
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer);
-			if (points.size() == 0)
+			if (vertices.size() == 0)
 				glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW);
 			else
-				glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(glm::vec3), &points[0], GL_DYNAMIC_DRAW);
+				glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_DYNAMIC_DRAW);
+			glCheckError();
+
+			glBindBuffer(GL_ARRAY_BUFFER, this->uvBuffer);
+			if (uvs.size() == 0)
+				glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW);
+			else
+				glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_DYNAMIC_DRAW);
+			glCheckError();
+			
+			glBindBuffer(GL_ARRAY_BUFFER, this->normalBuffer);
+			if (normals.size() == 0)
+				glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW);
+			else
+				glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_DYNAMIC_DRAW);
 			glCheckError();
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->indexBuffer);
@@ -469,14 +508,34 @@ namespace textoolkit::renderer
 
 	// Renderer
 
-	Renderer::Renderer()
+	Renderer::Renderer(std::shared_ptr<Context> context)
+		: context(std::move(context))
 	{
+		glCheckError(); // Sanity check
+
 		this->properties[propertyProjection] = glm::mat4(1.0f);
+		this->properties[propertyOrtho] = glm::mat4(1.0f);
 		this->properties[propertyView] = this->camera.getViewMatrix();
-		this->properties[propertyProjection] = glm::mat4(1.0f);
 		this->properties[propertyGlobalLightColor] = glm::vec3(0.7f);
 		this->properties[propertyLightColor] = this->light.getColor();
 		this->properties[propertyLightDirection] = this->light.getDirection();
+	}
+
+	Renderer::~Renderer()
+	{
+		glCheckError(); // Sanity check
+	}
+
+	bool Renderer::loadShaders(const std::string& shadersDir)
+	{
+		bool result = true;
+		for (const auto& entry : std::filesystem::directory_iterator(shadersDir))
+		{
+			const auto& path = entry.path();
+			if (path.extension() == ".sdr")
+				result &= this->loadShader(path.string());
+		}
+		return result;
 	}
 
 	bool Renderer::loadShader(const std::string& sdrPath)
@@ -497,6 +556,7 @@ namespace textoolkit::renderer
 		if (nameIt == section.end())
 			return false;
 
+		auto dir = std::filesystem::path(sdrPath).parent_path();
 		std::string name = nameIt->second->toString();
 
 		std::string vert = Shader::NoShader;
@@ -505,15 +565,15 @@ namespace textoolkit::renderer
 
 		auto itVert = section.find("vertex");
 		if (itVert != section.end())
-			vert = itVert->second->toString();
+			vert = std::filesystem::path(dir).append(trimmed(itVert->second->toString())).string();
 		
 		auto itGeom = section.find("geometry");
 		if (itGeom != section.end())
-			geom = itGeom->second->toString();
+			geom = std::filesystem::path(dir).append(trimmed(itGeom->second->toString())).string();
 		
 		auto itFrag = section.find("fragment");
 		if (itFrag != section.end())
-			frag = itFrag->second->toString();
+			frag = std::filesystem::path(dir).append(trimmed(itFrag->second->toString())).string();
 
 		this->shaders[name] = Shader(vert, frag, geom);
 
@@ -530,7 +590,11 @@ namespace textoolkit::renderer
 
 		if (this->updateRequired)
 		{
+			const float w = static_cast<float>(this->viewportSize.x) * 0.5f;
+			const float h = static_cast<float>(this->viewportSize.y) * 0.5f;
+
 			this->properties[propertyProjection] = glm::perspective(this->fov, this->aspectRatio, this->nearPlane, this->farPlane);
+			this->properties[propertyOrtho] = glm::ortho(-w, w, -h, h, -20.0f, 20.0f);
 
 			glViewport(0, 0, this->viewportSize.x, this->viewportSize.y);
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0);
@@ -540,6 +604,7 @@ namespace textoolkit::renderer
 			glStencilFunc(GL_ALWAYS, 1, 0xFF);
 			glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 			glClearStencil(0);
+			glCheckError();
 
 			this->updateRequired = false;
 		}
@@ -550,7 +615,13 @@ namespace textoolkit::renderer
 
 	void Renderer::render()
 	{
-		this->initialize();
+		this->context->setCurrent();
+
+		glStencilMask(0xFF);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glStencilMask(0x00);
+		glCheckError();
+
 		this->update();
 
 		while (!this->renderQueue.empty())
@@ -559,12 +630,6 @@ namespace textoolkit::renderer
 			this->renderQueue.pop();
 
 			// Get object data
-			if (!object->isUploaded())
-				this->upload(*object);
-
-			if (object->updateRequired())
-				this->update(*object);
-
 			auto model = object->getModel();
 			if (!model)
 			{
@@ -577,6 +642,14 @@ namespace textoolkit::renderer
 
 			if (model->updateRequired())
 				this->update(*model);
+
+			if (!object->isUploaded())
+				this->upload(*object);
+
+			if (object->updateRequired())
+				this->update(*object);
+
+			object->setProjectionInfo(this->viewportSize, this->nearPlane, this->farPlane);
 
 			// Set shader
 			const std::string& shaderName = object->getShader();
@@ -596,6 +669,11 @@ namespace textoolkit::renderer
 				for (const auto& [name, prop] : container)
 				{
 					auto uniform = shader->getUniform(name);
+					if (!uniform)
+					{
+						Logger::getLogger() << Logger::Uniq(LOGGER_UNIQUE_ID()) << "Shader " << shaderName << ": Cannot find uniform name " << name;
+						continue;
+					}
 					std::visit(uniform->getSetter(), prop);
 				}
 			}
@@ -604,9 +682,20 @@ namespace textoolkit::renderer
 			auto renderMode = translateRenderMode(object->getRenderMode());
 			auto data = static_cast<OpenglObjectData*>(object->getData());
 			glBindVertexArray(data->getVao());
+			glCheckError();
+
 			glDrawElements(renderMode, model->getIndices().size(), GL_UNSIGNED_INT, 0);
 			glCheckError();
+
+			glBindVertexArray(0); // Or else it crashes
+			glCheckError();
 		}
+
+		glFlush();
+		glCheckError();
+
+		this->context->swapBuffers();
+		glCheckError();
 	}
 
 	Shader* Renderer::getShader(const std::string& name)
@@ -622,28 +711,12 @@ namespace textoolkit::renderer
 		this->renderQueue.push(object);
 	}
 
-	void Renderer::initialize()
-	{
-		if (this->isInitialized())
-			return;
-
-		glewExperimental = true;
-		auto result = glewInit();
-		assert(result == GLEW_OK);
-		this->initialized = true;
-		this->rendererReady(*this);
-	}
-
-	bool Renderer::isInitialized() const
-	{
-		return this->initialized;
-	}
-
 	void Renderer::upload(Model& model) const
 	{
 		auto data = std::make_unique<OpenglModelData>();
-		data->update(model.getVertices(), model.getIndices());
+		data->update(model.getVertices(), model.getUVs(), model.getNormals(), model.getIndices());
 		model.setData(std::move(data));
+		model.clearUpdateStatus();
 	}
 
 	void Renderer::update(Model& model) const
@@ -656,7 +729,8 @@ namespace textoolkit::renderer
 		}
 		
 		auto gldata = static_cast<OpenglModelData*>(data);
-		gldata->update(model.getVertices(), model.getIndices());
+		gldata->update(model.getVertices(), model.getUVs(), model.getNormals(), model.getIndices());
+		model.clearUpdateStatus();
 	}
 
 	void Renderer::upload(Object& object) const

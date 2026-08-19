@@ -112,14 +112,17 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	wxBoxSizer* bSizer30;
 	bSizer30 = new wxBoxSizer( wxHORIZONTAL );
 
-	displaymode = new wxComboBox( m_panel24, wxID_ANY, _("Cube"), wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_READONLY );
-	displaymode->Append( _("Cube") );
-	displaymode->Append( _("Rectangle") );
-	displaymode->Append( _("Pyramid") );
-	displaymode->Append( _("Sphere") );
+	displaymode = new wxComboBox( m_panel24, wxID_ANY, _("Cube"), wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_READONLY|wxCB_SORT );
 	displaymode->SetMinSize( wxSize( 150,-1 ) );
 
-	bSizer30->Add( displaymode, 0, wxBOTTOM|wxTOP, 5 );
+	bSizer30->Add( displaymode, 0, wxALIGN_CENTER_VERTICAL|wxBOTTOM|wxTOP, 5 );
+
+	refreshModelListButton = new wxBitmapButton( m_panel24, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|0 );
+
+	refreshModelListButton->SetBitmap( wxArtProvider::GetBitmap( wxASCII_STR(wxART_REDO), wxASCII_STR(wxART_BUTTON) ) );
+	refreshModelListButton->SetToolTip( _("Refresh list") );
+
+	bSizer30->Add( refreshModelListButton, 0, wxALIGN_CENTER_VERTICAL|wxLEFT, 5 );
 
 
 	m_panel24->SetSizer( bSizer30 );

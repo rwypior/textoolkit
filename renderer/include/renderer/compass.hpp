@@ -27,10 +27,18 @@ namespace textoolkit::renderer
 
 		void setCameraDirection(const glm::vec3& dir);
 
+		void setSize(float size);
+		void setOffset(float x, float y);
+		virtual void setProjectionInfo(const glm::vec2& viewport, float nearPlane, float farPlane) override;
+
 	private:
 		void updateModelMatrix();
 
-		glm::vec3 direction;
+		glm::vec3 direction = glm::vec3(0.0f);
+		glm::vec2 viewport = glm::vec2(0.0f);
+		float size = 50.0f;
+		float offsetX = 80.0f;
+		float offsetY = 80.0f;
 	};
 }
 

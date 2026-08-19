@@ -2,6 +2,9 @@
 #define _h_common_result
 
 #include <optional>
+#include <vector>
+#include <string>
+#include <optional>
 
 namespace textoolkit
 {
@@ -13,17 +16,56 @@ namespace textoolkit
 			Ok,
 			Failure,
 			FileInaccessible,
-			InvalidMagic
+			InvalidMagic,
+			NothingLoaded
 		};
+
+		struct Warning
+		{
+			std::string warning;
+			std::optional<unsigned int> lineNumber = {};
+
+			Warning(const std::string& warning, std::optional<unsigned int> lineNumber = {})
+				: warning(warning)
+				, lineNumber(lineNumber)
+			{
+			}
+
+			Warning(const Warning& b)
+				: warning(b.warning)
+				, lineNumber(b.lineNumber)
+			{
+			}
+
+			std::string toString() const
+			{
+				return (this->lineNumber ? (std::to_string(*this->lineNumber) + ": ") : "") + this->warning;
+			}
+		};
+
+		using Warnings = std::vector<Warning>;
 
 		Result(Code code)
 			: code(code)
+		{
+		}
+		
+		Result(Code code, Warnings&& warnings)
+			: code(code)
+			, warnings(std::move(warnings))
 		{
 		}
 
 		Result(T&& data)
 			: code(Code::Ok)
 			, data(std::move(data))
+		{
+		}
+
+		Result(T&& data, Warnings&& warnings)
+			: code(Code::Ok)
+			, data(std::move(data))
+			, warnings(std::move(warnings))
 		{
 		}
 
@@ -74,6 +116,7 @@ namespace textoolkit
 
 		Code code;
 		std::optional<T> data;
+		Warnings warnings;
 	};
 }
 

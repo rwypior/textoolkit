@@ -3,19 +3,33 @@
 #include "gui/textoolkitprogressdialog.hpp"
 #include "gui/texture.hpp"
 #include "gui/util.hpp"
+#include "renderer/modeldatabase.hpp"
+#include "renderer/model.hpp"
+#include "renderer/object.hpp"
 
 namespace textoolkit
 {
-	TexToolkitTextureView::TexToolkitTextureView(wxWindow* parent, std::unique_ptr<Texture>&& texture)
+	TexToolkitTextureView::TexToolkitTextureView(std::unique_ptr<Texture>&& texture, renderer::ModelDatabase& modelDatabase, wxWindow* parent)
 		: TextureView(parent)
 		, texture(std::move(texture))
 		, progressNotifier(progressNotifier)
+		, modelDatabase(modelDatabase)
+		, object(std::make_unique<renderer::Object>(mainObjectName))
 	{
+		this->canvas->addObject(this->object.get());
+
 		this->flatView->SetScaleMode(wxStaticBitmapBase::ScaleMode::Scale_AspectFit);
 		this->m_notebook2->ChangeSelection(1);
 
+		this->updateModelList();
+		this->displaymode->SetSelection(0);
+
 		this->updateFlatView();
 		this->updateSubimages();
+		this->update3DView();
+
+		this->refreshModelListButton->Bind(wxEVT_BUTTON, &TexToolkitTextureView::modelUpdateButtonClicked, this);
+		this->displaymode->Bind(wxEVT_COMBOBOX, &TexToolkitTextureView::modelSelected, this);
 	}
 
 	TexToolkitTextureView::~TexToolkitTextureView() = default;
@@ -253,6 +267,34 @@ namespace textoolkit
 		this->levelScroller->Thaw();
 	}
 
+	void TexToolkitTextureView::update3DView()
+	{
+		unsigned int modelSelection = this->displaymode->GetSelection();
+		if (modelSelection == wxNOT_FOUND)
+			return;
+		auto modelName = this->displaymode->GetString(modelSelection);
+		auto model = this->modelDatabase.findModel(modelName.ToStdString());
+		if (!model)
+			return;
+		this->object->setModel(std::move(model));
+	}
+
+	void TexToolkitTextureView::updateModels()
+	{
+		auto modelPaths = getModels();
+		auto result = this->modelDatabase.loadModels(modelPaths);
+		this->updateModelList();
+	}
+
+	void TexToolkitTextureView::updateModelList()
+	{
+		this->displaymode->Clear();
+		for (auto& model : this->modelDatabase)
+		{
+			this->displaymode->Append(model.second->getName());
+		}
+	}
+
 	void TexToolkitTextureView::deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry)
 	{
 		for (auto& child : scroller->GetChildren())
@@ -289,5 +331,15 @@ namespace textoolkit
 		this->deselectOthers(this->levelScroller, event.entry);
 		this->currentLevel = event.entry->getTexture()->getLevel();
 		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel);
+	}
+
+	void TexToolkitTextureView::modelUpdateButtonClicked(wxCommandEvent& event)
+	{
+		this->updateModels();
+	}
+
+	void TexToolkitTextureView::modelSelected(wxCommandEvent& event)
+	{
+		this->update3DView();
 	}
 }
