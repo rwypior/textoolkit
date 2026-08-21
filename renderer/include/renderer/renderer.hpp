@@ -20,11 +20,25 @@
 #include <vector>
 #include <cassert>
 #include <variant>
+#include <array>
 
 namespace textoolkit::renderer
 {
 	class Model;
 	class Object;
+
+	enum class CubeFace
+	{
+		PositiveX,
+		NegativeX,
+		PositiveY,
+		NegativeY,
+		PositiveZ,
+		NegativeZ,
+		_count
+	};
+
+	using CubemapAlignment = std::array<CubeFace, static_cast<int>(CubeFace::_count)>;
 
 	class UniformData
 	{
@@ -158,6 +172,8 @@ namespace textoolkit::renderer
 		void change(const Image& image);
 
 		void bind() const;
+
+		void setCubemapAlignment(const CubemapAlignment& alignment);
 
 	private:
 		std::unique_ptr<Impl> impl;

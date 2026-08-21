@@ -32,14 +32,28 @@ namespace
 		return GL_TEXTURE_2D;
 	}
 
-	GLenum translateInternalFormat(textoolkit::Image::InfoMode mode, unsigned int format)
+	GLenum translateFormat(textoolkit::Image::InfoMode mode, unsigned int format)
 	{
 		if (mode == textoolkit::Image::InfoMode::Opengl)
 			return static_cast<GLenum>(format);
 
 		switch (static_cast<textoolkit::Image::TextureFormat>(format))
 		{
-		case textoolkit::Image::TextureFormat::Rgb8: return GL_RGB8;
+		case textoolkit::Image::TextureFormat::Rgb: return GL_RGB;
+		}
+
+		assert(!"Unsupported format");
+		return GL_RGB;
+	}
+
+	GLenum translateInternalFormat(textoolkit::Image::InfoMode mode, unsigned int format)
+	{
+		if (mode == textoolkit::Image::InfoMode::Opengl)
+			return static_cast<GLenum>(format);
+
+		switch (static_cast<textoolkit::Image::TextureInternalFormat>(format))
+		{
+		case textoolkit::Image::TextureInternalFormat::Rgb8: return GL_RGB8;
 		}
 
 		assert(!"Unsupported internal format");
@@ -58,6 +72,22 @@ namespace
 
 		assert(!"Unsupported data type");
 		return GL_UNSIGNED_BYTE;
+	}
+
+	GLenum translateCubeFace(textoolkit::renderer::CubeFace face)
+	{
+		switch (face)
+		{
+		case textoolkit::renderer::CubeFace::PositiveX: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+		case textoolkit::renderer::CubeFace::NegativeX: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+		case textoolkit::renderer::CubeFace::PositiveY: return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+		case textoolkit::renderer::CubeFace::NegativeY: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+		case textoolkit::renderer::CubeFace::PositiveZ: return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+		case textoolkit::renderer::CubeFace::NegativeZ: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+		}
+
+		assert(!"Invalid cubemap face");
+		return 0;
 	}
 }
 
@@ -395,6 +425,15 @@ namespace textoolkit::renderer
 			glGenTextures(1, &this->textureId);
 			glCheckError();
 
+			this->cubemapAlignment = {
+				CubeFace::PositiveX,
+				CubeFace::NegativeX,
+				CubeFace::PositiveY,
+				CubeFace::NegativeY,
+				CubeFace::PositiveZ,
+				CubeFace::NegativeZ
+			};
+
 			this->change(image);
 		}
 
@@ -430,6 +469,11 @@ namespace textoolkit::renderer
 		{
 			glBindTexture(this->target, this->textureId);
 			glCheckError();
+		}
+
+		void setCubemapAlignment(const CubemapAlignment& alignment)
+		{
+			this->cubemapAlignment = alignment;
 		}
 
 	private:
@@ -471,18 +515,27 @@ namespace textoolkit::renderer
 		void setDataCube(const Image& image)
 		{
 			GLenum internalFormat = translateInternalFormat(image.getInfoMode(), image.getInternalFormat());
-			glTexStorage3D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight(), image.getLayers());
+			glTexStorage2D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight());
 			glCheckError();
 			for (unsigned int face = 0; face < image.getFaces(); face++)
 			{
+				auto target = translateCubeFace(this->cubemapAlignment.at(face));
 				for (unsigned int level = 0; level < image.getLevels(); level++)
 				{
 					auto width = image.getWidth(level);
 					auto height = image.getHeight(level);
 					if (image.isCompressed())
-						glCompressedTexSubImage2D(this->target, level, 0, 0, width, height, internalFormat, image.getSize(0, face, level), image.getBytesPtr(0, face, level));
+						glCompressedTexSubImage2D(target, level, 0, 0, width, height, internalFormat, image.getSize(0, face, level), image.getBytesPtr(0, face, level));
 					else
-						glTexSubImage2D(this->target, level, 0, 0, width, height, internalFormat, translateDataType(image.getInfoMode(), image.getDataType()), image.getBytesPtr(0, face, level));
+						glTexSubImage2D(
+							target, 
+							level, 
+							0, 0, 
+							width, height, 
+							translateFormat(image.getInfoMode(), image.getFormat()), 
+							translateDataType(image.getInfoMode(), image.getDataType()), 
+							image.getBytesPtr(0, face, level)
+						);
 					glCheckError();
 				}
 			}
@@ -490,6 +543,7 @@ namespace textoolkit::renderer
 
 		GLuint textureId;
 		GLenum target;
+		CubemapAlignment cubemapAlignment;
 	};
 
 	// Texture
@@ -507,6 +561,11 @@ namespace textoolkit::renderer
 	void Texture::bind() const
 	{
 		this->impl->bind();
+	}
+
+	void Texture::setCubemapAlignment(const CubemapAlignment& alignment)
+	{
+		this->impl->setCubemapAlignment(alignment);
 	}
 
 	// Sampler impl

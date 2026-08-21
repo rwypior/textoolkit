@@ -51,6 +51,7 @@ namespace textoolkit
 		virtual Swizzles getSwizzles() const override;
 		virtual InfoMode getInfoMode() const override;
 		virtual unsigned int getInternalFormat() const override;
+		virtual unsigned int getFormat() const override;
 		virtual unsigned int getDataType() const override;
 		virtual bool isCompressed() const override;
 

@@ -222,6 +222,13 @@ namespace textoolkit
 		return format.Internal;
 	}
 
+	unsigned int DDS::getFormat() const
+	{
+		gli::gl gl(gli::gl::PROFILE_GL33);
+		auto format = gl.translate(this->dds.format(), this->dds.swizzles());
+		return format.External;
+	}
+
 	unsigned int DDS::getDataType() const
 	{
 		gli::gl gl(gli::gl::PROFILE_GL33);

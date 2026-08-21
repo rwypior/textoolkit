@@ -43,16 +43,21 @@ namespace textoolkit
 		};
 
 		/// Specify how texture information enums are returned and if they need to be translated
-		/// This is related to TextureFormat and DataType enums
+		/// This is related to TextureInternalFormat, TextureFormat and DataType enums
 		enum class InfoMode
 		{
 			Opengl, // Returned information is already OpenGL constants
 			Custom // Returned information is returned as internal enums and need to be translated
 		};
 
-		enum class TextureFormat
+		enum class TextureInternalFormat
 		{
 			Rgb8
+		};
+		
+		enum class TextureFormat
+		{
+			Rgb
 		};
 
 		enum class DataType
@@ -127,7 +132,11 @@ namespace textoolkit
 		}
 		virtual unsigned int getInternalFormat() const
 		{
-			return static_cast<unsigned int>(TextureFormat::Rgb8);
+			return static_cast<unsigned int>(TextureInternalFormat::Rgb8);
+		}
+		virtual unsigned int getFormat() const
+		{
+			return static_cast<unsigned int>(TextureFormat::Rgb);
 		}
 		virtual unsigned int getDataType() const
 		{

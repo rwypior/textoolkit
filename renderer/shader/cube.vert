@@ -21,5 +21,5 @@ void main()
     mat3 normalMatrix = mat3(transpose(inverse(mv)));
     normal = normalize(vec3(vec4(normalMatrix * vertexNormal, 0.0)));
 
-    uv = position;
+    uv = vertexLocation;
 }
