@@ -38,6 +38,31 @@ namespace textoolkit::renderer
 		_count
 	};
 
+	enum class Wrapping
+	{
+		ClampToEdge,
+		ClampToBorder,
+		MirroredRepeat,
+		Repeat,
+		MirroredClampToEdge
+	};
+	
+	enum class FilteringMin
+	{
+		Nearest,
+		Linear,
+		NearestMipmapNearest,
+		LinearMipmapNearest,
+		NearestMipmapLinear,
+		LinearMipmapLinear
+	};
+
+	enum class FilteringMag
+	{
+		Nearest,
+		Linear
+	};
+
 	using CubemapAlignment = std::array<CubeFace, static_cast<int>(CubeFace::_count)>;
 
 	class UniformData
@@ -174,6 +199,10 @@ namespace textoolkit::renderer
 		void bind() const;
 
 		void setCubemapAlignment(const CubemapAlignment& alignment);
+		void setWrappingS(Wrapping wrap);
+		void setWrappingT(Wrapping wrap);
+		void setFilterMin(FilteringMin filter);
+		void setFilterMag(FilteringMag filter);
 
 	private:
 		std::unique_ptr<Impl> impl;
@@ -248,6 +277,11 @@ namespace textoolkit::renderer
 		void setLightDirection(const glm::vec3& direction);
 
 		void setDisplayMode(const DisplayMode& mode);
+		void setWrappingS(Wrapping wrap);
+		void setWrappingT(Wrapping wrap);
+		void setFilterMin(FilteringMin filter);
+		void setFilterMag(FilteringMag filter);
+		void setShowWireframe(bool show);
 
 	private:
 		std::shared_ptr<Context> context;

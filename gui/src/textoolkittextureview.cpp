@@ -7,6 +7,20 @@
 #include "renderer/model.hpp"
 #include "renderer/object.hpp"
 
+namespace
+{
+	template<typename T>
+	T getProperty(wxPGProperty* prop)
+	{
+		auto enumprop = static_cast<wxEnumProperty*>(prop);
+		return static_cast<T>(enumprop->GetChoices().GetValue(enumprop->GetChoiceSelection()));
+	}
+	
+	bool getBoolProperty(wxPGProperty* prop)
+	{
+		return static_cast<wxBoolProperty*>(prop)->GetValue().GetBool();
+	}
+}
 
 namespace textoolkit
 {
@@ -22,6 +36,7 @@ namespace textoolkit
 		this->flatView->SetScaleMode(wxStaticBitmapBase::ScaleMode::Scale_AspectFit);
 		this->m_notebook2->ChangeSelection(1);
 		
+		this->setupProperties();
 		this->updateModels();
 		this->updateDisplayModes();
 		this->displaymode->SetSelection(0);
@@ -32,6 +47,7 @@ namespace textoolkit
 
 		this->refreshDisplayModeListButton->Bind(wxEVT_BUTTON, &TexToolkitTextureView::displayModeUpdateButtonClicked, this);
 		this->displaymode->Bind(wxEVT_COMBOBOX, &TexToolkitTextureView::displayModeSelected, this);
+		this->propertyGrid->Bind(wxEVT_PG_CHANGED, &TexToolkitTextureView::propertyChanged, this);
 	}
 
 	TexToolkitTextureView::~TexToolkitTextureView() = default;
@@ -269,6 +285,45 @@ namespace textoolkit
 		this->levelScroller->Thaw();
 	}
 
+	void TexToolkitTextureView::setupProperties()
+	{
+		this->propertyGrid->Append(new wxPropertyCategory("3D display settings", "grp3ddisplaysettings"));
+
+		wxPGChoices wrappingChoices;
+		wrappingChoices.Add("Clamp to edge", static_cast<int>(renderer::Wrapping::ClampToEdge));
+		wrappingChoices.Add("Clamp to border", static_cast<int>(renderer::Wrapping::ClampToBorder));
+		wrappingChoices.Add("Mirrored repeat", static_cast<int>(renderer::Wrapping::MirroredRepeat));
+		wrappingChoices.Add("Repeat", static_cast<int>(renderer::Wrapping::Repeat));
+		wrappingChoices.Add("Mirrored clamp to edge", static_cast<int>(renderer::Wrapping::MirroredClampToEdge));
+
+		wxPGChoices filterMinChoices;
+		filterMinChoices.Add("Nearest", static_cast<int>(renderer::FilteringMin::Nearest));
+		filterMinChoices.Add("Linear", static_cast<int>(renderer::FilteringMin::Linear));
+		filterMinChoices.Add("Nearest mipmap nearest", static_cast<int>(renderer::FilteringMin::NearestMipmapNearest));
+		filterMinChoices.Add("Linear mipmap nearest", static_cast<int>(renderer::FilteringMin::LinearMipmapNearest));
+		filterMinChoices.Add("Nearest mipmap linear", static_cast<int>(renderer::FilteringMin::NearestMipmapLinear));
+		filterMinChoices.Add("Linear mipmap linear", static_cast<int>(renderer::FilteringMin::LinearMipmapLinear));
+
+		wxPGChoices filterMagChoices;
+		filterMagChoices.Add("Nearest", static_cast<int>(renderer::FilteringMag::Nearest));
+		filterMagChoices.Add("Linear", static_cast<int>(renderer::FilteringMag::Linear));
+
+		this->propertyGrid->Append(new wxPropertyCategory("3D display settings", propGrp3DDisplaySettings));
+		this->propertyGrid->Append(new wxEnumProperty("Wrap S", propDisplayWrapS, wrappingChoices));
+		this->propertyGrid->Append(new wxEnumProperty("Wrap T", propDisplayWrapT, wrappingChoices));
+		this->propertyGrid->Append(new wxEnumProperty("Filtering min", propDisplayFilterMin, filterMinChoices));
+		this->propertyGrid->Append(new wxEnumProperty("Filtering mag", propDisplayFilterMag, filterMagChoices));
+		this->propertyGrid->Append(new wxBoolProperty("Show wireframe", propDisplayWireframe));
+
+		this->propertyGrid->Append(new wxPropertyCategory("Texture properties", "grp3ddisplaysettings"));
+
+		this->canvas->setWrappingS(getProperty<renderer::Wrapping>(this->propertyGrid->GetProperty(propDisplayWrapS)));
+		this->canvas->setWrappingT(getProperty<renderer::Wrapping>(this->propertyGrid->GetProperty(propDisplayWrapT)));
+		this->canvas->setFilterMin(getProperty<renderer::FilteringMin>(this->propertyGrid->GetProperty(propDisplayFilterMin)));
+		this->canvas->setFilterMag(getProperty<renderer::FilteringMag>(this->propertyGrid->GetProperty(propDisplayFilterMag)));
+		this->canvas->setShowWireframe(getBoolProperty(this->propertyGrid->GetProperty(propDisplayWireframe)));
+	}
+
 	void TexToolkitTextureView::update3DView()
 	{
 		unsigned int modelSelection = this->displaymode->GetSelection();
@@ -356,5 +411,19 @@ namespace textoolkit
 	void TexToolkitTextureView::displayModeSelected(wxCommandEvent& event)
 	{
 		this->update3DView();
+	}
+
+	void TexToolkitTextureView::propertyChanged(wxPropertyGridEvent& event)
+	{
+		if (event.m_propertyName == propDisplayWrapS)
+			this->canvas->setWrappingS(static_cast<renderer::Wrapping>(event.GetValue().GetInteger()));
+		if (event.m_propertyName == propDisplayWrapT)
+			this->canvas->setWrappingT(static_cast<renderer::Wrapping>(event.GetValue().GetInteger()));
+		if (event.m_propertyName == propDisplayFilterMin)
+			this->canvas->setFilterMin(static_cast<renderer::FilteringMin>(event.GetValue().GetInteger()));
+		if (event.m_propertyName == propDisplayFilterMag)
+			this->canvas->setFilterMag(static_cast<renderer::FilteringMag>(event.GetValue().GetInteger()));
+		if (event.m_propertyName == propDisplayWireframe)
+			this->canvas->setShowWireframe(event.GetValue().GetBool());
 	}
 }

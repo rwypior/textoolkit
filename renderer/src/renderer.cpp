@@ -89,6 +89,62 @@ namespace
 		assert(!"Invalid cubemap face");
 		return 0;
 	}
+
+	GLenum translateWrapping(textoolkit::renderer::Wrapping wrap)
+	{
+		switch (wrap)
+		{
+		case textoolkit::renderer::Wrapping::ClampToEdge:
+			return GL_CLAMP_TO_EDGE;
+		case textoolkit::renderer::Wrapping::ClampToBorder:
+			return GL_CLAMP_TO_BORDER;
+		case textoolkit::renderer::Wrapping::MirroredRepeat:
+			return GL_MIRRORED_REPEAT;
+		case textoolkit::renderer::Wrapping::Repeat:
+			return GL_REPEAT;
+		case textoolkit::renderer::Wrapping::MirroredClampToEdge:
+			return GL_MIRROR_CLAMP_TO_EDGE;
+		}
+
+		assert(!"Unsupported mirroring");
+		return GL_CLAMP_TO_EDGE;
+	}
+
+	GLenum translateFilteringMin(textoolkit::renderer::FilteringMin filter)
+	{
+		switch (filter)
+		{
+		case textoolkit::renderer::FilteringMin::Nearest:
+			return GL_NEAREST;
+		case textoolkit::renderer::FilteringMin::Linear:
+			return GL_LINEAR;
+		case textoolkit::renderer::FilteringMin::NearestMipmapNearest:
+			return GL_NEAREST_MIPMAP_NEAREST;
+		case textoolkit::renderer::FilteringMin::LinearMipmapNearest:
+			return GL_LINEAR_MIPMAP_NEAREST;
+		case textoolkit::renderer::FilteringMin::NearestMipmapLinear:
+			return GL_NEAREST_MIPMAP_LINEAR;
+		case textoolkit::renderer::FilteringMin::LinearMipmapLinear:
+			return GL_LINEAR_MIPMAP_LINEAR;
+		}
+
+		assert(!"Unsupported filtering");
+		return GL_NEAREST;
+	}
+
+	GLenum translateFilteringMag(textoolkit::renderer::FilteringMag filter)
+	{
+		switch (filter)
+		{
+		case textoolkit::renderer::FilteringMag::Nearest:
+			return GL_NEAREST;
+		case textoolkit::renderer::FilteringMag::Linear:
+			return GL_LINEAR;
+		}
+
+		assert(!"Unsupported filtering");
+		return GL_NEAREST;
+	}
 }
 
 namespace textoolkit::renderer
@@ -476,6 +532,30 @@ namespace textoolkit::renderer
 			this->cubemapAlignment = alignment;
 		}
 
+		void setWrappingS(Wrapping wrap)
+		{
+			this->bind();
+			glTexParameteri(this->target, GL_TEXTURE_WRAP_S, translateWrapping(wrap));
+		}
+
+		void setWrappingT(Wrapping wrap)
+		{
+			this->bind();
+			glTexParameteri(this->target, GL_TEXTURE_WRAP_T, translateWrapping(wrap));
+		}
+
+		void setFilterMin(FilteringMin filter)
+		{
+			this->bind();
+			glTexParameteri(this->target, GL_TEXTURE_MIN_FILTER, translateFilteringMin(filter));
+		}
+
+		void setFilterMag(FilteringMag filter)
+		{
+			this->bind();
+			glTexParameteri(this->target, GL_TEXTURE_MAG_FILTER, translateFilteringMag(filter));
+		}
+
 	private:
 		void setData2D(const Image& image)
 		{
@@ -566,6 +646,26 @@ namespace textoolkit::renderer
 	void Texture::setCubemapAlignment(const CubemapAlignment& alignment)
 	{
 		this->impl->setCubemapAlignment(alignment);
+	}
+
+	void Texture::setWrappingS(Wrapping wrap)
+	{
+		this->impl->setWrappingS(wrap);
+	}
+
+	void Texture::setWrappingT(Wrapping wrap)
+	{
+		this->impl->setWrappingT(wrap);
+	}
+
+	void Texture::setFilterMin(FilteringMin filter)
+	{
+		this->impl->setFilterMin(filter);
+	}
+
+	void Texture::setFilterMag(FilteringMag filter)
+	{
+		this->impl->setFilterMag(filter);
 	}
 
 	// Sampler impl
@@ -1143,5 +1243,30 @@ namespace textoolkit::renderer
 	{
 		this->displayMode = mode;
 		this->update();
+	}
+
+	void Renderer::setWrappingS(Wrapping wrap)
+	{
+		this->texture->setWrappingS(wrap);
+	}
+
+	void Renderer::setWrappingT(Wrapping wrap)
+	{
+		this->texture->setWrappingT(wrap);
+	}
+
+	void Renderer::setFilterMin(FilteringMin filter)
+	{
+		this->texture->setFilterMin(filter);
+	}
+
+	void Renderer::setFilterMag(FilteringMag filter)
+	{
+		this->texture->setFilterMag(filter);
+	}
+
+	void Renderer::setShowWireframe(bool show)
+	{
+
 	}
 }

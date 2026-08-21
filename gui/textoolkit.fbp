@@ -50,7 +50,7 @@
       <property name="minimum_size"></property>
       <property name="name">MainWindow</property>
       <property name="pos"></property>
-      <property name="size">909,710</property>
+      <property name="size">1187,710</property>
       <property name="style">wxDEFAULT_FRAME_STYLE</property>
       <property name="subclass">; ; forward_declare</property>
       <property name="title">TexToolkit</property>
@@ -360,7 +360,7 @@
       <property name="minimum_size"></property>
       <property name="name">TextureView</property>
       <property name="pos"></property>
-      <property name="size">804,631</property>
+      <property name="size">1034,631</property>
       <property name="subclass">; ; forward_declare</property>
       <property name="tooltip"></property>
       <property name="two_step_creation">0</property>
@@ -731,7 +731,7 @@
                                   <property name="style">wxCB_READONLY|wxCB_SORT</property>
                                   <property name="subclass">; ; forward_declare</property>
                                   <property name="toolbar_pane">0</property>
-                                  <property name="tooltip"></property>
+                                  <property name="tooltip">Display mode</property>
                                   <property name="validator_data_type"></property>
                                   <property name="validator_style">wxFILTER_NONE</property>
                                   <property name="validator_type">wxDefaultValidator</property>

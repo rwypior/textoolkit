@@ -102,7 +102,7 @@ namespace textoolkit::renderer
 
 		this->properties[propertyModelMatrix] = 
 			glm::translate(glm::vec3(offsetX, offsetY, 0.0f)) *
-			glm::toMat4(orient(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(-this->direction.x, this->direction.y, this->direction.z))) *
-			glm::scale(glm::vec3(this->size));
+			glm::lookAt(glm::vec3(this->direction.x, this->direction.y, this->direction.z), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::scale(glm::vec3(-this->size, this->size, this->size));
 	}
 }

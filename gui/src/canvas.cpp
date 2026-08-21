@@ -284,5 +284,36 @@ namespace textoolkit
 	void Canvas::setDisplayMode(const renderer::DisplayMode& mode)
 	{
 		this->renderer.setDisplayMode(mode);
+		this->Refresh();
+	}
+
+	void Canvas::setWrappingS(renderer::Wrapping wrap)
+	{
+		this->renderer.setWrappingS(wrap);
+		this->Refresh();
+	}
+
+	void Canvas::setWrappingT(renderer::Wrapping wrap)
+	{
+		this->renderer.setWrappingT(wrap);
+		this->Refresh();
+	}
+
+	void Canvas::setFilterMin(renderer::FilteringMin filter)
+	{
+		this->renderer.setFilterMin(filter);
+		this->Refresh();
+	}
+
+	void Canvas::setFilterMag(renderer::FilteringMag filter)
+	{
+		this->renderer.setFilterMag(filter);
+		this->Refresh();
+	}
+
+	void Canvas::setShowWireframe(bool show)
+	{
+		this->renderer.setShowWireframe(show);
+		this->Refresh();
 	}
 }

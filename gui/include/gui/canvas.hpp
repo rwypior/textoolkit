@@ -54,6 +54,11 @@ namespace textoolkit
         glm::uvec2 getViewportSize() const;
 
         void setDisplayMode(const renderer::DisplayMode& mode);
+        void setWrappingS(renderer::Wrapping wrap);
+        void setWrappingT(renderer::Wrapping wrap);
+        void setFilterMin(renderer::FilteringMin filter);
+        void setFilterMag(renderer::FilteringMag filter);
+        void setShowWireframe(bool show);
 
     private:
         void cameraArcball(wxMouseEvent& event);

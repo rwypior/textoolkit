@@ -29,6 +29,13 @@ namespace textoolkit
 	public:
 		static constexpr char mainObjectName[] = "mainobject";
 
+		static constexpr char propGrp3DDisplaySettings[] = "grp3ddisplaysettings";
+		static constexpr char propDisplayWrapS[] = "displaywraps";
+		static constexpr char propDisplayWrapT[] = "displaywrapt";
+		static constexpr char propDisplayFilterMin[] = "displayfiltermin";
+		static constexpr char propDisplayFilterMag[] = "displayfiltermag";
+		static constexpr char propDisplayWireframe[] = "displaywireframe";
+
 		using SubTextureContainer = std::vector<std::unique_ptr<SubTexture>>;
 
 		enum class UpdateTarget
@@ -53,6 +60,7 @@ namespace textoolkit
 		void updateFaces(SubTextureContainer* subtextures = nullptr);
 		void updateLevels(SubTextureContainer* subtextures = nullptr);
 
+		void setupProperties();
 		void update3DView();
 		void updateModels();
 		void updateDisplayModes();
@@ -66,6 +74,7 @@ namespace textoolkit
 		void levelSelected(TexToolkitSubimageEvent& event);
 		void displayModeUpdateButtonClicked(wxCommandEvent& event);
 		void displayModeSelected(wxCommandEvent& event);
+		void propertyChanged(wxPropertyGridEvent& event);
 
 		std::unique_ptr<Texture> texture;
 		SubTexture mainTexture;
