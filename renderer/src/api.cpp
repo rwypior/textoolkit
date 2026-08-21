@@ -5,8 +5,6 @@
 
 namespace textoolkit::renderer
 {
-	bool Api::initialized = false;
-
 	void glCheckError2(const char* file, unsigned int line)
 	{
 		if (GLuint glerr = glGetError())
@@ -68,17 +66,12 @@ namespace textoolkit::renderer
 	Api::Api(std::shared_ptr<Context> context)
 		: context(std::move(context))
 	{
-		if (this->initialized)
-			return;
-
 		this->context->setCurrent();
 
 		glewExperimental = true;
 		auto result = glewInit();
 		glCheckError();
 		assert(result == GLEW_OK);
-
-		initialized = true;
 	}
 
 	Api::~Api()

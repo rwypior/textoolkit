@@ -47,7 +47,6 @@ namespace textoolkit::renderer
 		std::shared_ptr<Context> getContext();
 
 	private:
-		static bool initialized;
 		std::shared_ptr<Context> context;
 	};
 }
