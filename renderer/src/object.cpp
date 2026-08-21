@@ -38,6 +38,7 @@ namespace textoolkit::renderer
 	{
 		this->model = std::move(model);
 		this->modelChanged();
+		this->needsUpdate = true;
 	}
 
 	glm::vec3 Object::getLocation() const
@@ -60,16 +61,6 @@ namespace textoolkit::renderer
 	void Object::setProperty(const std::string& name, RenderProperty&& property)
 	{
 		this->properties[name] = std::move(property);
-	}
-
-	const std::string& Object::getShader() const
-	{
-		return this->shader;
-	}
-
-	void Object::setShader(const std::string& shader)
-	{
-		this->shader = shader;
 	}
 
 	RenderMode Object::getRenderMode()

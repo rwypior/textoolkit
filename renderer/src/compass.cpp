@@ -29,7 +29,6 @@ namespace textoolkit::renderer
 
 		this->properties[propertyLightingEnabled] = false;
 		this->renderMode = RenderMode::Lines;
-		this->shader = "compass";
 		this->updateModelMatrix();
 	}
 
@@ -89,6 +88,11 @@ namespace textoolkit::renderer
 
 		this->viewport = viewport;
 		this->updateModelMatrix();
+	}
+
+	std::string Compass::getShaderOverride() const
+	{
+		return "compass";
 	}
 
 	void Compass::updateModelMatrix()

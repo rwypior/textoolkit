@@ -1,0 +1,4 @@
+[shader]
+name = cube
+fragment = cube.frag
+vertex = cube.vert

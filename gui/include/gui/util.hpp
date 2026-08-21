@@ -1,17 +1,26 @@
 #ifndef _h_textoolkit_gui_util
 #define _h_textoolkit_gui_util
 
-#include <string>
-
 #include <wx/wx.h>
 #include <wx/dir.h>
 
+#include <string>
+#include <map>
+
 namespace textoolkit
 {
+	namespace renderer
+	{
+		struct DisplayMode;
+	}
+
 	std::string getModelsPath();
 	std::string getShadersPath();
+	std::string getDisplayModePath();
 	wxArrayString getModels();
 	wxArrayString getShaders();
+
+	std::map<std::string, renderer::DisplayMode> loadDisplayModes(const std::string& path);
 
 	/// Bind an event to given class and all of it's children recursively
 	template <typename EventTag, typename Class, typename EventArg, typename EventHandler>

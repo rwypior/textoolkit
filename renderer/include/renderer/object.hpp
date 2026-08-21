@@ -62,8 +62,10 @@ namespace textoolkit::renderer
 
 		virtual void setProjectionInfo(const glm::vec2& viewport, float nearPlane, float farPlane) {};
 
-		const std::string& getShader() const;
-		void setShader(const std::string& shader);
+		virtual std::string getShaderOverride() const
+		{
+			return "";
+		};
 
 		RenderMode getRenderMode();
 		void setRenderMode(RenderMode mode);
@@ -76,7 +78,6 @@ namespace textoolkit::renderer
 		std::unique_ptr<ObjectRenderData> data;
 		std::shared_ptr<Model> model = nullptr;
 		RenderProperties properties{};
-		std::string shader = "default";
 		RenderMode renderMode = RenderMode::Solid;
 
 		bool needsUpdate = false;

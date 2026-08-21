@@ -101,6 +101,7 @@ namespace textoolkit
 		Bmp& operator=(BmpLoadResult&& b) noexcept;
 
 		virtual Type getType() const override;
+		virtual TextureType getTextureType() const override;
 
 		static BmpLoadResult load(std::istream& stream, LoadMode mode = LoadMode::LoadPalette);
 		static BmpLoadResult load(const std::string& path, LoadMode mode = LoadMode::LoadPalette);
@@ -111,9 +112,11 @@ namespace textoolkit
 
 		virtual unsigned int getWidth(unsigned int level = 0) const override;
 		virtual unsigned int getHeight(unsigned int level = 0) const override;
+		virtual size_t getSize(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0) const override;
 
 		virtual std::optional<unsigned char> getByte(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
 		virtual std::vector<unsigned char> getBytes(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
+		virtual const void* getBytesPtr(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
 		virtual std::optional<Pixel> getPixel(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
 		virtual std::vector<Pixel> getPixels(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
 		virtual bool setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) override;

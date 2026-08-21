@@ -16,6 +16,11 @@ namespace textoolkit
 		return Type::RgbImage;
 	}
 
+	RgbImage::TextureType RgbImage::getTextureType() const
+	{
+		return TextureType::Texture2D;
+	}
+
 	bool RgbImage::save(std::ostream& stream) const
 	{
 		assert(!"Unsupported, first convert to another format");
@@ -67,6 +72,11 @@ namespace textoolkit
 		if (!data)
 			return {};
 		return *data;
+	}
+
+	const void* RgbImage::getBytesPtr(unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const
+	{
+		return this->getData(layer, face, level);
 	}
 
 	std::optional<Pixel> RgbImage::getPixel(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const

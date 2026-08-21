@@ -25,6 +25,7 @@ namespace textoolkit
 		RgbImage(unsigned int baseWidth, unsigned int baseHeight, unsigned int layers = 1, unsigned int faces = 1, unsigned int levels = 1, const Pixel& baseColor = Pixel::white());
 
 		virtual Type getType() const override;
+		virtual TextureType getTextureType() const override;
 
 		virtual bool save(std::ostream& stream) const override;
 
@@ -34,6 +35,7 @@ namespace textoolkit
 
 		virtual std::optional<unsigned char> getByte(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
 		virtual std::vector<unsigned char> getBytes(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
+		virtual const void* getBytesPtr(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
 		virtual std::optional<Pixel> getPixel(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
 		virtual std::vector<Pixel> getPixels(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
 		virtual bool setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) override;
@@ -47,7 +49,7 @@ namespace textoolkit
 
 		const DataContainer* getData(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0) const;
 		DataContainer* getData(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0);
-		size_t getSize(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0) const;
+		size_t getSize(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0) const override;
 		size_t calculateSize(unsigned int level) const;
 		std::optional<size_t> getIndex(unsigned int x, unsigned int y, unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0, DataOption mode = DataOption::Normal) const;
 

@@ -19,6 +19,48 @@
 #include <cassert>
 #include <filesystem>
 
+namespace
+{
+	GLenum translateImageTarget(textoolkit::Image::TextureType type)
+	{
+		switch (type)
+		{
+		case textoolkit::Image::TextureType::TextureCube: return GL_TEXTURE_CUBE_MAP;
+		case textoolkit::Image::TextureType::Texture2D: return GL_TEXTURE_2D;
+		}
+
+		return GL_TEXTURE_2D;
+	}
+
+	GLenum translateInternalFormat(textoolkit::Image::InfoMode mode, unsigned int format)
+	{
+		if (mode == textoolkit::Image::InfoMode::Opengl)
+			return static_cast<GLenum>(format);
+
+		switch (static_cast<textoolkit::Image::TextureFormat>(format))
+		{
+		case textoolkit::Image::TextureFormat::Rgb8: return GL_RGB8;
+		}
+
+		assert(!"Unsupported internal format");
+		return GL_RGB8;
+	}
+
+	GLenum translateDataType(textoolkit::Image::InfoMode mode, unsigned int dataType)
+	{
+		if (mode == textoolkit::Image::InfoMode::Opengl)
+			return static_cast<GLenum>(dataType);
+
+		switch (static_cast<textoolkit::Image::DataType>(dataType))
+		{
+		case textoolkit::Image::DataType::UnsignedChar: return GL_UNSIGNED_BYTE;
+		}
+
+		assert(!"Unsupported data type");
+		return GL_UNSIGNED_BYTE;
+	}
+}
+
 namespace textoolkit::renderer
 {
 	// Uniform impl
@@ -63,6 +105,12 @@ namespace textoolkit::renderer
 	void Uniform::set(float val)
 	{
 		glUniform1f(this->impl->getId(), val);
+		glCheckError();
+	}
+	
+	void Uniform::set(int val)
+	{
+		glUniform1i(this->impl->getId(), val);
 		glCheckError();
 	}
 	
@@ -329,11 +377,180 @@ namespace textoolkit::renderer
 		std::string namelower = name;
 		std::transform(namelower.begin(), namelower.end(), namelower.begin(), [](const auto& c) { return std::tolower(c); });
 
-		auto it = this->impl->uniforms.find(name);
+		auto it = this->impl->uniforms.find(namelower);
 		if (it != this->impl->uniforms.end())
 			return it->second.get();
 
 		return nullptr;
+	}
+
+	// Texture impl
+	
+	class Texture::Impl
+	{
+	public:
+		Impl(const Image& image)
+			: target(translateImageTarget(image.getTextureType()))
+		{
+			glGenTextures(1, &this->textureId);
+			glCheckError();
+
+			this->change(image);
+		}
+
+		void change(const Image& image)
+		{
+			glBindTexture(this->target, this->textureId);
+			glCheckError();
+
+			glTexParameteri(this->target, GL_TEXTURE_BASE_LEVEL, 0);
+			glTexParameteri(this->target, GL_TEXTURE_MAX_LEVEL, image.getLevels() - 1);
+			glTexParameteriv(this->target, GL_TEXTURE_SWIZZLE_RGBA, &image.getSwizzles()[0]);
+			glTexParameteri(this->target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(this->target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTexParameteri(this->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameteri(this->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glCheckError();
+
+			switch (this->target)
+			{
+			case GL_TEXTURE_2D:
+				this->setData2D(image);
+				break;
+			case GL_TEXTURE_CUBE_MAP:
+				this->setDataCube(image);				
+				break;
+			default:
+				assert(!"Unsupported texture target");
+				break;
+			}
+		}
+
+		void bind()
+		{
+			glBindTexture(this->target, this->textureId);
+			glCheckError();
+		}
+
+	private:
+		void setData2D(const Image& image)
+		{
+			GLenum internalFormat = translateInternalFormat(image.getInfoMode(), image.getInternalFormat());
+			glTexStorage2D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight());
+			glCheckError();
+			for (unsigned int level = 0; level < image.getLevels(); level++)
+			{
+				auto width = image.getWidth(level);
+				auto height = image.getHeight(level);
+				if (image.isCompressed())
+					glCompressedTexSubImage2D(this->target, level, 0, 0, width, height, internalFormat, image.getSize(0, 0, level), image.getBytesPtr(0, 0, level));
+				else
+					glTexSubImage2D(this->target, level, 0, 0, width, height, GL_RGBA, translateDataType(image.getInfoMode(), image.getDataType()), image.getBytesPtr(0, 0, level));
+				glCheckError();
+			}
+		}
+
+		void setData3D(const Image& image)
+		{
+			GLenum internalFormat = translateInternalFormat(image.getInfoMode(), image.getInternalFormat());
+			glTexStorage3D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight(), image.getLayers());
+			glCheckError();
+			for (unsigned int level = 0; level < image.getLevels(); level++)
+			{
+				auto width = image.getWidth(level);
+				auto height = image.getHeight(level);
+				auto depth = image.getDepth(level);
+				if (image.isCompressed())
+					glCompressedTexSubImage3D(this->target, level, 0, 0, 0, width, height, depth, internalFormat, image.getSize(0, 0, level), image.getBytesPtr(0, 0, level));
+				else
+					glTexSubImage3D(this->target, level, 0, 0, 0, width, height, depth, internalFormat, translateDataType(image.getInfoMode(), image.getDataType()), image.getBytesPtr(0, 0, level));
+				glCheckError();
+			}
+		}
+
+		void setDataCube(const Image& image)
+		{
+			GLenum internalFormat = translateInternalFormat(image.getInfoMode(), image.getInternalFormat());
+			glTexStorage3D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight(), image.getLayers());
+			glCheckError();
+			for (unsigned int face = 0; face < image.getFaces(); face++)
+			{
+				for (unsigned int level = 0; level < image.getLevels(); level++)
+				{
+					auto width = image.getWidth(level);
+					auto height = image.getHeight(level);
+					if (image.isCompressed())
+						glCompressedTexSubImage2D(this->target, level, 0, 0, width, height, internalFormat, image.getSize(0, face, level), image.getBytesPtr(0, face, level));
+					else
+						glTexSubImage2D(this->target, level, 0, 0, width, height, internalFormat, translateDataType(image.getInfoMode(), image.getDataType()), image.getBytesPtr(0, face, level));
+					glCheckError();
+				}
+			}
+		}
+
+		GLuint textureId;
+		GLenum target;
+	};
+
+	// Texture
+
+	Texture::Texture(const Image& image)
+		: impl(std::make_unique<Impl>(image))
+	{
+	}
+
+	void Texture::change(const Image& image)
+	{
+		this->impl->change(image);
+	}
+
+	void Texture::bind() const
+	{
+		this->impl->bind();
+	}
+
+	// Sampler impl
+	
+	class Sampler::Impl
+	{
+	public:
+		Impl(GLint id)
+			: id(id)
+		{
+		}
+
+		void setTexture(const Texture& texture)
+		{
+			glActiveTexture(this->id);
+			glCheckError();
+
+			texture.bind();
+		}
+
+		int getAddress()
+		{
+			return this->id - GL_TEXTURE0;
+		}
+
+	private:
+		GLint id;
+	};
+
+	// Sampler
+
+	Sampler::Sampler(unsigned int samplerId)
+		: impl(std::make_unique<Impl>(samplerId))
+	{
+	}
+
+	void Sampler::setTexture(const Texture& texture)
+	{
+		this->impl->setTexture(texture);
+	}
+
+	int Sampler::getAddress()
+	{
+		return this->impl->getAddress();
 	}
 
 	// Model data
@@ -341,7 +558,8 @@ namespace textoolkit::renderer
 	class OpenglModelData : public ModelRenderData
 	{
 	public:
-		OpenglModelData()
+		OpenglModelData(std::shared_ptr<Context> context)
+			: context(std::move(context))
 		{
 			glGenBuffers(1, &this->vertexBuffer);
 			glGenBuffers(1, &this->uvBuffer);
@@ -421,6 +639,7 @@ namespace textoolkit::renderer
 		}
 
 	private:
+		std::shared_ptr<Context> context; // Store it so it doesn't get deleted before model data
 		GLuint vertexBuffer = -1;
 		GLuint normalBuffer = -1;
 		GLuint uvBuffer = -1;
@@ -432,7 +651,8 @@ namespace textoolkit::renderer
 	class OpenglObjectData : public ObjectRenderData
 	{
 	public:
-		OpenglObjectData()
+		OpenglObjectData(std::shared_ptr<Context> context)
+			: context(std::move(context))
 		{
 			glGenVertexArrays(1, &this->vao);
 			glCheckError();
@@ -496,6 +716,7 @@ namespace textoolkit::renderer
 		}
 
 	private:
+		std::shared_ptr<Context> context; // Store it so it doesn't get deleted before object data
 		GLuint vao;
 	};
 
@@ -510,6 +731,7 @@ namespace textoolkit::renderer
 
 	Renderer::Renderer(std::shared_ptr<Context> context)
 		: context(std::move(context))
+		, sampler(GL_TEXTURE0)
 	{
 		glCheckError(); // Sanity check
 
@@ -519,11 +741,18 @@ namespace textoolkit::renderer
 		this->properties[propertyGlobalLightColor] = glm::vec3(0.7f);
 		this->properties[propertyLightColor] = this->light.getColor();
 		this->properties[propertyLightDirection] = this->light.getDirection();
+		this->properties[propertyTexColor] = this->sampler.getAddress();
 	}
 
 	Renderer::~Renderer()
 	{
 		glCheckError(); // Sanity check
+	}
+
+	void Renderer::setImage(const Image& image)
+	{
+		this->texture = std::make_unique<Texture>(image);
+		this->updateRequired = true;
 	}
 
 	bool Renderer::loadShaders(const std::string& shadersDir)
@@ -652,14 +881,17 @@ namespace textoolkit::renderer
 			object->setProjectionInfo(this->viewportSize, this->nearPlane, this->farPlane);
 
 			// Set shader
-			const std::string& shaderName = object->getShader();
+			std::string shaderName = this->displayMode.shader;
+			std::string shaderOverride = object->getShaderOverride();
+			if (!shaderOverride.empty())
+				shaderName = shaderOverride;
 			auto shader = this->getShader(shaderName);
 			if (!shader)
 			{
 				assert(!"Object has no valid shader assigned");
 				continue;
 			}
-
+			
 			shader->use();
 
 			// Set uniforms
@@ -684,6 +916,7 @@ namespace textoolkit::renderer
 			glBindVertexArray(data->getVao());
 			glCheckError();
 
+			this->sampler.setTexture(*this->texture);
 			glDrawElements(renderMode, model->getIndices().size(), GL_UNSIGNED_INT, 0);
 			glCheckError();
 
@@ -713,7 +946,7 @@ namespace textoolkit::renderer
 
 	void Renderer::upload(Model& model) const
 	{
-		auto data = std::make_unique<OpenglModelData>();
+		auto data = std::make_unique<OpenglModelData>(this->context);
 		data->update(model.getVertices(), model.getUVs(), model.getNormals(), model.getIndices());
 		model.setData(std::move(data));
 		model.clearUpdateStatus();
@@ -742,7 +975,7 @@ namespace textoolkit::renderer
 			return;
 		}
 
-		auto data = std::make_unique<OpenglObjectData>();
+		auto data = std::make_unique<OpenglObjectData>(this->context);
 		data->update(*object.getModel());
 		object.setData(std::move(data));
 	}
@@ -822,6 +1055,11 @@ namespace textoolkit::renderer
 		this->camera.setUpVector(up);
 	}
 
+	glm::vec3 Renderer::getCameraDirection() const
+	{
+		return this->camera.getDirection();
+	}
+
 	glm::vec3 Renderer::getLightColor() const
 	{
 		return this->light.getColor();
@@ -840,5 +1078,11 @@ namespace textoolkit::renderer
 	void Renderer::setLightDirection(const glm::vec3& direction)
 	{
 		this->light.setDirection(direction);
+	}
+
+	void Renderer::setDisplayMode(const DisplayMode& mode)
+	{
+		this->displayMode = mode;
+		this->update();
 	}
 }

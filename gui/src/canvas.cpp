@@ -72,6 +72,7 @@ namespace textoolkit
 		, renderer(this->api.getContext())
 	{
 		this->renderer.loadShaders(getShadersPath());
+		this->compass.setCameraDirection(this->renderer.getCameraDirection());
 
 		if (!this->api.getContext()->isOk())
 			wxMessageBox("Unable to initialize drawing context", "Error - textoolkit", wxOK | wxCENTRE | wxICON_ERROR, this);
@@ -88,6 +89,11 @@ namespace textoolkit
 	Canvas::~Canvas()
 	{
 		this->api.getContext()->setCurrent();
+	}
+
+	void Canvas::setImage(const Image& image)
+	{
+		this->renderer.setImage(image);
 	}
 
 	void Canvas::update()
@@ -177,7 +183,7 @@ namespace textoolkit
 		assert(success && "Failed to set context");
 
 		for (auto& obj : this->objects)
-			this->renderer.enqueue(obj);
+			this->renderer.enqueue(obj.get());
 		this->renderer.enqueue(&this->compass);
 
 		this->renderer.render();
@@ -229,19 +235,22 @@ namespace textoolkit
 		this->update();
 	}
 
-	void Canvas::addObject(renderer::Object* object)
+	renderer::Object* Canvas::addObject(std::unique_ptr<renderer::Object> object)
 	{
-		this->objects.push_back(object);
-		
+		this->objects.push_back(std::move(object));
 		this->update();
+		return this->objects.back().get();
 	}
 
 	renderer::Object* Canvas::getObject(unsigned int index)
 	{
-		return this->objects[index];
+		if (index >= this->objects.size())
+			return nullptr;
+
+		return this->objects[index].get();;
 	}
 
-	const std::vector<renderer::Object*>& Canvas::getObjects() const
+	const Canvas::ObjectsContainer& Canvas::getObjects() const
 	{
 		return this->objects;
 	}
@@ -250,7 +259,7 @@ namespace textoolkit
 	{
 		for (auto it = this->objects.begin(); it != this->objects.end(); it++)
 		{
-			if (*it == object)
+			if (it->get() == object)
 			{
 				this->objects.erase(it);
 				this->Refresh();
@@ -270,5 +279,10 @@ namespace textoolkit
 	{
 		wxSize size = this->GetClientSize() * this->GetContentScaleFactor();
 		return glm::uvec2(size.x, size.y);
+	}
+
+	void Canvas::setDisplayMode(const renderer::DisplayMode& mode)
+	{
+		this->renderer.setDisplayMode(mode);
 	}
 }

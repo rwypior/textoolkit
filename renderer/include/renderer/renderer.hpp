@@ -4,6 +4,8 @@
 #include "renderer/api.hpp"
 #include "renderer/camera.hpp"
 #include "renderer/light.hpp"
+#include "renderer/displaymode.hpp"
+#include "common/image.hpp"
 
 #include <events/events.h>
 
@@ -58,6 +60,12 @@ namespace textoolkit::renderer
 			}
 
 			template<>
+			void operator()(const int& val)
+			{
+				uniform.set(val);
+			}
+
+			template<>
 			void operator()(const bool& val)
 			{
 				uniform.set(val);
@@ -89,6 +97,7 @@ namespace textoolkit::renderer
 		Uniform(const UniformData& data);
 
 		void set(float val);
+		void set(int val);
 		void set(bool val);
 		void set(const glm::vec3& vec);
 		void set(const glm::mat3& mtx);
@@ -140,6 +149,33 @@ namespace textoolkit::renderer
 		bool operator()(const Object* a, const Object* b) const;
 	};
 
+	class Texture
+	{
+		class Impl;
+
+	public:
+		Texture(const Image& image);
+		void change(const Image& image);
+
+		void bind() const;
+
+	private:
+		std::unique_ptr<Impl> impl;
+	};
+
+	class Sampler
+	{
+		class Impl;
+
+	public:
+		Sampler(unsigned int samplerId);
+		void setTexture(const Texture& texture);
+		int getAddress();
+
+	private:
+		std::unique_ptr<Impl> impl;
+	};
+
 	class Renderer
 	{
 		event_binding_container;
@@ -152,12 +188,16 @@ namespace textoolkit::renderer
 		static constexpr char propertyGlobalLightColor[] = "globallightcolor";
 		static constexpr char propertyLightColor[] = "lightcolor";
 		static constexpr char propertyLightDirection[] = "lightdirection";
+		static constexpr char propertyTextureType[] = "texturetype";
+		static constexpr char propertyTexColor[] = "texcolor";
 
 	public:
 		Event<Renderer&> rendererReady;
 
 		Renderer(std::shared_ptr<Context> context);
 		~Renderer();
+
+		void setImage(const Image& image);
 
 		bool loadShaders(const std::string& shadersDir);
 		bool loadShader(const std::string& sdrPath);
@@ -184,11 +224,14 @@ namespace textoolkit::renderer
 		void setCameraLookTarget(const glm::vec3& lookTarget);
 		glm::vec3 getCameraUpVector() const;
 		void setCameraUpVector(const glm::vec3& up);
+		glm::vec3 getCameraDirection() const;
 
 		glm::vec3 getLightColor() const;
 		void setLightColor(const glm::vec3& color);
 		glm::vec3 getLightDirection() const;
 		void setLightDirection(const glm::vec3& direction);
+
+		void setDisplayMode(const DisplayMode& mode);
 
 	private:
 		std::shared_ptr<Context> context;
@@ -197,6 +240,9 @@ namespace textoolkit::renderer
 		RenderProperties properties{};
 		Camera camera;
 		Light light;
+		std::unique_ptr<textoolkit::renderer::Texture> texture;
+		Sampler sampler;
+		DisplayMode displayMode;
 
 		float fov = 90.0f;
 		float nearPlane = 0.1f;

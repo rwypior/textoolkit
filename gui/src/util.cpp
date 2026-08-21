@@ -1,4 +1,9 @@
 #include "gui/util.hpp"
+#include "common/logger.hpp"
+#include "common/util.hpp"
+#include "renderer/displaymode.hpp"
+
+#include <iniparser/iniparser.hpp>
 
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
@@ -25,6 +30,17 @@ namespace textoolkit
 		return respath.GetPath().ToStdString();
 	}
 
+	std::string getDisplayModePath()
+	{
+		wxFileName apppath(wxStandardPaths::Get().GetExecutablePath());
+
+		wxFileName respath(apppath);
+		respath.SetName("displaymodes");
+		respath.SetExt("ini");
+
+		return respath.GetFullPath().ToStdString();
+	}
+
 	wxArrayString getModels()
 	{
 		WildcardFileTraverser trav("*.obj");
@@ -41,6 +57,48 @@ namespace textoolkit
 		wxDir dir(shadersPath);
 		dir.Traverse(trav);
 		return trav.getFoundFiles();
+	}
+
+	std::map<std::string, renderer::DisplayMode> loadDisplayModes(const std::string& path)
+	{
+		Ini::Parser parser;
+		Ini::Model model;
+		auto result = parser.readFile(path, model);
+		if (result.code != Ini::Result::Code::OK)
+			return {};
+
+		std::map<std::string, renderer::DisplayMode> displayModes;
+		for (auto& section : model.sections)
+		{
+			const auto& key = section.first;
+			auto itName = section.second.find("name");
+			auto itModel = section.second.find("model");
+			auto itShader = section.second.find("shader");
+
+			if (itName == section.second.end())
+			{
+				Logger::getLogger() << path << ": doesn't have 'name' entry";
+				return {};
+			}
+			if (itModel == section.second.end())
+			{
+				Logger::getLogger() << path << ": doesn't have 'model' entry";
+				return {};
+			}
+			if (itShader == section.second.end())
+			{
+				Logger::getLogger() << path << ": doesn't have 'shader' entry";
+				return {};
+			}
+
+			displayModes[key] = renderer::DisplayMode(
+				trimmed(itName->second->toString()),
+				trimmed(itModel->second->toString()),
+				trimmed(itShader->second->toString())
+			);
+		}
+
+		return displayModes;
 	}
 
 	// Model traverser

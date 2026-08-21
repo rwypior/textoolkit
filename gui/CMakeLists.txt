@@ -61,3 +61,8 @@ add_custom_command(
   TARGET textoolkit POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${TEXTOOLKIT_RENDERER_SHADERS_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/shaders"
 )
+
+add_custom_command(
+  TARGET textoolkit POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/displaymodes.ini" "${CMAKE_CURRENT_BINARY_DIR}"
+)

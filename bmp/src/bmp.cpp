@@ -184,6 +184,11 @@ namespace textoolkit
 		return Type::BMP;
 	}
 
+	Bmp::TextureType Bmp::getTextureType() const
+	{
+		return TextureType::Texture2D;
+	}
+
 	BmpLoadResult Bmp::load(std::istream& stream, LoadMode mode)
 	{
 		Bmp bmp;
@@ -291,6 +296,11 @@ namespace textoolkit
 		return this->infoHeader.height;
 	}
 
+	size_t Bmp::getSize(unsigned int layer, unsigned int face, unsigned int level) const
+	{
+		return this->calculateDataSize(layer, face, level);
+	}
+
 	std::optional<unsigned char> Bmp::getByte(unsigned int x, unsigned int y, unsigned int /*layer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption mode) const
 	{
 		auto idx = this->getIndex(x, y, mode);
@@ -300,9 +310,14 @@ namespace textoolkit
 		return this->bytes.at(*idx);
 	}
 
-	std::vector<unsigned char> Bmp::getBytes(unsigned int /*layer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption mode) const
+	std::vector<unsigned char> Bmp::getBytes(unsigned int /*layer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption /*mode*/) const
 	{
 		return this->bytes;
+	}
+
+	const void* Bmp::getBytesPtr(unsigned int /*layer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption /*mode*/) const
+	{
+		return this->bytes.data();
 	}
 
 	std::optional<Pixel> Bmp::getPixel(unsigned int x, unsigned int y, unsigned int /*layer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption mode) const

@@ -5,7 +5,7 @@
 namespace textoolkit::renderer
 {
 	Camera::Camera()
-		: position(glm::vec3(0.0f, 0.0f, -1.0f))
+		: position(glm::vec3(0.0f, 1.0f, -2.0f))
 		, lookTarget(0.0f)
 		, upVector(0.0f, 1.0f, 0.0f)
 		, matrix(1.0f)

@@ -2,12 +2,10 @@
 
 layout (location = 0) in vec3 vertexLocation;
 layout (location = 1) in vec3 vertexNormal;
-layout (location = 2) in vec2 vertexUv;
 
 out vec3 position;
 out vec3 normal;
-out vec2 uv;
-out vec3 uvCube;
+out vec3 uv;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
@@ -23,6 +21,5 @@ void main()
     mat3 normalMatrix = mat3(transpose(inverse(mv)));
     normal = normalize(vec3(vec4(normalMatrix * vertexNormal, 0.0)));
 
-    uv = vertexUv;
-    uvCube = position;
+    uv = position;
 }

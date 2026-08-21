@@ -21,8 +21,17 @@
 
 namespace textoolkit
 {
+    class Image;
+
+    namespace renderer
+    {
+        class DisplayMode;
+    }
+
     class Canvas : public wxGLCanvas
     {
+        using ObjectsContainer = std::vector<std::unique_ptr<renderer::Object>>;
+
     public:
         Canvas(wxWindow* parent, wxWindowID id = wxID_ANY);
         Canvas(const Canvas& tc) = delete;
@@ -30,18 +39,21 @@ namespace textoolkit
 
         virtual ~Canvas();
 
+        void setImage(const Image& image);
         void update();
 
         Canvas& operator=(const Canvas& tc) = delete;
         Canvas& operator=(Canvas&& tc) = delete;
 
-        void addObject(renderer::Object* object);
+        renderer::Object* addObject(std::unique_ptr<renderer::Object> object);
         renderer::Object* getObject(unsigned int index);
-        const std::vector<renderer::Object*>& getObjects() const;
+        const ObjectsContainer& getObjects() const;
         void removeObject(renderer::Object* object);
         void clearObjects();
 
         glm::uvec2 getViewportSize() const;
+
+        void setDisplayMode(const renderer::DisplayMode& mode);
 
     private:
         void cameraArcball(wxMouseEvent& event);
@@ -58,7 +70,7 @@ namespace textoolkit
         renderer::Api api;
         renderer::Renderer renderer;
 
-        std::vector<renderer::Object*> objects;
+        ObjectsContainer objects;
 
         renderer::Compass compass;
 

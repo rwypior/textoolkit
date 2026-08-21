@@ -5,11 +5,13 @@
 #include "textoolkitsubimageentry.hpp"
 #include "common/threadpool.hpp"
 #include "common/bitset.hpp"
+#include "renderer/displaymode.hpp"
 
 #include <wx/bitmap.h>
 
 #include <memory>
 #include <vector>
+#include <map>
 
 namespace textoolkit
 {
@@ -53,7 +55,8 @@ namespace textoolkit
 
 		void update3DView();
 		void updateModels();
-		void updateModelList();
+		void updateDisplayModes();
+		void updateDisplayModeList();
 
 	private:
 		void deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry);
@@ -61,8 +64,8 @@ namespace textoolkit
 		void layerSelected(TexToolkitSubimageEvent& event);
 		void faceSelected(TexToolkitSubimageEvent& event);
 		void levelSelected(TexToolkitSubimageEvent& event);
-		void modelUpdateButtonClicked(wxCommandEvent& event);
-		void modelSelected(wxCommandEvent& event);
+		void displayModeUpdateButtonClicked(wxCommandEvent& event);
+		void displayModeSelected(wxCommandEvent& event);
 
 		std::unique_ptr<Texture> texture;
 		SubTexture mainTexture;
@@ -70,8 +73,9 @@ namespace textoolkit
 		wxBitmap editorBitmap;
 		ProgressNotifier progressNotifier;
 		renderer::ModelDatabase& modelDatabase;
+		std::map<std::string, renderer::DisplayMode> displayModes;
 
-		std::unique_ptr<renderer::Object> object;
+		renderer::Object* object = nullptr;
 
 		unsigned int currentLayer = 0;
 		unsigned int currentFace = 0;

@@ -31,6 +31,8 @@ namespace textoolkit::renderer
 		void setOffset(float x, float y);
 		virtual void setProjectionInfo(const glm::vec2& viewport, float nearPlane, float farPlane) override;
 
+		virtual std::string getShaderOverride() const override;
+
 	private:
 		void updateModelMatrix();
 

@@ -99,7 +99,7 @@ namespace textoolkit
 			Canvas* canvas;
 			wxPanel* m_panel24;
 			wxComboBox* displaymode;
-			wxBitmapButton* refreshModelListButton;
+			wxBitmapButton* refreshDisplayModeListButton;
 			wxPanel* pageflat;
 			wxStaticBitmap* flatView;
 			wxPanel* m_panel45;

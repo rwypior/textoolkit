@@ -7,6 +7,7 @@
 #include "renderer/model.hpp"
 #include "renderer/object.hpp"
 
+
 namespace textoolkit
 {
 	TexToolkitTextureView::TexToolkitTextureView(std::unique_ptr<Texture>&& texture, renderer::ModelDatabase& modelDatabase, wxWindow* parent)
@@ -14,22 +15,23 @@ namespace textoolkit
 		, texture(std::move(texture))
 		, progressNotifier(progressNotifier)
 		, modelDatabase(modelDatabase)
-		, object(std::make_unique<renderer::Object>(mainObjectName))
 	{
-		this->canvas->addObject(this->object.get());
+		this->object = this->canvas->addObject(std::make_unique<renderer::Object>(mainObjectName));
+		this->canvas->setImage(this->texture->getImage());
 
 		this->flatView->SetScaleMode(wxStaticBitmapBase::ScaleMode::Scale_AspectFit);
 		this->m_notebook2->ChangeSelection(1);
-
-		this->updateModelList();
+		
+		this->updateModels();
+		this->updateDisplayModes();
 		this->displaymode->SetSelection(0);
 
 		this->updateFlatView();
 		this->updateSubimages();
 		this->update3DView();
 
-		this->refreshModelListButton->Bind(wxEVT_BUTTON, &TexToolkitTextureView::modelUpdateButtonClicked, this);
-		this->displaymode->Bind(wxEVT_COMBOBOX, &TexToolkitTextureView::modelSelected, this);
+		this->refreshDisplayModeListButton->Bind(wxEVT_BUTTON, &TexToolkitTextureView::displayModeUpdateButtonClicked, this);
+		this->displaymode->Bind(wxEVT_COMBOBOX, &TexToolkitTextureView::displayModeSelected, this);
 	}
 
 	TexToolkitTextureView::~TexToolkitTextureView() = default;
@@ -272,26 +274,39 @@ namespace textoolkit
 		unsigned int modelSelection = this->displaymode->GetSelection();
 		if (modelSelection == wxNOT_FOUND)
 			return;
-		auto modelName = this->displaymode->GetString(modelSelection);
-		auto model = this->modelDatabase.findModel(modelName.ToStdString());
+		auto displayMode = reinterpret_cast<renderer::DisplayMode*>(this->displaymode->GetClientData(modelSelection));
+		auto model = this->modelDatabase.findModel(displayMode->model);
 		if (!model)
 			return;
 		this->object->setModel(std::move(model));
+		this->canvas->setDisplayMode(*displayMode);
+		this->canvas->Refresh();
 	}
 
 	void TexToolkitTextureView::updateModels()
 	{
 		auto modelPaths = getModels();
-		auto result = this->modelDatabase.loadModels(modelPaths);
-		this->updateModelList();
+		this->modelDatabase.loadModels(modelPaths);
 	}
 
-	void TexToolkitTextureView::updateModelList()
+	void TexToolkitTextureView::updateDisplayModes()
+	{
+		auto displayModesPath = getDisplayModePath();
+		this->displayModes = loadDisplayModes(displayModesPath);
+		if (this->displayModes.empty())
+		{
+			wxMessageBox("Cannot open displaymodes.ini", "textoolkit - error", wxOK | wxICON_ERROR, this);
+			exit(1);
+		}
+		this->updateDisplayModeList();
+	}
+
+	void TexToolkitTextureView::updateDisplayModeList()
 	{
 		this->displaymode->Clear();
-		for (auto& model : this->modelDatabase)
+		for (auto& entry : this->displayModes)
 		{
-			this->displaymode->Append(model.second->getName());
+			this->displaymode->Append(entry.second.name, reinterpret_cast<void*>(&entry.second));
 		}
 	}
 
@@ -333,12 +348,12 @@ namespace textoolkit
 		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel);
 	}
 
-	void TexToolkitTextureView::modelUpdateButtonClicked(wxCommandEvent& event)
+	void TexToolkitTextureView::displayModeUpdateButtonClicked(wxCommandEvent& event)
 	{
-		this->updateModels();
+		this->updateDisplayModes();
 	}
 
-	void TexToolkitTextureView::modelSelected(wxCommandEvent& event)
+	void TexToolkitTextureView::displayModeSelected(wxCommandEvent& event)
 	{
 		this->update3DView();
 	}

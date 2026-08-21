@@ -3,6 +3,8 @@
 
 #include "common/pixel.hpp"
 
+#include <glm/vec4.hpp>
+
 #include <string>
 #include <memory>
 #include <vector>
@@ -19,6 +21,14 @@ namespace textoolkit
 	class Image
 	{
 	public:
+		using Swizzles = glm::ivec4;
+		static constexpr int SwizzleRed = 0x1903;
+		static constexpr int SwizzleGreen = 0x1904;
+		static constexpr int SwizzleBlue = 0x1905;
+		static constexpr int SwizzleAlpha = 0x1906;
+		static constexpr int SwizzleOne = 0x0001;
+		static constexpr int SwizzleZero = 0x0000;
+
 		enum class Type
 		{
 			RgbImage,
@@ -26,10 +36,35 @@ namespace textoolkit
 			DDS
 		};
 
+		enum class TextureType
+		{
+			Texture2D = 1,
+			TextureCube = 2
+		};
+
+		/// Specify how texture information enums are returned and if they need to be translated
+		/// This is related to TextureFormat and DataType enums
+		enum class InfoMode
+		{
+			Opengl, // Returned information is already OpenGL constants
+			Custom // Returned information is returned as internal enums and need to be translated
+		};
+
+		enum class TextureFormat
+		{
+			Rgb8
+		};
+
+		enum class DataType
+		{
+			UnsignedChar
+		};
+
 	public:
 		virtual ~Image() = default;
 
 		virtual Type getType() const = 0;
+		virtual TextureType getTextureType() const = 0;
 
 		virtual bool save(const std::string& path) const;
 		virtual bool save(std::ostream& stream) const = 0;
@@ -44,6 +79,7 @@ namespace textoolkit
 		{
 			return getBytes(0, 0, 0, mode);
 		}
+		virtual const void* getBytesPtr(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const = 0;
 		virtual std::optional<Pixel> getPixel(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const = 0;
 		virtual std::optional<Pixel> getPixel(unsigned int x, unsigned int y, DataOption mode = DataOption::Normal) const
 		{
@@ -67,6 +103,8 @@ namespace textoolkit
 
 		virtual unsigned int getWidth(unsigned int level = 0) const = 0;
 		virtual unsigned int getHeight(unsigned int level = 0) const = 0;
+		virtual unsigned int getDepth(unsigned int level = 0) const { return 0; };
+		virtual size_t getSize(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0) const = 0;
 		virtual unsigned int getLayers() const
 		{
 			return 1;
@@ -79,6 +117,23 @@ namespace textoolkit
 		{
 			return 1;
 		}
+		virtual Swizzles getSwizzles() const
+		{
+			return {SwizzleRed, SwizzleGreen, SwizzleBlue, SwizzleOne};
+		}
+		virtual InfoMode getInfoMode() const
+		{
+			return InfoMode::Custom;
+		}
+		virtual unsigned int getInternalFormat() const
+		{
+			return static_cast<unsigned int>(TextureFormat::Rgb8);
+		}
+		virtual unsigned int getDataType() const
+		{
+			return static_cast<unsigned int>(DataType::UnsignedChar);
+		}
+		virtual bool isCompressed() const { return false; };
 	};
 
 	struct Cubemap

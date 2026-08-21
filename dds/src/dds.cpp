@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <unordered_set>
 
 namespace textoolkit
 {
@@ -71,6 +72,16 @@ namespace textoolkit
 		return Type::DDS;
 	}
 
+	DDS::TextureType DDS::getTextureType() const
+	{
+		switch (this->dds.target())
+		{
+		case gli::target::TARGET_CUBE: return TextureType::TextureCube;
+		}
+
+		return TextureType::Texture2D;
+	}
+
 	bool DDS::save(std::ostream& stream) const
 	{
 		// TODO - implement this
@@ -94,6 +105,11 @@ namespace textoolkit
 		unsigned int size = this->dds.size(level);
 		const unsigned char* data = static_cast<const unsigned char*>(this->dds.data(layer, face, level));
 		return std::vector<unsigned char>(&data[0], &data[size]);
+	}
+
+	const void* DDS::getBytesPtr(unsigned int layer, unsigned int face, unsigned int level, DataOption /*mode*/) const
+	{
+		return this->dds.data(layer, face, level);
 	}
 
 	std::optional<Pixel> DDS::getPixel(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const
@@ -162,6 +178,16 @@ namespace textoolkit
 		return this->dds.extent(level).y;
 	}
 
+	unsigned int DDS::getDepth(unsigned int level) const
+	{
+		return this->dds.extent(level).z;
+	}
+
+	size_t DDS::getSize(unsigned int /*layer*/, unsigned int /*face*/, unsigned int level) const
+	{
+		return this->dds.size(level);
+	}
+
 	unsigned int DDS::getLayers() const
 	{
 		return this->dds.layers();
@@ -175,6 +201,112 @@ namespace textoolkit
 	unsigned int DDS::getLevels() const
 	{
 		return this->dds.levels();
+	}
+
+	DDS::Swizzles DDS::getSwizzles() const
+	{
+		gli::gl gl(gli::gl::PROFILE_GL33);
+		auto format = gl.translate(this->dds.format(), this->dds.swizzles());
+		return format.Swizzles;
+	}
+
+	DDS::InfoMode DDS::getInfoMode() const
+	{
+		return InfoMode::Opengl;
+	}
+
+	unsigned int DDS::getInternalFormat() const
+	{
+		gli::gl gl(gli::gl::PROFILE_GL33);
+		auto format = gl.translate(this->dds.format(), this->dds.swizzles());
+		return format.Internal;
+	}
+
+	unsigned int DDS::getDataType() const
+	{
+		gli::gl gl(gli::gl::PROFILE_GL33);
+		auto format = gl.translate(this->dds.format(), this->dds.swizzles());
+		return format.Type;
+	}
+
+	bool DDS::isCompressed() const
+	{
+		// This is copied from GLI. At this point GLI doesn't seem to have any mechamism of supplying this
+		// kind of information, so keep watch for it.
+		// TODO - create a pull request to GLI
+		std::unordered_set<gli::gl::internal_format> compressedFormats{
+			gli::gl::INTERNAL_RGB_DXT1,
+			gli::gl::INTERNAL_RGBA_DXT1,
+			gli::gl::INTERNAL_RGBA_DXT3,
+			gli::gl::INTERNAL_RGBA_DXT5,
+			gli::gl::INTERNAL_R_ATI1N_UNORM,
+			gli::gl::INTERNAL_R_ATI1N_SNORM,
+			gli::gl::INTERNAL_RG_ATI2N_UNORM,
+			gli::gl::INTERNAL_RG_ATI2N_SNORM,
+			gli::gl::INTERNAL_RGB_BP_UNSIGNED_FLOAT,
+			gli::gl::INTERNAL_RGB_BP_SIGNED_FLOAT,
+			gli::gl::INTERNAL_RGB_BP_UNORM,
+			gli::gl::INTERNAL_RGB_PVRTC_4BPPV1,
+			gli::gl::INTERNAL_RGB_PVRTC_2BPPV1,
+			gli::gl::INTERNAL_RGBA_PVRTC_4BPPV1,
+			gli::gl::INTERNAL_RGBA_PVRTC_2BPPV1,
+			gli::gl::INTERNAL_RGBA_PVRTC_4BPPV2,
+			gli::gl::INTERNAL_RGBA_PVRTC_2BPPV2,
+			gli::gl::INTERNAL_ATC_RGB,
+			gli::gl::INTERNAL_ATC_RGBA_EXPLICIT_ALPHA,
+			gli::gl::INTERNAL_ATC_RGBA_INTERPOLATED_ALPHA,
+			gli::gl::INTERNAL_RGB_ETC,
+			gli::gl::INTERNAL_RGB_ETC2,
+			gli::gl::INTERNAL_RGBA_PUNCHTHROUGH_ETC2,
+			gli::gl::INTERNAL_RGBA_ETC2,
+			gli::gl::INTERNAL_R11_EAC,
+			gli::gl::INTERNAL_SIGNED_R11_EAC,
+			gli::gl::INTERNAL_RG11_EAC,
+			gli::gl::INTERNAL_SIGNED_RG11_EAC,
+			gli::gl::INTERNAL_RGBA_ASTC_4x4,
+			gli::gl::INTERNAL_RGBA_ASTC_5x4,
+			gli::gl::INTERNAL_RGBA_ASTC_5x5,
+			gli::gl::INTERNAL_RGBA_ASTC_6x5,
+			gli::gl::INTERNAL_RGBA_ASTC_6x6,
+			gli::gl::INTERNAL_RGBA_ASTC_8x5,
+			gli::gl::INTERNAL_RGBA_ASTC_8x6,
+			gli::gl::INTERNAL_RGBA_ASTC_8x8,
+			gli::gl::INTERNAL_RGBA_ASTC_10x5,
+			gli::gl::INTERNAL_RGBA_ASTC_10x6,
+			gli::gl::INTERNAL_RGBA_ASTC_10x8,
+			gli::gl::INTERNAL_RGBA_ASTC_10x10,
+			gli::gl::INTERNAL_RGBA_ASTC_12x10,
+			gli::gl::INTERNAL_RGBA_ASTC_12x12,
+			gli::gl::INTERNAL_SRGB_DXT1,
+			gli::gl::INTERNAL_SRGB_ALPHA_DXT1,
+			gli::gl::INTERNAL_SRGB_ALPHA_DXT3,
+			gli::gl::INTERNAL_SRGB_ALPHA_DXT5,
+			gli::gl::INTERNAL_SRGB_BP_UNORM,
+			gli::gl::INTERNAL_SRGB_PVRTC_2BPPV1,
+			gli::gl::INTERNAL_SRGB_PVRTC_4BPPV1,
+			gli::gl::INTERNAL_SRGB_ALPHA_PVRTC_2BPPV1,
+			gli::gl::INTERNAL_SRGB_ALPHA_PVRTC_4BPPV1,
+			gli::gl::INTERNAL_SRGB_ALPHA_PVRTC_2BPPV2,
+			gli::gl::INTERNAL_SRGB_ALPHA_PVRTC_4BPPV2,
+			gli::gl::INTERNAL_SRGB8_ETC2,
+			gli::gl::INTERNAL_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ETC2_EAC,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_4x4,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_5x4,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_5x5,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_6x5,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_6x6,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_8x5,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_8x6,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_8x8,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_10x5,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_10x6,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_10x8,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_10x10,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_12x10,
+			gli::gl::INTERNAL_SRGB8_ALPHA8_ASTC_12x12,
+		};
+		return compressedFormats.count(static_cast<gli::gl::internal_format>(this->getInternalFormat())) > 0;
 	}
 
 	gli::texture& DDS::getTexture()
