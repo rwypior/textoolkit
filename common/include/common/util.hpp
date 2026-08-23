@@ -33,6 +33,7 @@ namespace textoolkit
 	std::string ltrimmed(std::string s);
 	std::string rtrimmed(std::string s);
 	std::string trimmed(std::string s);
+	std::vector<std::string> split(const std::string& string, const std::string& delimiter);
 
 	bool startsWith(const std::string& haystack, const std::string& needle);
 

@@ -59,6 +59,7 @@ namespace textoolkit
         void setFilterMin(renderer::FilteringMin filter);
         void setFilterMag(renderer::FilteringMag filter);
         void setShowWireframe(bool show);
+        void setCubeAlignment(const renderer::CubemapAlignment& alignment);
 
     private:
         void cameraArcball(wxMouseEvent& event);

@@ -15,6 +15,7 @@ namespace textoolkit
 		~TexToolkitNewDialog();
 
 		std::unique_ptr<Texture> createTexture();
+		std::string getTextureName() const;
 
 	private:
 		void updatePropertiesWidget();

@@ -1,4 +1,5 @@
 #include "gui/texture.hpp"
+#include "common/accessor.hpp"
 
 #include <wx/dcmemory.h>
 #include <wx/rawbmp.h>
@@ -177,6 +178,28 @@ namespace textoolkit
 	SubTexture SubTexture::createLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level)
 	{
 		return SubTexture(Type::Level, layer, face, level, texture.image, texture.name);
+	}
+
+	void SubTexture::set(const SubTexture& texture)
+	{
+		std::unique_ptr<PixelAccessor> access;
+		if (texture.getSize() == this->getSize())
+			access = std::make_unique<SimpleAccessor>(*texture.image, this->layer, this->face, this->level);
+		else
+			access = std::make_unique<BicubicAccessor>(*texture.image, this->getSize().x, this->getSize().y, this->layer, this->face, this->level);
+
+		if (pickDataOption(this->image->getStorageMode(), texture.image->getStorageMode()) == DataOption::InvertY)
+			access->setSubAccessor(access->makeSubaccessor<InvertYAccessor>());
+
+		for (unsigned int x = 0; x < this->getSize().x; x++)
+		{
+			for (unsigned int y = 0; y < this->getSize().y; y++)
+			{
+				this->image->setPixel(access->getPixel(x, y), x, y, this->layer, this->face, this->level);
+			}
+		}
+
+		this->updateBitmap();
 	}
 
 	glm::uvec2 SubTexture::getSize() const

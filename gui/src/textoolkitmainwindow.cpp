@@ -19,10 +19,10 @@ namespace textoolkit
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventAbout, this, ID_ABOUT);
 	}
 
-	void TexToolkitMainWindow::openTexture(std::unique_ptr<Texture>&& texture)
+	void TexToolkitMainWindow::openTexture(std::unique_ptr<Texture>&& texture, const std::string& name)
 	{
 		this->notebook->Freeze();
-		this->notebook->AddPage(new TexToolkitTextureView(std::move(texture), this->modelDatabase, this->notebook), "New texture", true);
+		this->notebook->AddPage(new TexToolkitTextureView(std::move(texture), this->modelDatabase, this->notebook), name, true);
 		this->notebook->Thaw();
 		this->notebook->Layout();
 	}
@@ -32,7 +32,7 @@ namespace textoolkit
 		TexToolkitNewDialog newdialog(this);
 		if (newdialog.ShowModal() == wxID_OK)
 		{
-			this->openTexture(newdialog.createTexture());
+			this->openTexture(newdialog.createTexture(), newdialog.getTextureName());
 		}
 	}
 
@@ -51,7 +51,8 @@ namespace textoolkit
 			return;
 
 		auto path = dlg.GetPath().ToStdString();
-		this->openTexture(loader.loadTexture(path));
+		auto name = wxFileName(path).GetFullName().ToStdString();
+		this->openTexture(loader.loadTexture(path), name);
 	}
 
 	void TexToolkitMainWindow::eventAbout(wxCommandEvent& event)

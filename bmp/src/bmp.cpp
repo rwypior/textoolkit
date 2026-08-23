@@ -189,6 +189,11 @@ namespace textoolkit
 		return TextureType::Texture2D;
 	}
 
+	Bmp::StorageMode Bmp::getStorageMode() const
+	{
+		return StorageMode::BottomTop;
+	}
+
 	BmpLoadResult Bmp::load(std::istream& stream, LoadMode mode)
 	{
 		Bmp bmp;

@@ -68,6 +68,9 @@ namespace textoolkit
 		static SubTexture createFace(Texture& texture, unsigned int layer, unsigned int face);
 		static SubTexture createLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level);
 
+		/// Copy data from another texture into this subtexture
+		void set(const SubTexture& texture);
+
 		glm::uvec2 getSize() const;
 
 		virtual void updateBitmap() override;

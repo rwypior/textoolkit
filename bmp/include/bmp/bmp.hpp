@@ -102,6 +102,7 @@ namespace textoolkit
 
 		virtual Type getType() const override;
 		virtual TextureType getTextureType() const override;
+		virtual StorageMode getStorageMode() const override;
 
 		static BmpLoadResult load(std::istream& stream, LoadMode mode = LoadMode::LoadPalette);
 		static BmpLoadResult load(const std::string& path, LoadMode mode = LoadMode::LoadPalette);
@@ -124,7 +125,7 @@ namespace textoolkit
 
 		const std::vector<unsigned char>& getPalette() const;
 		void setPalette(const std::vector<unsigned char>& paletteBytes);
-		unsigned int getBytesPerPixel() const;
+		virtual unsigned int getBytesPerPixel() const override;
 
 		unsigned int calculateDataSize(unsigned int width, unsigned int height, unsigned int bpp) const;
 

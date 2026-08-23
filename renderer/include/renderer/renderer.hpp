@@ -206,6 +206,7 @@ namespace textoolkit::renderer
 
 	private:
 		std::unique_ptr<Impl> impl;
+		const Image& image;
 	};
 
 	class Sampler
@@ -282,6 +283,7 @@ namespace textoolkit::renderer
 		void setFilterMin(FilteringMin filter);
 		void setFilterMag(FilteringMag filter);
 		void setShowWireframe(bool show);
+		void setCubeAlignment(const CubemapAlignment& alignment);
 
 	private:
 		std::shared_ptr<Context> context;

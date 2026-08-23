@@ -113,6 +113,7 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	bSizer30 = new wxBoxSizer( wxHORIZONTAL );
 
 	displaymode = new wxComboBox( m_panel24, wxID_ANY, _("Cube"), wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_READONLY|wxCB_SORT );
+	displaymode->SetToolTip( _("Display mode") );
 	displaymode->SetMinSize( wxSize( 150,-1 ) );
 
 	bSizer30->Add( displaymode, 0, wxALIGN_CENTER_VERTICAL|wxBOTTOM|wxTOP, 5 );
@@ -643,6 +644,15 @@ newDdsPanel::newDdsPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 
 	bSizer14->Add( heightEdit, 0, wxALL, 5 );
 
+	m_staticText17 = new wxStaticText( m_panel10, wxID_ANY, _("Depth"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText17->Wrap( -1 );
+	bSizer14->Add( m_staticText17, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+	depthEdit = new wxSpinCtrl( m_panel10, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 1000000000, 1 );
+	depthEdit->SetMinSize( wxSize( 100,-1 ) );
+
+	bSizer14->Add( depthEdit, 0, wxALL, 5 );
+
 
 	m_panel10->SetSizer( bSizer14 );
 	m_panel10->Layout();
@@ -657,11 +667,6 @@ newDdsPanel::newDdsPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	mipmapsCheckbox->SetValue(true);
 	bSizer22->Add( mipmapsCheckbox, 0, wxALIGN_CENTER|wxALL, 5 );
 
-	mipmapsCount = new wxSpinCtrl( m_panel15, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 0 );
-	mipmapsCount->SetMinSize( wxSize( 50,-1 ) );
-
-	bSizer22->Add( mipmapsCount, 0, wxALL, 5 );
-
 
 	bSizer22->Add( 0, 0, 1, wxEXPAND, 5 );
 
@@ -669,9 +674,8 @@ newDdsPanel::newDdsPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	m_staticText14->Wrap( -1 );
 	bSizer22->Add( m_staticText14, 0, wxALIGN_CENTER|wxALL, 5 );
 
-	wxString typeChoiceChoices[] = { _("2D Texture"), _("3D Texture"), _("Cube map"), _("Array texture") };
-	int typeChoiceNChoices = sizeof( typeChoiceChoices ) / sizeof( wxString );
-	typeChoice = new wxChoice( m_panel15, wxID_ANY, wxDefaultPosition, wxDefaultSize, typeChoiceNChoices, typeChoiceChoices, 0 );
+	wxArrayString typeChoiceChoices;
+	typeChoice = new wxChoice( m_panel15, wxID_ANY, wxDefaultPosition, wxDefaultSize, typeChoiceChoices, 0 );
 	typeChoice->SetSelection( 0 );
 	typeChoice->SetMinSize( wxSize( 150,-1 ) );
 
@@ -682,6 +686,50 @@ newDdsPanel::newDdsPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	m_panel15->Layout();
 	bSizer22->Fit( m_panel15 );
 	bSizer12->Add( m_panel15, 0, wxEXPAND | wxALL, 0 );
+
+	m_panel40 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer42;
+	bSizer42 = new wxBoxSizer( wxHORIZONTAL );
+
+
+	bSizer42->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	m_staticText151 = new wxStaticText( m_panel40, wxID_ANY, _("Format"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText151->Wrap( -1 );
+	bSizer42->Add( m_staticText151, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+	wxArrayString formatChoiceChoices;
+	formatChoice = new wxChoice( m_panel40, wxID_ANY, wxDefaultPosition, wxDefaultSize, formatChoiceChoices, 0 );
+	formatChoice->SetSelection( 0 );
+	bSizer42->Add( formatChoice, 0, wxALL, 5 );
+
+
+	m_panel40->SetSizer( bSizer42 );
+	m_panel40->Layout();
+	bSizer42->Fit( m_panel40 );
+	bSizer12->Add( m_panel40, 0, wxEXPAND | wxALL, 0 );
+
+	m_panel41 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer43;
+	bSizer43 = new wxBoxSizer( wxHORIZONTAL );
+
+
+	bSizer43->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	m_staticText16 = new wxStaticText( m_panel41, wxID_ANY, _("Compression"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText16->Wrap( -1 );
+	bSizer43->Add( m_staticText16, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+	wxArrayString compressionChoiceChoices;
+	compressionChoice = new wxChoice( m_panel41, wxID_ANY, wxDefaultPosition, wxDefaultSize, compressionChoiceChoices, 0 );
+	compressionChoice->SetSelection( 0 );
+	bSizer43->Add( compressionChoice, 0, wxALL, 5 );
+
+
+	m_panel41->SetSizer( bSizer43 );
+	m_panel41->Layout();
+	bSizer43->Fit( m_panel41 );
+	bSizer12->Add( m_panel41, 0, wxEXPAND | wxALL, 0 );
 
 	m_panel16 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer23;

@@ -74,6 +74,7 @@ namespace textoolkit
 			auto itName = section.second.find("name");
 			auto itModel = section.second.find("model");
 			auto itShader = section.second.find("shader");
+			auto itDefault = section.second.find("default");
 
 			if (itName == section.second.end())
 			{
@@ -91,10 +92,19 @@ namespace textoolkit
 				return {};
 			}
 
+			std::unordered_set<std::string> defaults;
+			if (itDefault != section.second.end())
+			{
+				auto splitted = split(itDefault->second->toString(), ",");
+				std::transform(splitted.begin(), splitted.end(), splitted.begin(), [](std::string& el) { return trimmed(el); });
+				defaults.insert(splitted.begin(), splitted.end());
+			}
+
 			displayModes[key] = renderer::DisplayMode(
 				trimmed(itName->second->toString()),
 				trimmed(itModel->second->toString()),
-				trimmed(itShader->second->toString())
+				trimmed(itShader->second->toString()),
+				defaults
 			);
 		}
 
@@ -123,5 +133,18 @@ namespace textoolkit
 	const wxArrayString& WildcardFileTraverser::getFoundFiles() const
 	{
 		return this->files;
+	}
+
+	// Freeze guard
+
+	FreezeGuard::FreezeGuard(wxWindowBase& window)
+		: window(window)
+	{
+		window.Freeze();
+	}
+
+	FreezeGuard::~FreezeGuard()
+	{
+		window.Thaw();
 	}
 }

@@ -49,6 +49,24 @@ namespace textoolkit
 			);
 		}
 
+		Pixel& operator=(const Pixel& b);
+		Pixel operator-(const Pixel& b) const;
+		Pixel operator-(int c) const;
+		Pixel& operator-=(const Pixel& b);
+		Pixel& operator-=(int c);
+		Pixel operator+(const Pixel& b) const;
+		Pixel operator+(int c) const;
+		Pixel& operator+=(const Pixel& b);
+		Pixel& operator+=(int c);
+		Pixel operator*(const Pixel& b) const;
+		Pixel operator*(int c) const;
+		Pixel& operator*=(const Pixel& b);
+		Pixel& operator*=(int c);
+		Pixel operator/(const Pixel& b) const;
+		Pixel operator/(int c) const;
+		Pixel& operator/=(const Pixel& b);
+		Pixel& operator/=(int c);
+
 		static Pixel white();
 		static Pixel black();
 		static Pixel red();

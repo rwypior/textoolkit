@@ -232,6 +232,11 @@ namespace textoolkit
 		return idx;
 	}
 
+	unsigned int RgbImage::getBytesPerPixel() const
+	{
+		return this->bytesPerPixel;
+	}
+
 	void RgbImage::fill(Level& level, const Pixel& baseColor)
 	{
 		for (unsigned int i = 0; i < level.size(); i++)

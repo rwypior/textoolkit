@@ -18,6 +18,7 @@ namespace textoolkit
 
 	wxDEFINE_EVENT(texEVT_SUBIMAGE_SELECTED, TexToolkitSubimageEvent);
 	wxDEFINE_EVENT(texEVT_SUBIMAGE_DESELECTED, TexToolkitSubimageEvent);
+	wxDEFINE_EVENT(texEVT_SUBIMAGE_IMPORT_REQUESTED, TexToolkitSubimageEvent);
 
 	// Entry
 
@@ -49,6 +50,7 @@ namespace textoolkit
 		bindRecursively(*this, wxEVT_ENTER_WINDOW, &TexToolkitSubimageEntry::mouseEnterEvent, this);
 		bindRecursively(*this, wxEVT_LEAVE_WINDOW, &TexToolkitSubimageEntry::mouseLeaveEvent, this);
 		bindRecursively(*this, wxEVT_LEFT_UP, &TexToolkitSubimageEntry::mouseClickEvent, this);
+		bindRecursively(*this, wxEVT_RIGHT_UP, &TexToolkitSubimageEntry::mouseRightClickEvent, this);
 
 		this->Refresh();
 		this->Update();
@@ -159,6 +161,12 @@ namespace textoolkit
 		}
 	}
 
+	void TexToolkitSubimageEntry::importImage()
+	{
+		TexToolkitSubimageEvent event(texEVT_SUBIMAGE_IMPORT_REQUESTED, this);
+		this->ProcessEvent(event);
+	}
+
 	void TexToolkitSubimageEntry::sizeEvent(wxSizeEvent& ev)
 	{
 		this->updatePreview();
@@ -185,5 +193,24 @@ namespace textoolkit
 	void TexToolkitSubimageEntry::mouseClickEvent(wxMouseEvent& ev)
 	{
 		this->select();
+	}
+
+	void TexToolkitSubimageEntry::mouseRightClickEvent(wxMouseEvent& ev)
+	{
+		wxMenu menu;
+		menu.Append(static_cast<int>(ContextMenuItem::Import), "Import...");
+		menu.Bind(wxEVT_COMMAND_MENU_SELECTED, &TexToolkitSubimageEntry::menuClicked, this);
+		PopupMenu(&menu);
+	}
+
+	void TexToolkitSubimageEntry::menuClicked(wxCommandEvent& ev)
+	{
+		auto item = static_cast<ContextMenuItem>(ev.GetId());
+		switch (item)
+		{
+		case ContextMenuItem::Import:
+			this->importImage();
+			break;
+		}
 	}
 }

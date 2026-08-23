@@ -17,6 +17,7 @@ namespace
 {
 	using createPanelFnc = wxPanel*(*)(wxWindow* parent);
 	using createTextureFnc = std::unique_ptr<textoolkit::Texture>(*)(wxWindow* panel);
+	using panelTuple = std::tuple<std::string, createPanelFnc, createTextureFnc>;
 
 	wxPanel* createBmpPanel(wxWindow* parent)
 	{
@@ -37,12 +38,19 @@ namespace
 
 	std::unique_ptr<textoolkit::Texture> createDds(wxWindow* panel)
 	{
-		auto ddsPanel = static_cast<textoolkit::TexToolkitnewBmpPanel*>(panel);
-
-		return nullptr;
+		auto ddsPanel = static_cast<textoolkit::TexToolkitnewDdsPanel*>(panel);
+		auto dds = std::make_shared<textoolkit::DDS>(
+			ddsPanel->getTextureType(),
+			ddsPanel->getFormat(),
+			ddsPanel->getCompression(),
+			glm::vec3(ddsPanel->getTextureWidth(), ddsPanel->getTextureHeight(), ddsPanel->getTextureDepth()),
+			ddsPanel->getLayersCount(),
+			ddsPanel->getGenerateMipmaps()
+		);
+		return std::make_unique<textoolkit::Texture>(std::move(dds), ddsPanel->getTextureName());
 	}
 
-	std::map<textoolkit::Image::Type, std::tuple<std::string, createPanelFnc, createTextureFnc>> imageTypes{
+	std::map<textoolkit::Image::Type, panelTuple> imageTypes{
 		{ textoolkit::Image::Type::BMP, {"Bitmap (.bmp)", createBmpPanel, createBmp} },
 		{ textoolkit::Image::Type::DDS, {"Direct Draw Surface (.dds)", createDdsPanel, createDds} }
 	};
@@ -85,6 +93,21 @@ namespace textoolkit
 
 		auto createFnc = std::get<2>(it->second);
 		return createFnc(children.front());
+	}
+
+	std::string TexToolkitNewDialog::getTextureName() const
+	{
+		auto children = this->propertiesPanel->GetChildren();
+		assert(children.size() == 1 && "Must contain exactly one child");
+
+		auto panel = dynamic_cast<NewImagePanel*>(children.front());
+		if (!panel)
+		{
+			assert(!"Invalid new texture panel");
+			return "";
+		}
+
+		return panel->getTextureName();
 	}
 
 	void TexToolkitNewDialog::updatePropertiesWidget()

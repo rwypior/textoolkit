@@ -9,6 +9,8 @@
 #include <gli/texture.hpp>
 #include <gli/texture_cube.hpp>
 
+#include <glm/vec3.hpp>
+
 #include <string>
 #include <array>
 
@@ -22,6 +24,14 @@ namespace textoolkit
 	{
 	public:
 		DDS();
+		DDS(
+			TextureType type, 
+			TextureInternalFormat format, 
+			CompressionType compression, 
+			const glm::vec3& extents,
+			unsigned int layers,
+			bool generateMipmaps
+		);
 		DDS(const gli::texture& dds);
 		DDS(gli::texture&& dds);
 
@@ -45,6 +55,7 @@ namespace textoolkit
 		virtual unsigned int getHeight(unsigned int level = 0) const override;
 		virtual unsigned int getDepth(unsigned int level = 0) const override;
 		virtual size_t getSize(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0) const override;
+		virtual unsigned int getBytesPerPixel() const override;
 		virtual unsigned int getLayers() const override;
 		virtual unsigned int getFaces() const override;
 		virtual unsigned int getLevels() const override;
@@ -66,7 +77,7 @@ namespace textoolkit
 		std::optional<size_t> getIndex(unsigned int x, unsigned int y, unsigned int level) const;
 
 		gli::gl::swizzles swizzles;
-		gli::format originalForamt;
+		gli::format originalFormat;
 		gli::texture dds;
 		unsigned int bytesPerPixel = 0;
 	};

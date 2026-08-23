@@ -117,6 +117,22 @@ namespace textoolkit
 		return ltrimmed(rtrimmed(s));
 	}
 
+	std::vector<std::string> split(const std::string& string, const std::string& delimiter)
+	{
+		std::vector<std::string> result;
+		unsigned int pos = 0;
+		unsigned int last = string.find(delimiter);
+		while (last <= string.size())
+		{
+			std::string found = string.substr(pos, last - pos);
+			result.push_back(found);
+			pos = last + delimiter.size();
+			last = string.find(delimiter, pos);
+		}
+		result.push_back(string.substr(pos, last));
+		return result;
+	}
+
 	bool startsWith(const std::string& haystack, const std::string& needle)
 	{
 		return haystack.compare(0, needle.length(), needle) == 0;

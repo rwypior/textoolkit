@@ -35,6 +35,12 @@ namespace textoolkit
 		static constexpr char propDisplayFilterMin[] = "displayfiltermin";
 		static constexpr char propDisplayFilterMag[] = "displayfiltermag";
 		static constexpr char propDisplayWireframe[] = "displaywireframe";
+		static constexpr char propCubeAlignment0[] = "cubeface0";
+		static constexpr char propCubeAlignment1[] = "cubeface1";
+		static constexpr char propCubeAlignment2[] = "cubeface2";
+		static constexpr char propCubeAlignment3[] = "cubeface3";
+		static constexpr char propCubeAlignment4[] = "cubeface4";
+		static constexpr char propCubeAlignment5[] = "cubeface5";
 
 		using SubTextureContainer = std::vector<std::unique_ptr<SubTexture>>;
 
@@ -54,6 +60,10 @@ namespace textoolkit
 		SubTextureContainer createFaces(ProgressNotifier progressNotifier = {}) const;
 		SubTextureContainer createLevels(ProgressNotifier progressNotifier = {}) const;
 
+		TexToolkitSubimageEntry* getLayer(unsigned int layer);
+		TexToolkitSubimageEntry* getFace(unsigned int face);
+		TexToolkitSubimageEntry* getLevel(unsigned int level);
+
 		void updateFlatView(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0);
 		void updateSubimages(UpdateTargets targets = UpdateTargets::default(true));
 		void updateLayers(SubTextureContainer* subtextures = nullptr);
@@ -66,15 +76,22 @@ namespace textoolkit
 		void updateDisplayModes();
 		void updateDisplayModeList();
 
+		void importLayer(Texture& texture, unsigned int layer);
+		void importFace(Texture& texture, unsigned int layer, unsigned int face);
+		void importLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level);
+
 	private:
 		void deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry);
 
 		void layerSelected(TexToolkitSubimageEvent& event);
 		void faceSelected(TexToolkitSubimageEvent& event);
 		void levelSelected(TexToolkitSubimageEvent& event);
+		void importRequested(TexToolkitSubimageEvent& event);
 		void displayModeUpdateButtonClicked(wxCommandEvent& event);
 		void displayModeSelected(wxCommandEvent& event);
 		void propertyChanged(wxPropertyGridEvent& event);
+
+		void fixAlignments(const wxString& propname);
 
 		std::unique_ptr<Texture> texture;
 		SubTexture mainTexture;

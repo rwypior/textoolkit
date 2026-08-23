@@ -2,17 +2,18 @@
 #define _h_textoolkit_gui_newbmppanel
 
 #include "mainwindow.h"
+#include "util.hpp"
 
 namespace textoolkit
 {
-	class TexToolkitnewBmpPanel : public newBmpPanel
+	class TexToolkitnewBmpPanel : public newBmpPanel, public NewImagePanel
 	{
 	public:
 		TexToolkitnewBmpPanel(wxWindow* parent);
 
-		std::string getTextureName() const;
-		unsigned int getTextureWidth() const;
-		unsigned int getTextureHeight() const;
+		virtual std::string getTextureName() const override;
+		virtual unsigned int getTextureWidth() const override;
+		virtual unsigned int getTextureHeight() const override;
 	};
 }
 

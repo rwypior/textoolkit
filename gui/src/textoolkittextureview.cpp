@@ -3,9 +3,14 @@
 #include "gui/textoolkitprogressdialog.hpp"
 #include "gui/texture.hpp"
 #include "gui/util.hpp"
+#include "gui/textureloader.hpp"
 #include "renderer/modeldatabase.hpp"
 #include "renderer/model.hpp"
 #include "renderer/object.hpp"
+
+#include <wx/stdpaths.h>
+
+#include <unordered_set>
 
 namespace
 {
@@ -39,7 +44,6 @@ namespace textoolkit
 		this->setupProperties();
 		this->updateModels();
 		this->updateDisplayModes();
-		this->displaymode->SetSelection(0);
 
 		this->updateFlatView();
 		this->updateSubimages();
@@ -124,6 +128,45 @@ namespace textoolkit
 		return subtextures;
 	}
 
+	TexToolkitSubimageEntry* TexToolkitTextureView::getLayer(unsigned int layer)
+	{
+		auto& children = this->layerScroller->GetChildren();
+		for (auto& child : children)
+		{
+			auto& subentry = static_cast<TexToolkitSubimageEntry&>(*child);
+			auto tex = subentry.getTexture();
+			if (tex->getLayer() == layer)
+				return &subentry;
+		}
+		return nullptr;
+	}
+
+	TexToolkitSubimageEntry* TexToolkitTextureView::getFace(unsigned int face)
+	{
+		auto& children = this->faceScroller->GetChildren();
+		for (auto& child : children)
+		{
+			auto& subentry = static_cast<TexToolkitSubimageEntry&>(*child);
+			auto tex = subentry.getTexture();
+			if (tex->getFace() == face)
+				return &subentry;
+		}
+		return nullptr;
+	}
+
+	TexToolkitSubimageEntry* TexToolkitTextureView::getLevel(unsigned int level)
+	{
+		auto& children = this->levelScroller->GetChildren();
+		for (auto& child : children)
+		{
+			auto& subentry = static_cast<TexToolkitSubimageEntry&>(*child);
+			auto tex = subentry.getTexture();
+			if (tex->getLevel() == level)
+				return &subentry;
+		}
+		return nullptr;
+	}
+
 	void TexToolkitTextureView::updateFlatView(unsigned int layer, unsigned int face, unsigned int level)
 	{
 		if (!this->texture)
@@ -182,7 +225,7 @@ namespace textoolkit
 
 	void TexToolkitTextureView::updateLayers(SubTextureContainer* subtextures)
 	{
-		this->layerScroller->Freeze();
+		FreezeGuard fg(*this->layerScroller);
 
 		auto& children = this->layerScroller->GetChildren();
 		while (!children.empty())
@@ -209,15 +252,15 @@ namespace textoolkit
 			this->layerScroller->GetSizer()->Add(entry);
 			this->layerScroller->GetSizer()->FitInside(this->layerScroller);
 			entry->Bind(texEVT_SUBIMAGE_SELECTED, &TexToolkitTextureView::layerSelected, this);
+			entry->Bind(texEVT_SUBIMAGE_IMPORT_REQUESTED, &TexToolkitTextureView::importRequested, this);
 		}
 
 		this->layerScroller->Layout();
-		this->layerScroller->Thaw();
 	}
 
 	void TexToolkitTextureView::updateFaces(SubTextureContainer* subtextures)
 	{
-		this->faceScroller->Freeze();
+		FreezeGuard fg(*this->faceScroller);
 
 		auto& children = this->faceScroller->GetChildren();
 		while (!children.empty())
@@ -244,15 +287,15 @@ namespace textoolkit
 			this->faceScroller->GetSizer()->Add(entry);
 			this->faceScroller->GetSizer()->FitInside(this->faceScroller);
 			entry->Bind(texEVT_SUBIMAGE_SELECTED, &TexToolkitTextureView::faceSelected, this);
+			entry->Bind(texEVT_SUBIMAGE_IMPORT_REQUESTED, &TexToolkitTextureView::importRequested, this);
 		}
 
 		this->faceScroller->Layout();
-		this->faceScroller->Thaw();
 	}
 
 	void TexToolkitTextureView::updateLevels(SubTextureContainer* subtextures)
 	{
-		this->levelScroller->Freeze();
+		FreezeGuard fg(*this->levelScroller);
 
 		auto& children = this->levelScroller->GetChildren();
 		while (!children.empty())
@@ -279,16 +322,14 @@ namespace textoolkit
 			this->levelScroller->GetSizer()->Add(entry);
 			this->levelScroller->GetSizer()->FitInside(this->levelScroller);
 			entry->Bind(texEVT_SUBIMAGE_SELECTED, &TexToolkitTextureView::levelSelected, this);
+			entry->Bind(texEVT_SUBIMAGE_IMPORT_REQUESTED, &TexToolkitTextureView::importRequested, this);
 		}
 
 		this->levelScroller->Layout();
-		this->levelScroller->Thaw();
 	}
 
 	void TexToolkitTextureView::setupProperties()
 	{
-		this->propertyGrid->Append(new wxPropertyCategory("3D display settings", "grp3ddisplaysettings"));
-
 		wxPGChoices wrappingChoices;
 		wrappingChoices.Add("Clamp to edge", static_cast<int>(renderer::Wrapping::ClampToEdge));
 		wrappingChoices.Add("Clamp to border", static_cast<int>(renderer::Wrapping::ClampToBorder));
@@ -308,12 +349,29 @@ namespace textoolkit
 		filterMagChoices.Add("Nearest", static_cast<int>(renderer::FilteringMag::Nearest));
 		filterMagChoices.Add("Linear", static_cast<int>(renderer::FilteringMag::Linear));
 
+		this->propertyGrid->Append(new wxPropertyCategory("3D display settings", "grp3ddisplaysettings"));
 		this->propertyGrid->Append(new wxPropertyCategory("3D display settings", propGrp3DDisplaySettings));
 		this->propertyGrid->Append(new wxEnumProperty("Wrap S", propDisplayWrapS, wrappingChoices));
 		this->propertyGrid->Append(new wxEnumProperty("Wrap T", propDisplayWrapT, wrappingChoices));
 		this->propertyGrid->Append(new wxEnumProperty("Filtering min", propDisplayFilterMin, filterMinChoices));
 		this->propertyGrid->Append(new wxEnumProperty("Filtering mag", propDisplayFilterMag, filterMagChoices));
 		this->propertyGrid->Append(new wxBoolProperty("Show wireframe", propDisplayWireframe));
+
+		wxPGChoices alignmentChoices;
+		alignmentChoices.Add("Positive X", static_cast<int>(renderer::CubeFace::PositiveX));
+		alignmentChoices.Add("Negative X", static_cast<int>(renderer::CubeFace::NegativeX));
+		alignmentChoices.Add("Positive Y", static_cast<int>(renderer::CubeFace::PositiveY));
+		alignmentChoices.Add("Negative Y", static_cast<int>(renderer::CubeFace::NegativeY));
+		alignmentChoices.Add("Positive Z", static_cast<int>(renderer::CubeFace::PositiveZ));
+		alignmentChoices.Add("Negative Z", static_cast<int>(renderer::CubeFace::NegativeZ));
+
+		this->propertyGrid->Append(new wxPropertyCategory("Cubemap alignment", "grp3dcubemapalignment"));
+		this->propertyGrid->Append(new wxEnumProperty("Face 0", propCubeAlignment0, alignmentChoices, 0));
+		this->propertyGrid->Append(new wxEnumProperty("Face 1", propCubeAlignment1, alignmentChoices, 1));
+		this->propertyGrid->Append(new wxEnumProperty("Face 2", propCubeAlignment2, alignmentChoices, 2));
+		this->propertyGrid->Append(new wxEnumProperty("Face 3", propCubeAlignment3, alignmentChoices, 3));
+		this->propertyGrid->Append(new wxEnumProperty("Face 4", propCubeAlignment4, alignmentChoices, 4));
+		this->propertyGrid->Append(new wxEnumProperty("Face 5", propCubeAlignment5, alignmentChoices, 5));
 
 		this->propertyGrid->Append(new wxPropertyCategory("Texture properties", "grp3ddisplaysettings"));
 
@@ -322,6 +380,14 @@ namespace textoolkit
 		this->canvas->setFilterMin(getProperty<renderer::FilteringMin>(this->propertyGrid->GetProperty(propDisplayFilterMin)));
 		this->canvas->setFilterMag(getProperty<renderer::FilteringMag>(this->propertyGrid->GetProperty(propDisplayFilterMag)));
 		this->canvas->setShowWireframe(getBoolProperty(this->propertyGrid->GetProperty(propDisplayWireframe)));
+		this->canvas->setCubeAlignment({ 
+			getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment0)),
+			getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment1)),
+			getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment2)),
+			getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment3)),
+			getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment4)),
+			getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment5))
+		});
 	}
 
 	void TexToolkitTextureView::update3DView()
@@ -354,6 +420,21 @@ namespace textoolkit
 			exit(1);
 		}
 		this->updateDisplayModeList();
+
+		// Select default display mode if applicable
+		this->displaymode->SetSelection(0);
+		for (unsigned int i = 0; i < this->displaymode->GetCount(); i++)
+		{
+			auto displayMode = reinterpret_cast<renderer::DisplayMode*>(this->displaymode->GetClientData(i));
+			std::unordered_set<Image::TextureType> types;
+			for (const auto& defaultType : displayMode->defaultFor)
+				types.insert(Image::translateTextureType(defaultType));
+			if (types.count(this->texture->getImage().getTextureType()) >= 1)
+			{
+				this->displaymode->SetSelection(i);
+				break;
+			}
+		}
 	}
 
 	void TexToolkitTextureView::updateDisplayModeList()
@@ -363,6 +444,58 @@ namespace textoolkit
 		{
 			this->displaymode->Append(entry.second.name, reinterpret_cast<void*>(&entry.second));
 		}
+	}
+
+	void TexToolkitTextureView::importLayer(Texture& texture, unsigned int layer)
+	{
+		auto subentry = this->getLayer(layer);
+		if (!subentry)
+			return;
+
+		for (unsigned int face = 0; face < this->texture->getImage().getFaces(); face++)
+		{
+			for (unsigned int level = 0; level < this->texture->getImage().getLevels(); level++)
+			{
+				auto source = SubTexture::createLevel(texture, 0, 0, 0);
+				auto destination = SubTexture::createLevel(*this->texture, layer, face, level);
+				destination.set(source);
+
+				if (auto subentry = this->getLevel(level))
+					subentry->updatePreview();
+			}
+
+			if (auto subentry = this->getFace(face))
+				subentry->updatePreview();
+		}
+
+		if (auto subentry = this->getLayer(layer))
+			subentry->updatePreview();
+	}
+
+	void TexToolkitTextureView::importFace(Texture& texture, unsigned int layer, unsigned int face)
+	{
+		for (unsigned int level = 0; level < this->texture->getImage().getLevels(); level++)
+		{
+			auto source = SubTexture::createLevel(texture, 0, 0, 0);
+			auto destination = SubTexture::createLevel(*this->texture, layer, face, level);
+			destination.set(source);
+
+			if (auto subentry = this->getLevel(level))
+				subentry->updatePreview();
+		}
+
+		if (auto subentry = this->getFace(face))
+			subentry->updatePreview();
+	}
+
+	void TexToolkitTextureView::importLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level)
+	{
+		auto source = SubTexture::createLevel(texture, 0, 0, 0);
+		auto destination = SubTexture::createLevel(*this->texture, layer, face, level);
+		destination.set(source);
+
+		if (auto subentry = this->getLevel(level))
+			subentry->setTexture(std::make_unique<SubTexture>(std::move(destination)));
 	}
 
 	void TexToolkitTextureView::deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry)
@@ -403,6 +536,37 @@ namespace textoolkit
 		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel);
 	}
 
+	void TexToolkitTextureView::importRequested(TexToolkitSubimageEvent& event)
+	{
+		TextureLoader loader;
+
+		const auto picturesDir = wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir_Pictures);
+		std::string wildcard = loader.getWildcardString();
+
+		wxFileDialog dlg(this, "Open image", picturesDir, wxEmptyString, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		dlg.SetFilterIndex(loader.getFilterIndexAll());
+
+		auto res = dlg.ShowModal();
+		if (res == wxID_CANCEL)
+			return;
+
+		auto tex = loader.loadTexture(dlg.GetPath().ToStdString());
+
+		auto textureType = event.entry->getTexture()->getType();
+		switch (textureType)
+		{
+		case SubTexture::Type::Layer:
+			this->importLayer(*tex, event.entry->getTexture()->getLayer());
+			break;
+		case SubTexture::Type::Face:
+			this->importFace(*tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace());
+			break;
+		case SubTexture::Type::Level:
+			this->importLevel(*tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace(), event.entry->getTexture()->getLevel());
+			break;
+		}
+	}
+
 	void TexToolkitTextureView::displayModeUpdateButtonClicked(wxCommandEvent& event)
 	{
 		this->updateDisplayModes();
@@ -417,13 +581,73 @@ namespace textoolkit
 	{
 		if (event.m_propertyName == propDisplayWrapS)
 			this->canvas->setWrappingS(static_cast<renderer::Wrapping>(event.GetValue().GetInteger()));
-		if (event.m_propertyName == propDisplayWrapT)
+		else if (event.m_propertyName == propDisplayWrapT)
 			this->canvas->setWrappingT(static_cast<renderer::Wrapping>(event.GetValue().GetInteger()));
-		if (event.m_propertyName == propDisplayFilterMin)
+		else if (event.m_propertyName == propDisplayFilterMin)
 			this->canvas->setFilterMin(static_cast<renderer::FilteringMin>(event.GetValue().GetInteger()));
-		if (event.m_propertyName == propDisplayFilterMag)
+		else if (event.m_propertyName == propDisplayFilterMag)
 			this->canvas->setFilterMag(static_cast<renderer::FilteringMag>(event.GetValue().GetInteger()));
-		if (event.m_propertyName == propDisplayWireframe)
+		else if (event.m_propertyName == propDisplayWireframe)
 			this->canvas->setShowWireframe(event.GetValue().GetBool());
+		else if (
+			event.m_propertyName == propCubeAlignment0 ||
+			event.m_propertyName == propCubeAlignment1 ||
+			event.m_propertyName == propCubeAlignment2 ||
+			event.m_propertyName == propCubeAlignment3 ||
+			event.m_propertyName == propCubeAlignment4 ||
+			event.m_propertyName == propCubeAlignment5
+		)
+		{
+			this->fixAlignments(event.m_propertyName);
+			this->canvas->setCubeAlignment({
+				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment0)),
+				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment1)),
+				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment2)),
+				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment3)),
+				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment4)),
+				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment5))
+				});
+		}
+	}
+
+	void TexToolkitTextureView::fixAlignments(const wxString& propname)
+	{
+		auto currentAlignment = getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propname));
+
+		std::unordered_map<std::string, renderer::CubeFace> properties{
+			{ propCubeAlignment0, getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment0)) },
+			{ propCubeAlignment1, getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment1)) },
+			{ propCubeAlignment2, getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment2)) },
+			{ propCubeAlignment3, getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment3)) },
+			{ propCubeAlignment4, getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment4)) },
+			{ propCubeAlignment5, getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment5)) }
+		};
+
+		std::unordered_set<renderer::CubeFace> alignments{
+			renderer::CubeFace::PositiveX,
+			renderer::CubeFace::NegativeX,
+			renderer::CubeFace::PositiveY,
+			renderer::CubeFace::NegativeY,
+			renderer::CubeFace::PositiveZ,
+			renderer::CubeFace::NegativeZ,
+		};
+
+		std::string propToChange;
+
+		for (auto prop : properties)
+		{
+			if (currentAlignment == prop.second && prop.first != propname)
+				propToChange = prop.first;
+
+			alignments.erase(prop.second);
+		}
+
+		assert(alignments.size() == 1);
+
+		auto enumprop = static_cast<wxEnumProperty*>(this->propertyGrid->GetProperty(propToChange));
+		auto choiceidx = enumprop->GetChoices().Index(static_cast<int>(*alignments.begin()));
+		enumprop->SetChoiceSelection(choiceidx);
+		//this->propertyGrid->GetProperty(propToChange)->setval
+		//this->propertyGrid->GetProperty(propToChange)->SetValue()
 	}
 }

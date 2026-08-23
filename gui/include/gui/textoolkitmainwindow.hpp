@@ -19,7 +19,7 @@ namespace textoolkit
 	public:
 		TexToolkitMainWindow(renderer::ModelDatabase& modelDatabase, wxWindow* parent);
 
-		void openTexture(std::unique_ptr<Texture>&& texture);
+		void openTexture(std::unique_ptr<Texture>&& texture, const std::string& name);
 
 	private:
 		void eventNew(wxCommandEvent& event);

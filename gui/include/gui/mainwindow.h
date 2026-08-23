@@ -79,7 +79,7 @@ namespace textoolkit
 
 		public:
 
-			MainWindow( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("TexToolkit"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 909,710 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+			MainWindow( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("TexToolkit"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1187,710 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 
 			~MainWindow();
 
@@ -148,7 +148,7 @@ namespace textoolkit
 
 		public:
 
-			TextureView( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 804,631 ), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString );
+			TextureView( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1034,631 ), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString );
 
 			~TextureView();
 
@@ -230,11 +230,18 @@ namespace textoolkit
 			wxSpinCtrl* widthEdit;
 			wxStaticText* m_staticText7;
 			wxSpinCtrl* heightEdit;
+			wxStaticText* m_staticText17;
+			wxSpinCtrl* depthEdit;
 			wxPanel* m_panel15;
 			wxCheckBox* mipmapsCheckbox;
-			wxSpinCtrl* mipmapsCount;
 			wxStaticText* m_staticText14;
 			wxChoice* typeChoice;
+			wxPanel* m_panel40;
+			wxStaticText* m_staticText151;
+			wxChoice* formatChoice;
+			wxPanel* m_panel41;
+			wxStaticText* m_staticText16;
+			wxChoice* compressionChoice;
 			wxPanel* m_panel16;
 			wxPanel* additionalPanel;
 			wxStaticText* m_staticText15;

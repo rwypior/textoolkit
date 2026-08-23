@@ -53,6 +53,24 @@ namespace textoolkit
 		std::string wildcard;
 		wxArrayString files;
 	};
+
+	class NewImagePanel
+	{
+	public:
+		virtual std::string getTextureName() const = 0;
+		virtual unsigned int getTextureWidth() const = 0;
+		virtual unsigned int getTextureHeight() const = 0;
+	};
+
+	class FreezeGuard
+	{
+	public:
+		FreezeGuard(wxWindowBase& window);
+		~FreezeGuard();
+
+	private:
+		wxWindowBase& window;
+	};
 }
 
 #endif

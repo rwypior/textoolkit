@@ -52,6 +52,7 @@ namespace textoolkit
 		size_t getSize(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0) const override;
 		size_t calculateSize(unsigned int level) const;
 		std::optional<size_t> getIndex(unsigned int x, unsigned int y, unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0, DataOption mode = DataOption::Normal) const;
+		virtual unsigned int getBytesPerPixel() const override;
 
 	private:
 		void fill(Level& level, const Pixel& baseColor);

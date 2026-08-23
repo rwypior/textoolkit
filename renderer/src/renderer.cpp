@@ -18,6 +18,7 @@
 #include <vector>
 #include <cassert>
 #include <filesystem>
+#include <unordered_set>
 
 namespace
 {
@@ -480,6 +481,25 @@ namespace textoolkit::renderer
 		{
 			glGenTextures(1, &this->textureId);
 			glCheckError();
+			glBindTexture(this->target, this->textureId);
+			glCheckError();
+
+			GLenum internalFormat = translateInternalFormat(image.getInfoMode(), image.getInternalFormat());
+			switch (this->target)
+			{
+			case GL_TEXTURE_2D:
+			case GL_TEXTURE_CUBE_MAP:
+				glTexStorage2D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight());
+				glCheckError();
+				break;
+			case GL_TEXTURE_3D:
+				glTexStorage3D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight(), image.getLayers());
+				glCheckError();
+				break;
+			default:
+				assert(!"Unsupported texture target");
+				break;
+			}
 
 			this->cubemapAlignment = {
 				CubeFace::PositiveX,
@@ -512,6 +532,9 @@ namespace textoolkit::renderer
 			case GL_TEXTURE_2D:
 				this->setData2D(image);
 				break;
+			case GL_TEXTURE_3D:
+				this->setData3D(image);
+				break;
 			case GL_TEXTURE_CUBE_MAP:
 				this->setDataCube(image);				
 				break;
@@ -527,9 +550,13 @@ namespace textoolkit::renderer
 			glCheckError();
 		}
 
-		void setCubemapAlignment(const CubemapAlignment& alignment)
+		bool setCubemapAlignment(const CubemapAlignment& alignment)
 		{
+			if (this->cubemapAlignment == alignment)
+				return false;
+
 			this->cubemapAlignment = alignment;
+			return true;
 		}
 
 		void setWrappingS(Wrapping wrap)
@@ -559,44 +586,76 @@ namespace textoolkit::renderer
 	private:
 		void setData2D(const Image& image)
 		{
-			GLenum internalFormat = translateInternalFormat(image.getInfoMode(), image.getInternalFormat());
-			glTexStorage2D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight());
+			glBindTexture(this->target, this->textureId);
 			glCheckError();
+			GLenum internalFormat = translateInternalFormat(image.getInfoMode(), image.getInternalFormat());
 			for (unsigned int level = 0; level < image.getLevels(); level++)
 			{
 				auto width = image.getWidth(level);
 				auto height = image.getHeight(level);
 				if (image.isCompressed())
-					glCompressedTexSubImage2D(this->target, level, 0, 0, width, height, internalFormat, image.getSize(0, 0, level), image.getBytesPtr(0, 0, level));
+					glCompressedTexSubImage2D(
+						this->target, 
+						level, 
+						0, 0, 
+						width, height, 
+						internalFormat, 
+						image.getSize(0, 0, level), 
+						image.getBytesPtr(0, 0, level)
+					);
 				else
-					glTexSubImage2D(this->target, level, 0, 0, width, height, GL_RGBA, translateDataType(image.getInfoMode(), image.getDataType()), image.getBytesPtr(0, 0, level));
+					glTexSubImage2D(
+						this->target, 
+						level, 
+						0, 0, 
+						width, height, 
+						translateFormat(image.getInfoMode(), image.getFormat()),
+						translateDataType(image.getInfoMode(), image.getDataType()), 
+						image.getBytesPtr(0, 0, level)
+					);
 				glCheckError();
 			}
 		}
 
 		void setData3D(const Image& image)
 		{
-			GLenum internalFormat = translateInternalFormat(image.getInfoMode(), image.getInternalFormat());
-			glTexStorage3D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight(), image.getLayers());
+			glBindTexture(this->target, this->textureId);
 			glCheckError();
+			GLenum internalFormat = translateInternalFormat(image.getInfoMode(), image.getInternalFormat());
 			for (unsigned int level = 0; level < image.getLevels(); level++)
 			{
 				auto width = image.getWidth(level);
 				auto height = image.getHeight(level);
 				auto depth = image.getDepth(level);
 				if (image.isCompressed())
-					glCompressedTexSubImage3D(this->target, level, 0, 0, 0, width, height, depth, internalFormat, image.getSize(0, 0, level), image.getBytesPtr(0, 0, level));
+					glCompressedTexSubImage3D(
+						this->target, 
+						level, 
+						0, 0, 0, 
+						width, height, depth, 
+						internalFormat, 
+						image.getSize(0, 0, level), 
+						image.getBytesPtr(0, 0, level)
+					);
 				else
-					glTexSubImage3D(this->target, level, 0, 0, 0, width, height, depth, internalFormat, translateDataType(image.getInfoMode(), image.getDataType()), image.getBytesPtr(0, 0, level));
+					glTexSubImage3D(
+						this->target, 
+						level, 
+						0, 0, 0, 
+						width, height, depth, 
+						internalFormat, 
+						translateDataType(image.getInfoMode(), image.getDataType()), 
+						image.getBytesPtr(0, 0, level)
+					);
 				glCheckError();
 			}
 		}
 
 		void setDataCube(const Image& image)
 		{
-			GLenum internalFormat = translateInternalFormat(image.getInfoMode(), image.getInternalFormat());
-			glTexStorage2D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight());
+			glBindTexture(this->target, this->textureId);
 			glCheckError();
+			GLenum internalFormat = translateInternalFormat(image.getInfoMode(), image.getInternalFormat());
 			for (unsigned int face = 0; face < image.getFaces(); face++)
 			{
 				auto target = translateCubeFace(this->cubemapAlignment.at(face));
@@ -605,7 +664,15 @@ namespace textoolkit::renderer
 					auto width = image.getWidth(level);
 					auto height = image.getHeight(level);
 					if (image.isCompressed())
-						glCompressedTexSubImage2D(target, level, 0, 0, width, height, internalFormat, image.getSize(0, face, level), image.getBytesPtr(0, face, level));
+						glCompressedTexSubImage2D(
+							target, 
+							level, 
+							0, 0, 
+							width, height, 
+							internalFormat, 
+							image.getSize(0, face, level), 
+							image.getBytesPtr(0, face, level)
+						);
 					else
 						glTexSubImage2D(
 							target, 
@@ -630,6 +697,7 @@ namespace textoolkit::renderer
 
 	Texture::Texture(const Image& image)
 		: impl(std::make_unique<Impl>(image))
+		, image(image)
 	{
 	}
 
@@ -645,7 +713,8 @@ namespace textoolkit::renderer
 
 	void Texture::setCubemapAlignment(const CubemapAlignment& alignment)
 	{
-		this->impl->setCubemapAlignment(alignment);
+		if (this->impl->setCubemapAlignment(alignment))
+			this->impl->change(this->image);
 	}
 
 	void Texture::setWrappingS(Wrapping wrap)
@@ -1268,5 +1337,10 @@ namespace textoolkit::renderer
 	void Renderer::setShowWireframe(bool show)
 	{
 
+	}
+
+	void Renderer::setCubeAlignment(const CubemapAlignment& alignment)
+	{
+		this->texture->setCubemapAlignment(alignment);
 	}
 }

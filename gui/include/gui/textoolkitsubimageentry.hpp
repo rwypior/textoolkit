@@ -22,9 +22,16 @@ namespace textoolkit
 	};
 	wxDECLARE_EVENT(texEVT_SUBIMAGE_SELECTED, TexToolkitSubimageEvent);
 	wxDECLARE_EVENT(texEVT_SUBIMAGE_DESELECTED, TexToolkitSubimageEvent);
+	wxDECLARE_EVENT(texEVT_SUBIMAGE_IMPORT_REQUESTED, TexToolkitSubimageEvent);
 
 	class TexToolkitSubimageEntry : public SubimageEntry
 	{
+	public:
+		enum class ContextMenuItem
+		{
+			Import
+		};
+
 	public:
 		TexToolkitSubimageEntry(wxWindow* parent, std::unique_ptr<SubTexture>&& texture, bool initiallySelected = false);
 
@@ -34,6 +41,8 @@ namespace textoolkit
 		void setTexture(std::unique_ptr<SubTexture>&& texture);
 		void setLineVisibility(bool visible);
 
+		void updatePreview();
+
 		std::string getSubtextureName() const;
 		std::string getSubtextureSize() const;
 
@@ -42,12 +51,14 @@ namespace textoolkit
 	private:
 		void setColor(const wxColour& color);
 
-		void updatePreview();
+		void importImage();
 
 		void sizeEvent(wxSizeEvent& ev);
 		void mouseEnterEvent(wxMouseEvent& ev);
 		void mouseLeaveEvent(wxMouseEvent& ev);
 		void mouseClickEvent(wxMouseEvent& ev);
+		void mouseRightClickEvent(wxMouseEvent& ev);
+		void menuClicked(wxCommandEvent& ev);
 
 		std::unique_ptr<SubTexture> texture = nullptr;
 		wxBitmap bitmap;

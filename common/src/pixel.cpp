@@ -49,6 +49,115 @@ namespace textoolkit
 		}
 	}
 
+	Pixel& Pixel::operator=(const Pixel& b)
+	{
+		this->r = b.r;
+		this->g = b.g;
+		this->b = b.b;
+		this->b = b.a;
+		return *this;
+	}
+
+	Pixel Pixel::operator-(const Pixel& b) const
+	{
+		return Pixel(
+			std::max(0, static_cast<int>(this->r) - static_cast<int>(b.r)),
+			std::max(0, static_cast<int>(this->g) - static_cast<int>(b.g)),
+			std::max(0, static_cast<int>(this->b) - static_cast<int>(b.b)),
+			std::max(0, static_cast<int>(this->r) - static_cast<int>(b.r))
+		);
+	}
+
+	Pixel Pixel::operator-(int c) const
+	{
+		return *this - Pixel(c, c, c, c);
+	}
+
+	Pixel& Pixel::operator-=(const Pixel& b)
+	{
+		return *this = *this - b;
+	}
+
+	Pixel& Pixel::operator-=(int c)
+	{
+		return *this = *this - Pixel(c, c, c, c);
+	}
+
+	Pixel Pixel::operator+(const Pixel& b) const
+	{
+		return Pixel(
+			std::min(255, static_cast<int>(this->r) + static_cast<int>(b.r)),
+			std::min(255, static_cast<int>(this->g) + static_cast<int>(b.g)),
+			std::min(255, static_cast<int>(this->b) + static_cast<int>(b.b)),
+			std::min(255, static_cast<int>(this->r) + static_cast<int>(b.r))
+		);
+	}
+
+	Pixel Pixel::operator+(int c) const
+	{
+		return *this + Pixel(c, c, c, c);
+	}
+
+	Pixel& Pixel::operator+=(const Pixel& b)
+	{
+		return *this = *this + b;
+	}
+
+	Pixel& Pixel::operator+=(int c)
+	{
+		return *this = *this + Pixel(c, c, c, c);
+	}
+
+	Pixel Pixel::operator*(const Pixel& b) const
+	{
+		return Pixel(
+			std::min(255, static_cast<int>(this->r) * static_cast<int>(b.r)),
+			std::min(255, static_cast<int>(this->g) * static_cast<int>(b.g)),
+			std::min(255, static_cast<int>(this->b) * static_cast<int>(b.b)),
+			std::min(255, static_cast<int>(this->r) * static_cast<int>(b.r))
+		);
+	}
+
+	Pixel Pixel::operator*(int c) const
+	{
+		return *this * Pixel(c, c, c, c);
+	}
+
+	Pixel& Pixel::operator*=(const Pixel& b)
+	{
+		return *this = *this * b;
+	}
+
+	Pixel& Pixel::operator*=(int c)
+	{
+		return *this = *this * Pixel(c, c, c, c);
+	}
+
+	Pixel Pixel::operator/(const Pixel& b) const
+	{
+		return Pixel(
+			std::min(255, static_cast<int>(static_cast<double>(this->r) / static_cast<double>(b.r))),
+			std::min(255, static_cast<int>(static_cast<double>(this->g) / static_cast<double>(b.g))),
+			std::min(255, static_cast<int>(static_cast<double>(this->b) / static_cast<double>(b.b))),
+			std::min(255, static_cast<int>(static_cast<double>(this->r) / static_cast<double>(b.r)))
+		);
+	}
+
+	Pixel Pixel::operator/(int c) const
+	{
+		return *this / Pixel(c, c, c, c);
+	}
+
+	Pixel& Pixel::operator/=(const Pixel& b)
+	{
+		return *this = *this / b;
+	}
+
+	Pixel& Pixel::operator/=(int c)
+	{
+		return *this = *this / Pixel(c, c, c, c);
+	}
+
 	Pixel Pixel::white()
 	{
 		return Pixel(255, 255, 255);

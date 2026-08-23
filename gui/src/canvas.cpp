@@ -316,4 +316,10 @@ namespace textoolkit
 		this->renderer.setShowWireframe(show);
 		this->Refresh();
 	}
+
+	void Canvas::setCubeAlignment(const renderer::CubemapAlignment& alignment)
+	{
+		this->renderer.setCubeAlignment(alignment);
+		this->Refresh();
+	}
 }

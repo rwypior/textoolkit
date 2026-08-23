@@ -9,6 +9,62 @@
 #include <sstream>
 #include <unordered_set>
 
+namespace
+{
+	gli::texture::target_type translateTarget(textoolkit::Image::TextureType type)
+	{
+		switch (type)
+		{
+		case textoolkit::Image::TextureType::Texture2D:
+			return gli::texture::target_type::TARGET_2D;
+		case textoolkit::Image::TextureType::Texture3D:
+			return gli::texture::target_type::TARGET_3D;
+		case textoolkit::Image::TextureType::TextureCube:
+			return gli::texture::target_type::TARGET_CUBE;
+		case textoolkit::Image::TextureType::Texture2DArray:
+			return gli::texture::target_type::TARGET_2D_ARRAY;
+		case textoolkit::Image::TextureType::TextureCubeArray:
+			return gli::texture::target_type::TARGET_CUBE_ARRAY;
+		}
+
+		assert(!"Invalid texture type");
+		return gli::texture::target_type::TARGET_2D;
+	}
+
+	gli::texture::format_type translateFormat(textoolkit::Image::TextureInternalFormat format, textoolkit::Image::CompressionType compression)
+	{
+		switch (format)
+		{
+		case textoolkit::Image::TextureInternalFormat::Rgb8:
+			switch (compression)
+			{
+			case textoolkit::Image::CompressionType::None:
+				return gli::texture::format_type::FORMAT_RGB8_UINT_PACK8;
+			case textoolkit::Image::CompressionType::DXT1:
+				return gli::texture::format_type::FORMAT_RGBA_DXT1_SRGB_BLOCK8;
+			case textoolkit::Image::CompressionType::DXT3:
+				return gli::texture::format_type::FORMAT_RGBA_DXT3_SRGB_BLOCK16;
+			case textoolkit::Image::CompressionType::DXT5:
+				return gli::texture::format_type::FORMAT_RGBA_DXT5_SRGB_BLOCK16;
+			}
+		}
+
+		assert(!"Invalid format/compression combination");
+		return gli::texture::format_type::FORMAT_RGB8_UINT_PACK8;
+	}
+
+	unsigned int getFaces(textoolkit::Image::TextureType type)
+	{
+		return type == textoolkit::Image::TextureType::TextureCube ? 6 : 1;		
+	}
+
+	unsigned int getLevels(const glm::vec3& extents)
+	{
+		float smallerDimension = std::min(extents.x, extents.y);
+		return static_cast<unsigned int>(std::log2(smallerDimension));
+	}
+}
+
 namespace textoolkit
 {
 	// TODO:
@@ -18,14 +74,31 @@ namespace textoolkit
 	DDS::DDS() = default;
 
 	DDS::DDS(const gli::texture& dds)
-		: originalForamt(dds.format())
+		: originalFormat(dds.format())
 		, dds(gli::convert(dds, gli::format::FORMAT_RGBA8_UNORM_PACK8))
 	{
 		this->updateInfo();
 	}
 
+	DDS::DDS(
+		TextureType type,
+		TextureInternalFormat format,
+		CompressionType compression,
+		const glm::vec3& extents,
+		unsigned int layers,
+		bool generateMipmaps
+	)
+		: dds(
+			translateTarget(type),
+			translateFormat(format, compression),
+			extents, layers, ::getFaces(type), generateMipmaps ? ::getLevels(extents) : 1
+		)
+		, originalFormat(translateFormat(format, compression))
+	{
+	}
+
 	DDS::DDS(gli::texture&& dds)
-		: originalForamt(dds.format())
+		: originalFormat(dds.format())
 		, dds(gli::convert(std::move(dds), gli::format::FORMAT_RGBA8_UNORM_PACK8))
 	{
 		this->updateInfo();
@@ -163,8 +236,22 @@ namespace textoolkit
 
 	bool DDS::setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode)
 	{
-		glm::vec3 texel(pixel.r, pixel.g, pixel.b);
-		this->dds.store(gli::texture::extent_type(x, y, 0), layer, face, level, texel);
+		auto blocksize = gli::block_size(this->dds.format());
+		switch (blocksize)
+		{
+			case sizeof(glm::vec4):
+				this->dds.store(gli::texture::extent_type(x, y, 0), layer, face, level, glm::vec4(pixel.r, pixel.g, pixel.b, pixel.a));
+				break;
+			case sizeof(glm::u8vec3):
+				this->dds.store(gli::texture::extent_type(x, y, 0), layer, face, level, glm::u8vec3(pixel.r, pixel.g, pixel.b));
+				break;
+			case sizeof(glm::u8vec4):
+				this->dds.store(gli::texture::extent_type(x, y, 0), layer, face, level, glm::u8vec4(pixel.r, pixel.g, pixel.b, pixel.a));
+				break;
+			default:
+				return false;
+		}
+
 		return true;
 	}
 
@@ -186,6 +273,11 @@ namespace textoolkit
 	size_t DDS::getSize(unsigned int /*layer*/, unsigned int /*face*/, unsigned int level) const
 	{
 		return this->dds.size(level);
+	}
+
+	unsigned int DDS::getBytesPerPixel() const
+	{
+		return this->bytesPerPixel;
 	}
 
 	unsigned int DDS::getLayers() const
