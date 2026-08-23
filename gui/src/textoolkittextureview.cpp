@@ -40,6 +40,8 @@ namespace textoolkit
 
 		this->flatView->SetScaleMode(wxStaticBitmapBase::ScaleMode::Scale_AspectFit);
 		this->m_notebook2->ChangeSelection(1);
+
+		this->m_notebook2->DeletePage(2); // TODO - remove this when editor is ready
 		
 		this->setupProperties();
 		this->updateModels();
@@ -55,6 +57,11 @@ namespace textoolkit
 	}
 
 	TexToolkitTextureView::~TexToolkitTextureView() = default;
+
+	Texture& TexToolkitTextureView::getTexture()
+	{
+		return *this->texture;
+	}
 
 	std::vector<std::unique_ptr<SubTexture>> TexToolkitTextureView::createLayers(ProgressNotifier progressNotifier) const
 	{
@@ -470,6 +477,8 @@ namespace textoolkit
 
 		if (auto subentry = this->getLayer(layer))
 			subentry->updatePreview();
+
+		this->canvas->reuploadTexture();
 	}
 
 	void TexToolkitTextureView::importFace(Texture& texture, unsigned int layer, unsigned int face)
@@ -486,6 +495,8 @@ namespace textoolkit
 
 		if (auto subentry = this->getFace(face))
 			subentry->updatePreview();
+
+		this->canvas->reuploadTexture();
 	}
 
 	void TexToolkitTextureView::importLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level)
@@ -496,6 +507,8 @@ namespace textoolkit
 
 		if (auto subentry = this->getLevel(level))
 			subentry->setTexture(std::make_unique<SubTexture>(std::move(destination)));
+
+		this->canvas->reuploadTexture();
 	}
 
 	void TexToolkitTextureView::deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry)

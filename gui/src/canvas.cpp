@@ -96,6 +96,12 @@ namespace textoolkit
 		this->renderer.setImage(image);
 	}
 
+	void Canvas::reuploadTexture()
+	{
+		this->renderer.reuploadImage();
+		this->Refresh();
+	}
+
 	void Canvas::update()
 	{
 		this->Refresh();

@@ -94,9 +94,9 @@
             <property name="id">ID_NEW</property>
             <property name="kind">wxITEM_NORMAL</property>
             <property name="label">New</property>
-            <property name="name">newfile</property>
+            <property name="name">menu_new</property>
             <property name="permission">none</property>
-            <property name="shortcut">Alt + N</property>
+            <property name="shortcut">Ctrl+N</property>
             <property name="unchecked_bitmap"></property>
           </object>
           <object class="wxMenuItem" expanded="true">
@@ -109,7 +109,7 @@
             <property name="label">Open</property>
             <property name="name">open</property>
             <property name="permission">none</property>
-            <property name="shortcut">Ctrl + O</property>
+            <property name="shortcut">Ctrl+O</property>
             <property name="unchecked_bitmap"></property>
           </object>
           <object class="wxMenuItem" expanded="true">
@@ -122,7 +122,7 @@
             <property name="label">Recent...</property>
             <property name="name">recent</property>
             <property name="permission">none</property>
-            <property name="shortcut">Alt + R</property>
+            <property name="shortcut">Alt+R</property>
             <property name="unchecked_bitmap"></property>
           </object>
           <object class="wxMenuItem" expanded="true">
@@ -135,7 +135,7 @@
             <property name="label">Save</property>
             <property name="name">save</property>
             <property name="permission">none</property>
-            <property name="shortcut">Ctrl + S</property>
+            <property name="shortcut">Ctrl+S</property>
             <property name="unchecked_bitmap"></property>
           </object>
           <object class="wxMenuItem" expanded="true">
@@ -148,7 +148,7 @@
             <property name="label">Save as...</property>
             <property name="name">saveAs</property>
             <property name="permission">none</property>
-            <property name="shortcut"></property>
+            <property name="shortcut">Ctrl+Shift+S</property>
             <property name="unchecked_bitmap"></property>
           </object>
           <object class="separator" expanded="true">
@@ -165,30 +165,7 @@
             <property name="label">Exit</property>
             <property name="name">exit</property>
             <property name="permission">none</property>
-            <property name="shortcut"></property>
-            <property name="unchecked_bitmap"></property>
-          </object>
-        </object>
-        <object class="wxMenu" expanded="true">
-          <property name="label">Edit</property>
-          <property name="name">edit</property>
-          <property name="permission">protected</property>
-        </object>
-        <object class="wxMenu" expanded="true">
-          <property name="label">Tools</property>
-          <property name="name">tools</property>
-          <property name="permission">protected</property>
-          <object class="wxMenuItem" expanded="true">
-            <property name="bitmap"></property>
-            <property name="checked">0</property>
-            <property name="enabled">1</property>
-            <property name="help"></property>
-            <property name="id">ID_CREATE_CUBEMAP</property>
-            <property name="kind">wxITEM_NORMAL</property>
-            <property name="label">Create cubemap</property>
-            <property name="name">createCubemap</property>
-            <property name="permission">none</property>
-            <property name="shortcut"></property>
+            <property name="shortcut">Alt+F4</property>
             <property name="unchecked_bitmap"></property>
           </object>
         </object>
@@ -6526,10 +6503,10 @@
       <property name="minimum_size"></property>
       <property name="name">AboutWindow</property>
       <property name="pos"></property>
-      <property name="size">328,223</property>
-      <property name="style">wxDEFAULT_FRAME_STYLE</property>
+      <property name="size">328,192</property>
+      <property name="style">wxCAPTION|wxCLOSE_BOX</property>
       <property name="subclass">; ; forward_declare</property>
-      <property name="title"></property>
+      <property name="title">TexToolkit</property>
       <property name="tooltip"></property>
       <property name="two_step_creation">0</property>
       <property name="window_extra_style"></property>
@@ -6974,7 +6951,7 @@
                         <property name="gripper">0</property>
                         <property name="hidden">0</property>
                         <property name="id">wxID_ANY</property>
-                        <property name="label">Ok</property>
+                        <property name="label">Close</property>
                         <property name="margins"></property>
                         <property name="markup">0</property>
                         <property name="max_size"></property>
@@ -7007,6 +6984,16 @@
                         <property name="window_extra_style"></property>
                         <property name="window_name"></property>
                         <property name="window_style"></property>
+                      </object>
+                    </object>
+                    <object class="sizeritem" expanded="true">
+                      <property name="border">5</property>
+                      <property name="flag">wxEXPAND</property>
+                      <property name="proportion">1</property>
+                      <object class="spacer" expanded="true">
+                        <property name="height">0</property>
+                        <property name="permission">protected</property>
+                        <property name="width">0</property>
                       </object>
                     </object>
                   </object>

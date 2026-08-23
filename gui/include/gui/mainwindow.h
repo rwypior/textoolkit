@@ -65,14 +65,11 @@ namespace textoolkit
 				ID_SAVE,
 				ID_SAVE_AS,
 				ID_EXIT,
-				ID_CREATE_CUBEMAP,
 				ID_ABOUT,
 			};
 
 			wxMenuBar* mainmenu;
 			wxMenu* file;
-			wxMenu* edit;
-			wxMenu* tools;
 			wxMenu* help;
 			wxPanel* m_panel27;
 			wxAuiNotebook* notebook;
@@ -273,7 +270,7 @@ namespace textoolkit
 
 		public:
 
-			AboutWindow( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 328,223 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+			AboutWindow( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("TexToolkit"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 328,192 ), long style = wxCAPTION|wxCLOSE_BOX|wxTAB_TRAVERSAL );
 
 			~AboutWindow();
 

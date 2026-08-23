@@ -32,8 +32,8 @@ namespace textoolkit
 			unsigned int layers,
 			bool generateMipmaps
 		);
-		DDS(const gli::texture& dds);
-		DDS(gli::texture&& dds);
+		explicit DDS(const gli::texture& dds);
+		explicit DDS(gli::texture&& dds);
 
 		virtual Type getType() const override;
 		virtual TextureType getTextureType() const override;

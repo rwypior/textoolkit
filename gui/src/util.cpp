@@ -41,6 +41,12 @@ namespace textoolkit
 		return respath.GetFullPath().ToStdString();
 	}
 
+	std::string getRecentPath()
+	{
+		wxFileName path(wxStandardPaths::Get().GetUserLocalDataDir(), "recent.txt");
+		return path.GetFullPath().ToStdString();
+	}
+
 	wxArrayString getModels()
 	{
 		WildcardFileTraverser trav("*.obj");

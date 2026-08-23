@@ -2,7 +2,10 @@
 #include "common/image.hpp"
 #include "common/pixel.hpp"
 
+#include <glm/common.hpp>
+
 #include <array>
+#include <algorithm>
 
 namespace textoolkit
 {
@@ -158,48 +161,47 @@ namespace textoolkit
 
 		const float ratiox = static_cast<float>(this->subAccessor->getImage().getWidth()) / static_cast<float>(this->scaledWidth);
 		const float ratioy = static_cast<float>(this->subAccessor->getImage().getHeight()) / static_cast<float>(this->scaledHeight);
-		const unsigned int srcx = static_cast<unsigned int>(x * ratiox);
-		const unsigned int srcy = static_cast<unsigned int>(y * ratioy);
-		const float dx = ratiox * x - srcx;
-		const float dy = ratioy * y - srcy;
+		const float srcxreal = (static_cast<float>(x)) * ratiox - 0.5f;
+		const float srcyreal = (static_cast<float>(y)) * ratioy - 0.5f;
+		const float srcx = std::floor(srcxreal);
+		const float srcy = std::floor(srcyreal);
+		const float srcxfract = srcxreal - srcx;
+		const float srcyfract = srcyreal - srcy;
 
-		Pixel result;
-		std::array<Pixel, 4> samples;
-		for (int sample = -1; sample < 3; sample++)
+		std::array<glm::vec4, 16> samples;
+		for (int sampley = -1; sampley < 3; sampley++)
 		{
-			int samplex = srcy + sample;
-
-			auto pixel0 = this->sample(samplex, srcy);
-			auto pixel1 = this->sample(samplex, srcy - 1) - pixel0;
-			auto pixel2 = this->sample(samplex, srcy + 1) - pixel0;
-			auto pixel3 = this->sample(samplex, srcy + 2) - pixel0;
-			Pixel a = pixel1 / -3.0 + pixel2 - pixel3 / 6.0;
-			Pixel b = pixel1 / 2.0 + pixel2 / 2.0;
-			Pixel c = pixel1 / -6.0 - pixel2 / 2.0 + pixel3 / 6.0;
-			samples[sample + 1] =
-				pixel0 +
-				a * std::pow(dx, 1) +
-				b * std::pow(dx, 2) +
-				c * std::pow(dx, 3);
-
-			pixel0 = samples[1];
-			pixel1 = samples[0] - samples[1];
-			pixel2 = samples[2] - samples[1];
-			pixel3 = samples[3] - samples[1];
-			a = pixel1 / -3.0 + pixel2 - pixel3 / 6.0;
-			b = pixel1 / 2.0 + pixel2 / 2.0;
-			c = pixel1 / -6.0 - pixel2 / 2.0 + pixel3 / 6.0;
-			result = 
-				pixel0 +
-				a * std::pow(dy, 1) +
-				b * std::pow(dy, 2) +
-				c * std::pow(dy, 3);
+			for (int samplex = -1; samplex < 3; samplex++)
+			{
+				int idx = (sampley + 1) * 4 + (samplex + 1);
+				int idxx = srcx + samplex;
+				int idxy = srcy + sampley;
+				samples[idx] = this->sample(idxx, idxy).toVec4<glm::vec4, false>();
+			}
 		}
-		return result;
+
+		auto cubic = [](glm::vec4 a, glm::vec4 b, glm::vec4 c, glm::vec4 d, float fract) {
+			const auto s1 = a / -2.0f + b * 3.0f / 2.0f - c * 3.0f / 2.0f + d / 2.0f;
+			const auto s2 = a - b * 5.0f / 2.0f + c * 2.0f - d / 2.0f;
+			const auto s3 = -a / 2.0f + c / 2.0f;
+			const auto s4 = b;
+			return s1 * std::pow(fract, 3.0f) + s2 * std::pow(fract, 2.0f) + s3 * fract + d;
+		};
+
+		const auto s1 = cubic(samples[0], samples[1], samples[2], samples[3], srcxfract);
+		const auto s2 = cubic(samples[4], samples[5], samples[6], samples[7], srcxfract);
+		const auto s3 = cubic(samples[8], samples[9], samples[10], samples[11], srcxfract);
+		const auto s4 = cubic(samples[12], samples[13], samples[14], samples[15], srcxfract);
+		const auto result = glm::clamp(cubic(s1, s2, s3, s4, srcyfract), glm::vec4(0.0f), glm::vec4(255.0f));
+		
+		return Pixel(result.r, result.g, result.b, result.a);
 	}
 
-	Pixel BicubicAccessor::sample(unsigned int x, unsigned int y) const
+	Pixel BicubicAccessor::sample(int x, int y) const
 	{
+		x = std::clamp(x, 0, static_cast<int>(this->subAccessor->getImage().getWidth() - 1));
+		y = std::clamp(y, 0, static_cast<int>(this->subAccessor->getImage().getHeight() - 1));
+
 		return this->subAccessor->getPixel(x, y);
 	}
 

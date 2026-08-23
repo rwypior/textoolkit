@@ -40,6 +40,7 @@ namespace textoolkit
         virtual ~Canvas();
 
         void setImage(const Image& image);
+        void reuploadTexture();
         void update();
 
         Canvas& operator=(const Canvas& tc) = delete;

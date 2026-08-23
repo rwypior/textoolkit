@@ -79,6 +79,7 @@ namespace textoolkit
 		if (!this->image)
 			return false;
 
+		this->path = path;
 		return this->image->save(path);
 	}
 

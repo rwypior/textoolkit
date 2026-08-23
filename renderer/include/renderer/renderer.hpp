@@ -195,6 +195,7 @@ namespace textoolkit::renderer
 	public:
 		Texture(const Image& image);
 		void change(const Image& image);
+		void reupload();
 
 		void bind() const;
 
@@ -244,6 +245,7 @@ namespace textoolkit::renderer
 		~Renderer();
 
 		void setImage(const Image& image);
+		void reuploadImage();
 
 		bool loadShaders(const std::string& shadersDir);
 		bool loadShader(const std::string& sdrPath);

@@ -2,6 +2,7 @@
 
 #include <gli/gli.hpp>
 #include <gli/load_dds.hpp>
+#include <gli/save_dds.hpp>
 #include <gli/convert.hpp>
 #include <gli/format.hpp>
 
@@ -157,7 +158,9 @@ namespace textoolkit
 
 	bool DDS::save(std::ostream& stream) const
 	{
-		// TODO - implement this
+		std::vector<char> buffer;
+		gli::save_dds(this->dds, buffer);
+		stream.write(buffer.data(), buffer.size());
 		return true;
 	}
 

@@ -521,10 +521,10 @@ namespace textoolkit::renderer
 			glTexParameteri(this->target, GL_TEXTURE_BASE_LEVEL, 0);
 			glTexParameteri(this->target, GL_TEXTURE_MAX_LEVEL, image.getLevels() - 1);
 			glTexParameteriv(this->target, GL_TEXTURE_SWIZZLE_RGBA, &image.getSwizzles()[0]);
-			glTexParameteri(this->target, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(this->target, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			glTexParameteri(this->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameteri(this->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(this->target, GL_TEXTURE_WRAP_S, this->wrapS);
+			glTexParameteri(this->target, GL_TEXTURE_WRAP_T, this->wrapT);
+			glTexParameteri(this->target, GL_TEXTURE_MIN_FILTER, this->filterMin);
+			glTexParameteri(this->target, GL_TEXTURE_MAG_FILTER, this->filterMag);
 			glCheckError();
 
 			switch (this->target)
@@ -562,25 +562,29 @@ namespace textoolkit::renderer
 		void setWrappingS(Wrapping wrap)
 		{
 			this->bind();
-			glTexParameteri(this->target, GL_TEXTURE_WRAP_S, translateWrapping(wrap));
+			this->wrapS = translateWrapping(wrap);
+			glTexParameteri(this->target, GL_TEXTURE_WRAP_S, this->wrapS);
 		}
 
 		void setWrappingT(Wrapping wrap)
 		{
 			this->bind();
-			glTexParameteri(this->target, GL_TEXTURE_WRAP_T, translateWrapping(wrap));
+			this->wrapT = translateWrapping(wrap);
+			glTexParameteri(this->target, GL_TEXTURE_WRAP_T, this->wrapT);
 		}
 
 		void setFilterMin(FilteringMin filter)
 		{
 			this->bind();
-			glTexParameteri(this->target, GL_TEXTURE_MIN_FILTER, translateFilteringMin(filter));
+			this->filterMin = translateFilteringMin(filter);
+			glTexParameteri(this->target, GL_TEXTURE_MIN_FILTER, this->filterMin);
 		}
 
 		void setFilterMag(FilteringMag filter)
 		{
 			this->bind();
-			glTexParameteri(this->target, GL_TEXTURE_MAG_FILTER, translateFilteringMag(filter));
+			this->filterMag = translateFilteringMag(filter);
+			glTexParameteri(this->target, GL_TEXTURE_MAG_FILTER, this->filterMag);
 		}
 
 	private:
@@ -691,6 +695,11 @@ namespace textoolkit::renderer
 		GLuint textureId;
 		GLenum target;
 		CubemapAlignment cubemapAlignment;
+
+		GLint wrapS = GL_REPEAT;
+		GLint wrapT = GL_REPEAT;
+		GLint filterMin = GL_LINEAR_MIPMAP_LINEAR;
+		GLint filterMag = GL_LINEAR;
 	};
 
 	// Texture
@@ -704,6 +713,11 @@ namespace textoolkit::renderer
 	void Texture::change(const Image& image)
 	{
 		this->impl->change(image);
+	}
+
+	void Texture::reupload()
+	{
+		this->change(this->image);
 	}
 
 	void Texture::bind() const
@@ -981,6 +995,11 @@ namespace textoolkit::renderer
 	{
 		this->texture = std::make_unique<Texture>(image);
 		this->updateRequired = true;
+	}
+
+	void Renderer::reuploadImage()
+	{
+		this->texture->reupload();
 	}
 
 	bool Renderer::loadShaders(const std::string& shadersDir)

@@ -16,43 +16,33 @@ MainWindow::MainWindow( wxWindow* parent, wxWindowID id, const wxString& title, 
 
 	mainmenu = new wxMenuBar( 0 );
 	file = new wxMenu();
-	wxMenuItem* newfile;
-	newfile = new wxMenuItem( file, ID_NEW, wxString( _("New") ) + wxT('\t') + wxT("Alt + N"), wxEmptyString, wxITEM_NORMAL );
-	file->Append( newfile );
+	wxMenuItem* menu_new;
+	menu_new = new wxMenuItem( file, ID_NEW, wxString( _("New") ) + wxT('\t') + wxT("Ctrl+N"), wxEmptyString, wxITEM_NORMAL );
+	file->Append( menu_new );
 
 	wxMenuItem* open;
-	open = new wxMenuItem( file, ID_OPEN, wxString( _("Open") ) + wxT('\t') + wxT("Ctrl + O"), wxEmptyString, wxITEM_NORMAL );
+	open = new wxMenuItem( file, ID_OPEN, wxString( _("Open") ) + wxT('\t') + wxT("Ctrl+O"), wxEmptyString, wxITEM_NORMAL );
 	file->Append( open );
 
 	wxMenuItem* recent;
-	recent = new wxMenuItem( file, ID_RECENT, wxString( _("Recent...") ) + wxT('\t') + wxT("Alt + R"), wxEmptyString, wxITEM_NORMAL );
+	recent = new wxMenuItem( file, ID_RECENT, wxString( _("Recent...") ) + wxT('\t') + wxT("Alt+R"), wxEmptyString, wxITEM_NORMAL );
 	file->Append( recent );
 
 	wxMenuItem* save;
-	save = new wxMenuItem( file, ID_SAVE, wxString( _("Save") ) + wxT('\t') + wxT("Ctrl + S"), wxEmptyString, wxITEM_NORMAL );
+	save = new wxMenuItem( file, ID_SAVE, wxString( _("Save") ) + wxT('\t') + wxT("Ctrl+S"), wxEmptyString, wxITEM_NORMAL );
 	file->Append( save );
 
 	wxMenuItem* saveAs;
-	saveAs = new wxMenuItem( file, ID_SAVE_AS, wxString( _("Save as...") ) , wxEmptyString, wxITEM_NORMAL );
+	saveAs = new wxMenuItem( file, ID_SAVE_AS, wxString( _("Save as...") ) + wxT('\t') + wxT("Ctrl+Shift+S"), wxEmptyString, wxITEM_NORMAL );
 	file->Append( saveAs );
 
 	file->AppendSeparator();
 
 	wxMenuItem* exit;
-	exit = new wxMenuItem( file, ID_EXIT, wxString( _("Exit") ) , wxEmptyString, wxITEM_NORMAL );
+	exit = new wxMenuItem( file, ID_EXIT, wxString( _("Exit") ) + wxT('\t') + wxT("Alt+F4"), wxEmptyString, wxITEM_NORMAL );
 	file->Append( exit );
 
 	mainmenu->Append( file, _("File") );
-
-	edit = new wxMenu();
-	mainmenu->Append( edit, _("Edit") );
-
-	tools = new wxMenu();
-	wxMenuItem* createCubemap;
-	createCubemap = new wxMenuItem( tools, ID_CREATE_CUBEMAP, wxString( _("Create cubemap") ) , wxEmptyString, wxITEM_NORMAL );
-	tools->Append( createCubemap );
-
-	mainmenu->Append( tools, _("Tools") );
 
 	help = new wxMenu();
 	wxMenuItem* about;
@@ -817,8 +807,11 @@ AboutWindow::AboutWindow( wxWindow* parent, wxWindowID id, const wxString& title
 
 	bSizer27->Add( 0, 0, 1, wxEXPAND, 5 );
 
-	okButton = new wxButton( m_panel19, wxID_ANY, _("Ok"), wxDefaultPosition, wxDefaultSize, 0 );
+	okButton = new wxButton( m_panel19, wxID_ANY, _("Close"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer27->Add( okButton, 0, wxALL, 5 );
+
+
+	bSizer27->Add( 0, 0, 1, wxEXPAND, 5 );
 
 
 	m_panel19->SetSizer( bSizer27 );

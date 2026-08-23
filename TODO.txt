@@ -23,3 +23,4 @@ Improve GUI:
 General improvements:
 ---------------------
 - Speed up DDS loading if possible
+- Add options to compress images when saving (at least for DDS for now)

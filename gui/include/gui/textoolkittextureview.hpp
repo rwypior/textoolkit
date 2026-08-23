@@ -56,6 +56,8 @@ namespace textoolkit
 		TexToolkitTextureView(std::unique_ptr<Texture>&& texture, renderer::ModelDatabase& modelDatabase, wxWindow* parent);
 		~TexToolkitTextureView();
 
+		Texture& getTexture();
+
 		SubTextureContainer createLayers(ProgressNotifier progressNotifier = {}) const;
 		SubTextureContainer createFaces(ProgressNotifier progressNotifier = {}) const;
 		SubTextureContainer createLevels(ProgressNotifier progressNotifier = {}) const;

@@ -49,6 +49,23 @@ namespace textoolkit
 		}
 	}
 
+	Pixel& Pixel::operator=(const glm::vec3& b)
+	{
+		this->r = b.r;
+		this->g = b.g;
+		this->b = b.b;
+		return *this;
+	}
+
+	Pixel& Pixel::operator=(const glm::vec4& b)
+	{
+		this->r = b.r;
+		this->g = b.g;
+		this->b = b.b;
+		this->a = b.a;
+		return *this;
+	}
+
 	Pixel& Pixel::operator=(const Pixel& b)
 	{
 		this->r = b.r;

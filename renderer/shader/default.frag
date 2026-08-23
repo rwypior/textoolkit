@@ -16,11 +16,17 @@ uniform sampler2D texColor;
 
 void main()
 {
+	vec2 texsize = vec2(textureSize(texColor, 0));
+	vec2 dx = dFdx(uv * texsize);
+	vec2 dy = dFdy(uv * texsize);
+	float d = max(length(dx), length(dy));
+	float lod = max(0., 1.0 * log(d) / log(2.0)); // Play with the values to make mipmaps appear earlier/later
+
 	vec3 lightDir = normalize(-lightDirection);
 	float reflection = max(dot(normal, lightDir), 0.0);
 	vec3 diffuse = lightColor * reflection;
 
-	outColor = texture(texColor, uv).rgb;
+	outColor = textureLod(texColor, uv, lod).rgb;
 
 	//outColor = color * globalLightColor + lightColor;
 	//outColor = normal;

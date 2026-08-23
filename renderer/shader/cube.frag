@@ -16,11 +16,19 @@ uniform samplerCube texColor;
 
 void main()
 {
+	vec3 uvnorm = normalize(uv);
+
+	float texsize = textureSize(texColor, 0).x;
+	vec3 dx = dFdx(uvnorm * texsize);
+	vec3 dy = dFdy(uvnorm * texsize);
+	float d = max(length(dx), length(dy));
+	float lod = max(0., 1.0 * log(d) / log(2.0)); // Play with the values to make mipmaps appear earlier/later
+
 	vec3 lightDir = normalize(-lightDirection);
 	float reflection = max(dot(normal, lightDir), 0.0);
 	vec3 diffuse = lightColor * reflection;
 	
-	outColor = texture(texColor, uv).rgb;
+	outColor = textureLod(texColor, uvnorm, lod).rgb;
 
 	//outColor = color * globalLightColor + lightColor;
 	//outColor = normal;

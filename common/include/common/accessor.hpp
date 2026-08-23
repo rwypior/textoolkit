@@ -95,7 +95,7 @@ namespace textoolkit
 		virtual PixelAccessor& setLevel(unsigned int level) override;
 
 	private:
-		Pixel sample(unsigned int x, unsigned int y) const;
+		Pixel sample(int x, int y) const;
 
 		unsigned int scaledWidth;
 		unsigned int scaledHeight;
