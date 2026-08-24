@@ -22,7 +22,7 @@ namespace textoolkit
 
 	// Entry
 
-	TexToolkitSubimageEntry::TexToolkitSubimageEntry(wxWindow* parent, std::unique_ptr<SubTexture>&& texture, bool initiallySelected)
+	TexToolkitSubimageEntry::TexToolkitSubimageEntry(wxWindow* parent, std::unique_ptr<GuiSubTexture>&& texture, bool initiallySelected)
 		: SubimageEntry(parent)
 		, texture(std::move(texture))
 	{
@@ -84,7 +84,7 @@ namespace textoolkit
 		}
 	}
 
-	void TexToolkitSubimageEntry::setTexture(std::unique_ptr<SubTexture>&& texture)
+	void TexToolkitSubimageEntry::setTexture(std::unique_ptr<GuiSubTexture>&& texture)
 	{
 		this->texture = std::move(texture);
 		this->updatePreview();
@@ -122,7 +122,7 @@ namespace textoolkit
 		return std::to_string(width) + "px x " + std::to_string(height) + "px";
 	}
 
-	SubTexture* TexToolkitSubimageEntry::getTexture()
+	GuiSubTexture* TexToolkitSubimageEntry::getTexture()
 	{
 		return this->texture.get();
 	}

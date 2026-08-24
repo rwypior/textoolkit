@@ -91,10 +91,30 @@ namespace textoolkit
 			return true;
 		}
 
+		void OnEventLoopEnter(wxEventLoopBase* loop)
+		{
+			wxApp::OnEventLoopEnter(loop);
+
+			if (!loop || this->initialized)
+				return;
+			this->initialized = true;
+
+			if (!this->initialPath.empty())
+				this->mainWindow->openTexture(this->initialPath);
+		}
+
 		void OnInitCmdLine(wxCmdLineParser& parser) override
 		{
 			parser.SetDesc(g_cmdLineDesc);
 			parser.SetSwitchChars(wxT("-"));
+		}
+
+		bool OnCmdLineParsed(wxCmdLineParser& parser) override
+		{
+			if (parser.GetParamCount() >= 1)
+				this->initialPath = parser.GetParam(0).ToStdString();
+
+			return true;
 		}
 
 	private:
@@ -107,6 +127,8 @@ namespace textoolkit
 	private:
 		TexToolkitMainWindow* mainWindow = nullptr;
 		renderer::ModelDatabase modelDatabase;
+		bool initialized = false;
+		std::string initialPath;
 	};
 }
 

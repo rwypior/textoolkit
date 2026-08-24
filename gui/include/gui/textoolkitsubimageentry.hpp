@@ -33,12 +33,12 @@ namespace textoolkit
 		};
 
 	public:
-		TexToolkitSubimageEntry(wxWindow* parent, std::unique_ptr<SubTexture>&& texture, bool initiallySelected = false);
+		TexToolkitSubimageEntry(wxWindow* parent, std::unique_ptr<GuiSubTexture>&& texture, bool initiallySelected = false);
 
 		void deselect(bool sendEvent = true);
 		void select(bool sendEvent = true);
 
-		void setTexture(std::unique_ptr<SubTexture>&& texture);
+		void setTexture(std::unique_ptr<GuiSubTexture>&& texture);
 		void setLineVisibility(bool visible);
 
 		void updatePreview();
@@ -46,7 +46,7 @@ namespace textoolkit
 		std::string getSubtextureName() const;
 		std::string getSubtextureSize() const;
 
-		SubTexture* getTexture();
+		GuiSubTexture* getTexture();
 
 	private:
 		void setColor(const wxColour& color);
@@ -60,7 +60,7 @@ namespace textoolkit
 		void mouseRightClickEvent(wxMouseEvent& ev);
 		void menuClicked(wxCommandEvent& ev);
 
-		std::unique_ptr<SubTexture> texture = nullptr;
+		std::unique_ptr<GuiSubTexture> texture = nullptr;
 		wxBitmap bitmap;
 
 		wxColour originalColor;

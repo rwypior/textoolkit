@@ -14,7 +14,7 @@ namespace textoolkit
 		TexToolkitNewDialog(wxWindow* parent);
 		~TexToolkitNewDialog();
 
-		std::unique_ptr<Texture> createTexture();
+		std::unique_ptr<GuiTexture> createTexture();
 		std::string getTextureName() const;
 
 	private:

@@ -8,82 +8,52 @@
 
 namespace textoolkit
 {
-	Texture::Texture() = default;
+	// Gui texture
 
-	Texture::Texture(std::shared_ptr<Image>&& image, const std::string& name)
-		: image(std::move(image))
-		, name(name)
-		, path("")
+	GuiTexture::GuiTexture()
+		: Texture()
+	{
+	}
+
+	GuiTexture::GuiTexture(Texture&& texture) noexcept
+		: Texture(std::move(texture))
+	{
+	}
+
+	GuiTexture::GuiTexture(GuiTexture&& texture) noexcept
+		: Texture(std::move(texture))
+		, bitmap(std::move(texture.bitmap))
+	{
+	}
+
+	GuiTexture::GuiTexture(std::shared_ptr<Image> image, const std::string& name)
+		: Texture(std::move(image), name)
 	{
 		this->updateBitmap();
 	}
 
-	Texture::Texture(std::shared_ptr<Image>&& image, const std::string& path, const std::string& name)
-		: image(std::move(image))
-		, name(name)
-		, path(path)
+	GuiTexture::GuiTexture(std::shared_ptr<Image> image, const std::string& path, const std::string& name)
+		: Texture(std::move(image), path, name)
 	{
 		this->updateBitmap();
 	}
 
-	Texture::Texture(std::shared_ptr<Image>&& image, const std::string& path, const std::string& name, NoUpdateTag)
-		: image(std::move(image))
-		, name(name)
-		, path(path)
+	GuiTexture::GuiTexture(std::shared_ptr<Image> image, const std::string& name, NoUpdateTag)
+		: Texture(std::move(image), name)
 	{
 	}
 
-	Texture::Texture(std::shared_ptr<Image>&& image, const std::string& name, NoUpdateTag)
-		: image(std::move(image))
-		, name(name)
-		, path("")
+	GuiTexture::GuiTexture(std::shared_ptr<Image> image, const std::string& path, const std::string& name, NoUpdateTag)
+		: Texture(std::move(image), path, name)
 	{
 	}
 
-	Texture::~Texture() = default;
-
-	std::string Texture::getName() const
-	{
-		return this->name;
-	}
-
-	void Texture::setName(const std::string& name)
-	{
-		this->name = name;
-	}
-
-	std::string Texture::getPath() const
-	{
-		return this->path;
-	}
-
-	Image::Type Texture::getType() const
-	{
-		assert(this->image);
-		return this->image->getType();
-	}
-
-	Image& Texture::getImage()
-	{
-		assert(this->image);
-		return *this->image;
-	}
-
-	wxBitmap& Texture::getBitmap()
+	wxBitmap& GuiTexture::getBitmap()
 	{
 		return this->bitmap;
 	}
 
-	bool Texture::save(const std::string& path)
-	{
-		if (!this->image)
-			return false;
-
-		this->path = path;
-		return this->image->save(path);
-	}
-
-	void Texture::updateBitmap()
+	void GuiTexture::updateBitmap()
 	{
 		if (!this->image)
 			return;
@@ -95,7 +65,7 @@ namespace textoolkit
 		this->setBitmapData(this->bitmap);
 	}
 
-	void Texture::setBitmapData(wxBitmap& bmp, unsigned int layer, unsigned int face, unsigned int level)
+	void GuiTexture::setBitmapData(wxBitmap& bmp, unsigned int layer, unsigned int face, unsigned int level)
 	{
 		wxAlphaPixelData data(bmp);
 		wxAlphaPixelData::Iterator datait(data);
@@ -115,7 +85,7 @@ namespace textoolkit
 		}
 	}
 
-	void Texture::commit()
+	void GuiTexture::commit()
 	{
 		if (!this->image)
 			return;
@@ -136,110 +106,81 @@ namespace textoolkit
 		dc.SelectObject(wxNullBitmap);
 	}
 
-	bool Texture::commitAndSave(const std::string& path)
+	bool GuiTexture::commitAndSave(const std::string& path)
 	{
 		this->commit();
 		return this->save(path);
 	}
 
-	// Sub texture
+	// GUI subtexture
 
-	SubTexture::SubTexture() = default;
+	GuiSubTexture::GuiSubTexture()
+		: SubTexture(std::make_unique<GuiTexture>())
+	{
+	}
 
-	SubTexture::SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& name)
-		: Texture(std::move(image), name, NoUpdateTag{})
-		, type(type)
-		, layer(layer)
-		, face(face)
-		, level(level)
+	GuiSubTexture::GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& name)
+		: SubTexture(type, layer, face, level, image, name, std::make_unique<GuiTexture>(image, name, GuiTexture::NoUpdateTag()))
 	{
 		this->updateBitmap();
 	}
 
-	SubTexture::SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& path, const std::string& name)
-		: Texture(std::move(image), path, name, NoUpdateTag{})
-		, type(type)
-		, layer(layer)
-		, face(face)
-		, level(level)
+	GuiSubTexture::GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& path, const std::string& name)
+		: SubTexture(type, layer, face, level, image, path, name, std::make_unique<GuiTexture>(image, path, name, GuiTexture::NoUpdateTag()))
 	{
 		this->updateBitmap();
 	}
 
-	SubTexture SubTexture::createLayer(Texture& texture, unsigned int layer)
+	GuiSubTexture GuiSubTexture::createLayer(GuiTexture& texture, unsigned int layer)
 	{
-		return SubTexture(Type::Layer, layer, 0, 0, texture.image, texture.name);
+		return GuiSubTexture(Type::Layer, layer, 0, 0, texture.image, texture.name);
 	}
 
-	SubTexture SubTexture::createFace(Texture& texture, unsigned int layer, unsigned int face)
+	GuiSubTexture GuiSubTexture::createFace(GuiTexture& texture, unsigned int layer, unsigned int face)
 	{
-		return SubTexture(Type::Face, layer, face, 0, texture.image, texture.name);
+		return GuiSubTexture(Type::Face, layer, face, 0, texture.image, texture.name);
 	}
 
-	SubTexture SubTexture::createLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level)
+	GuiSubTexture GuiSubTexture::createLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level)
 	{
-		return SubTexture(Type::Level, layer, face, level, texture.image, texture.name);
+		return GuiSubTexture(Type::Level, layer, face, level, texture.image, texture.name);
 	}
 
-	void SubTexture::set(const SubTexture& texture)
+	wxBitmap& GuiSubTexture::getBitmap()
 	{
-		std::unique_ptr<PixelAccessor> access;
-		if (texture.getSize() == this->getSize())
-			access = std::make_unique<SimpleAccessor>(*texture.image, this->layer, this->face, this->level);
-		else
-			access = std::make_unique<BicubicAccessor>(*texture.image, this->getSize().x, this->getSize().y, this->layer, this->face, this->level);
-
-		if (pickDataOption(this->image->getStorageMode(), texture.image->getStorageMode()) == DataOption::InvertY)
-			access->setSubAccessor(access->makeSubaccessor<InvertYAccessor>());
-
-		for (unsigned int x = 0; x < this->getSize().x; x++)
-		{
-			for (unsigned int y = 0; y < this->getSize().y; y++)
-			{
-				this->image->setPixel(access->getPixel(x, y), x, y, this->layer, this->face, this->level);
-			}
-		}
-
-		this->updateBitmap();
+		auto& base = *static_cast<GuiTexture*>(this->base.get());
+		return base.getBitmap();
 	}
 
-	glm::uvec2 SubTexture::getSize() const
+	void GuiSubTexture::updateBitmap()
 	{
-		return glm::uvec2(
-			this->image->getWidth(this->level),
-			this->image->getHeight(this->level)
-		);
-	}
+		auto& base = *static_cast<GuiTexture*>(this->base.get());
 
-	void SubTexture::updateBitmap()
-	{
-		if (!this->image)
+		if (!base.hasImage())
 			return;
 
-		auto bitmapsize = this->bitmap.GetSize();
-		if (bitmapsize.x != this->image->getWidth(this->level) || bitmapsize.y != this->image->getHeight())
-			this->bitmap = wxBitmap(this->image->getWidth(this->level), this->image->getHeight(this->level), 32);
+		auto bitmapsize = base.bitmap.GetSize();
+		if (bitmapsize.x != base.image->getWidth(this->level) || bitmapsize.y != base.image->getHeight())
+			base.bitmap = wxBitmap(base.image->getWidth(this->level), base.image->getHeight(this->level), 32);
 
-		this->setBitmapData(this->bitmap, this->layer, this->face, this->level);
+		base.setBitmapData(base.bitmap, this->layer, this->face, this->level);
 	}
 
-	SubTexture::Type SubTexture::getType() const
+	void GuiSubTexture::commit()
 	{
-		return this->type;
+		auto& base = *static_cast<GuiTexture*>(this->base.get());
+		base.commit();
 	}
 
-	unsigned int SubTexture::getLayer() const
+	bool GuiSubTexture::commitAndSave(const std::string& path)
 	{
-		return this->layer;
+		auto& base = *static_cast<GuiTexture*>(this->base.get());
+		return base.commitAndSave(path);
 	}
 
-	unsigned int SubTexture::getFace() const
+	void GuiSubTexture::set(const SubTexture& texture)
 	{
-		return this->face;
-	}
-
-	unsigned int SubTexture::getLevel() const
-	{
-		return this->level;
+		SubTexture::set(texture);
+		this->updateBitmap();
 	}
 }

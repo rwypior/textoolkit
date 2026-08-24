@@ -18,6 +18,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Find packages
 find_package(events REQUIRED)
 find_package(iniparser REQUIRED)
+find_package(libcmdline REQUIRED)
 
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
@@ -39,6 +40,7 @@ add_subdirectory("dds")
 add_subdirectory("bmp")
 add_subdirectory("renderer")
 add_subdirectory("gui")
+add_subdirectory("cmdline")
 
 set(VS_STARTUP_PROJECT textoolkit)
 

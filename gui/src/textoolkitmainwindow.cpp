@@ -26,12 +26,24 @@ namespace textoolkit
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventAbout, this, ID_ABOUT);
 	}
 
-	void TexToolkitMainWindow::openTexture(std::unique_ptr<Texture>&& texture, const std::string& name)
+	void TexToolkitMainWindow::openTexture(std::unique_ptr<GuiTexture>&& texture, const std::string& name)
 	{
 		this->notebook->Freeze();
 		this->notebook->AddPage(new TexToolkitTextureView(std::move(texture), this->modelDatabase, this->notebook), name, true);
 		this->notebook->Thaw();
 		this->notebook->Layout();
+	}
+
+	void TexToolkitMainWindow::openTexture(const std::string& path)
+	{
+		TextureLoader loader;
+		auto name = wxFileName(path).GetFullName().ToStdString();
+		if (auto texture = loader.loadTexture(path))
+		{
+			this->openTexture(std::make_unique<GuiTexture>(std::move(*texture)), name);
+		}
+		else
+			wxMessageBox("Unable to open the file", "textoolkit - error", wxOK | wxICON_ERROR, this);
 	}
 
 	TexToolkitTextureView* TexToolkitMainWindow::getCurrentTextureView()
@@ -126,14 +138,14 @@ namespace textoolkit
 		this->loadRecent();
 	}
 
-	void TexToolkitMainWindow::saveAs(Texture& texture)
+	void TexToolkitMainWindow::saveAs(GuiTexture& texture)
 	{
 		TextureLoader loader;
 
 		const auto picturesDir = wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir_Pictures);
 		std::string wildcard = loader.getWildcardString();
 
-		wxFileDialog dlg(this, "Save image", picturesDir, texture.getName(), wildcard, wxFD_SAVE);
+		wxFileDialog dlg(this, "Save image", picturesDir, texture.getName(), wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 		dlg.SetFilterIndex(loader.getFilterIndexAll());
 
 		auto res = dlg.ShowModal();
@@ -144,7 +156,7 @@ namespace textoolkit
 		this->save(texture, path);
 	}
 
-	void TexToolkitMainWindow::save(Texture& texture)
+	void TexToolkitMainWindow::save(GuiTexture& texture)
 	{
 		if (texture.getPath().empty())
 			this->saveAs(texture);
@@ -152,7 +164,7 @@ namespace textoolkit
 			this->save(texture, texture.getPath());
 	}
 
-	void TexToolkitMainWindow::save(Texture& texture, const std::string& path)
+	void TexToolkitMainWindow::save(GuiTexture& texture, const std::string& path)
 	{
 		texture.save(path);
 
@@ -198,8 +210,7 @@ namespace textoolkit
 		auto path = dlg.GetPath().ToStdString();
 		this->addRecent(path);
 
-		auto name = wxFileName(path).GetFullName().ToStdString();
-		this->openTexture(loader.loadTexture(path), name);
+		this->openTexture(path);
 	}
 
 	void TexToolkitMainWindow::eventSave(wxCommandEvent& event)
@@ -223,7 +234,7 @@ namespace textoolkit
 		this->addRecent(path); // Bump up in the recent list
 		auto name = wxFileName(path).GetFullName().ToStdString();
 		TextureLoader loader;
-		this->openTexture(loader.loadTexture(path), name);
+		this->openTexture(std::make_unique<GuiTexture>(std::move(*loader.loadTexture(path))), name);
 	}
 
 	void TexToolkitMainWindow::eventAbout(wxCommandEvent& event)

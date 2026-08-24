@@ -15,8 +15,8 @@
 
 namespace textoolkit
 {
-	class Texture;
-	class SubTexture;
+	class GuiTexture;
+	class GuiSubTexture;
 
 	namespace renderer
 	{
@@ -42,7 +42,7 @@ namespace textoolkit
 		static constexpr char propCubeAlignment4[] = "cubeface4";
 		static constexpr char propCubeAlignment5[] = "cubeface5";
 
-		using SubTextureContainer = std::vector<std::unique_ptr<SubTexture>>;
+		using SubTextureContainer = std::vector<std::unique_ptr<GuiSubTexture>>;
 
 		enum class UpdateTarget
 		{
@@ -53,10 +53,10 @@ namespace textoolkit
 		using UpdateTargets = EnumBitset<UpdateTarget, 3>;
 
 	public:
-		TexToolkitTextureView(std::unique_ptr<Texture>&& texture, renderer::ModelDatabase& modelDatabase, wxWindow* parent);
+		TexToolkitTextureView(std::unique_ptr<GuiTexture>&& texture, renderer::ModelDatabase& modelDatabase, wxWindow* parent);
 		~TexToolkitTextureView();
 
-		Texture& getTexture();
+		GuiTexture& getTexture();
 
 		SubTextureContainer createLayers(ProgressNotifier progressNotifier = {}) const;
 		SubTextureContainer createFaces(ProgressNotifier progressNotifier = {}) const;
@@ -78,9 +78,9 @@ namespace textoolkit
 		void updateDisplayModes();
 		void updateDisplayModeList();
 
-		void importLayer(Texture& texture, unsigned int layer);
-		void importFace(Texture& texture, unsigned int layer, unsigned int face);
-		void importLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level);
+		void importLayer(GuiTexture& texture, unsigned int layer);
+		void importFace(GuiTexture& texture, unsigned int layer, unsigned int face);
+		void importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level);
 
 	private:
 		void deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry);
@@ -95,8 +95,8 @@ namespace textoolkit
 
 		void fixAlignments(const wxString& propname);
 
-		std::unique_ptr<Texture> texture;
-		SubTexture mainTexture;
+		std::unique_ptr<GuiTexture> texture;
+		GuiSubTexture mainTexture;
 		wxBitmap flatViewBitmap;
 		wxBitmap editorBitmap;
 		ProgressNotifier progressNotifier;

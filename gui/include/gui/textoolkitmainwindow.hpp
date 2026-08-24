@@ -7,7 +7,7 @@
 
 namespace textoolkit
 {
-	class Texture;
+	class GuiTexture;
 	class TexToolkitTextureView;
 
 	namespace renderer
@@ -28,15 +28,16 @@ namespace textoolkit
 	public:
 		TexToolkitMainWindow(renderer::ModelDatabase& modelDatabase, wxWindow* parent);
 
-		void openTexture(std::unique_ptr<Texture>&& texture, const std::string& name);
+		void openTexture(std::unique_ptr<GuiTexture>&& texture, const std::string& name);
+		void openTexture(const std::string& path);
 		TexToolkitTextureView* getCurrentTextureView();
 
 	private:
 		void loadRecent();
 		void addRecent(const std::string& path);
-		void saveAs(Texture& texture);
-		void save(Texture& texture);
-		void save(Texture& texture, const std::string& path);
+		void saveAs(GuiTexture& texture);
+		void save(GuiTexture& texture);
+		void save(GuiTexture& texture, const std::string& path);
 
 		void eventNew(wxCommandEvent& event);
 		void eventOpen(wxCommandEvent& event);

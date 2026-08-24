@@ -9,6 +9,8 @@ include("${CMAKE_SOURCE_DIR}/cmake/version.cmake")
 
 add_executable(textoolkit ${EXE_OPTIONS})
 
+target_sources(textoolkit PRIVATE "res/textoolkit.rc")
+
 target_compile_definitions(textoolkit
     PRIVATE 
         GLM_ENABLE_EXPERIMENTAL=1

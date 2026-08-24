@@ -29,7 +29,7 @@ namespace
 
 namespace textoolkit
 {
-	TexToolkitTextureView::TexToolkitTextureView(std::unique_ptr<Texture>&& texture, renderer::ModelDatabase& modelDatabase, wxWindow* parent)
+	TexToolkitTextureView::TexToolkitTextureView(std::unique_ptr<GuiTexture>&& texture, renderer::ModelDatabase& modelDatabase, wxWindow* parent)
 		: TextureView(parent)
 		, texture(std::move(texture))
 		, progressNotifier(progressNotifier)
@@ -58,21 +58,21 @@ namespace textoolkit
 
 	TexToolkitTextureView::~TexToolkitTextureView() = default;
 
-	Texture& TexToolkitTextureView::getTexture()
+	GuiTexture& TexToolkitTextureView::getTexture()
 	{
 		return *this->texture;
 	}
 
-	std::vector<std::unique_ptr<SubTexture>> TexToolkitTextureView::createLayers(ProgressNotifier progressNotifier) const
+	TexToolkitTextureView::SubTextureContainer TexToolkitTextureView::createLayers(ProgressNotifier progressNotifier) const
 	{
 		auto& image = this->texture->getImage();
 		unsigned int layers = image.getLayers();
 		FiniteThreadpool threadpool(progressNotifier);
-		std::vector<std::unique_ptr<SubTexture>> subtextures;
+		TexToolkitTextureView::SubTextureContainer subtextures;
 		for (unsigned int layer = 0; layer < layers; layer++)
 		{
 			threadpool.enqueue([this, layer, &subtextures, &threadpool]() {
-				auto subtexture = std::make_unique<SubTexture>(SubTexture::createLayer(*this->texture, layer));
+				auto subtexture = std::make_unique<GuiSubTexture>(GuiSubTexture::createLayer(*this->texture, layer));
 				auto lck = threadpool.lock();
 				subtextures.push_back(std::move(subtexture));
 				});
@@ -87,16 +87,16 @@ namespace textoolkit
 		return subtextures;
 	}
 
-	std::vector<std::unique_ptr<SubTexture>> TexToolkitTextureView::createFaces(ProgressNotifier progressNotifier) const
+	TexToolkitTextureView::SubTextureContainer TexToolkitTextureView::createFaces(ProgressNotifier progressNotifier) const
 	{
 		auto& image = this->texture->getImage();
 		unsigned int faces = image.getFaces();
 		FiniteThreadpool threadpool(progressNotifier);
-		std::vector<std::unique_ptr<SubTexture>> subtextures;
+		TexToolkitTextureView::SubTextureContainer subtextures;
 		for (unsigned int face = 0; face < faces; face++)
 		{
 			threadpool.enqueue([this, face, &subtextures, &threadpool]() {
-				auto subtexture = std::make_unique<SubTexture>(SubTexture::createFace(*this->texture, this->currentLayer, face));
+				auto subtexture = std::make_unique<GuiSubTexture>(GuiSubTexture::createFace(*this->texture, this->currentLayer, face));
 				auto lck = threadpool.lock();
 				subtextures.push_back(std::move(subtexture));
 			});
@@ -111,16 +111,16 @@ namespace textoolkit
 		return subtextures;
 	}
 
-	std::vector<std::unique_ptr<SubTexture>> TexToolkitTextureView::createLevels(ProgressNotifier progressNotifier) const
+	TexToolkitTextureView::SubTextureContainer TexToolkitTextureView::createLevels(ProgressNotifier progressNotifier) const
 	{
 		auto& image = this->texture->getImage();
 		unsigned int levels = image.getLevels();
 		FiniteThreadpool threadpool(progressNotifier);
-		std::vector<std::unique_ptr<SubTexture>> subtextures;
+		TexToolkitTextureView::SubTextureContainer subtextures;
 		for (unsigned int level = 0; level < levels; level++)
 		{
 			threadpool.enqueue([this, level, &subtextures, &threadpool]() {
-				auto subtexture = std::make_unique<SubTexture>(SubTexture::createLevel(*this->texture, this->currentLayer, this->currentFace, level));
+				auto subtexture = std::make_unique<GuiSubTexture>(GuiSubTexture::createLevel(*this->texture, this->currentLayer, this->currentFace, level));
 				auto lck = threadpool.lock();
 				subtextures.push_back(std::move(subtexture));
 			});
@@ -180,7 +180,7 @@ namespace textoolkit
 			return;
 
 		auto& image = this->texture->getImage();
-		this->mainTexture = SubTexture::createLevel(*this->texture, this->currentLayer, this->currentFace, level);
+		this->mainTexture = GuiSubTexture::createLevel(*this->texture, this->currentLayer, this->currentFace, level);
 		this->flatViewBitmap = this->mainTexture.getBitmap();
 
 		this->flatViewImageDetails->SetLabel(
@@ -453,7 +453,7 @@ namespace textoolkit
 		}
 	}
 
-	void TexToolkitTextureView::importLayer(Texture& texture, unsigned int layer)
+	void TexToolkitTextureView::importLayer(GuiTexture& texture, unsigned int layer)
 	{
 		auto subentry = this->getLayer(layer);
 		if (!subentry)
@@ -463,8 +463,8 @@ namespace textoolkit
 		{
 			for (unsigned int level = 0; level < this->texture->getImage().getLevels(); level++)
 			{
-				auto source = SubTexture::createLevel(texture, 0, 0, 0);
-				auto destination = SubTexture::createLevel(*this->texture, layer, face, level);
+				auto source = GuiSubTexture::createLevel(texture, 0, 0, 0);
+				auto destination = GuiSubTexture::createLevel(*this->texture, layer, face, level);
 				destination.set(source);
 
 				if (auto subentry = this->getLevel(level))
@@ -481,12 +481,12 @@ namespace textoolkit
 		this->canvas->reuploadTexture();
 	}
 
-	void TexToolkitTextureView::importFace(Texture& texture, unsigned int layer, unsigned int face)
+	void TexToolkitTextureView::importFace(GuiTexture& texture, unsigned int layer, unsigned int face)
 	{
 		for (unsigned int level = 0; level < this->texture->getImage().getLevels(); level++)
 		{
-			auto source = SubTexture::createLevel(texture, 0, 0, 0);
-			auto destination = SubTexture::createLevel(*this->texture, layer, face, level);
+			auto source = GuiSubTexture::createLevel(texture, 0, 0, 0);
+			auto destination = GuiSubTexture::createLevel(*this->texture, layer, face, level);
 			destination.set(source);
 
 			if (auto subentry = this->getLevel(level))
@@ -499,14 +499,14 @@ namespace textoolkit
 		this->canvas->reuploadTexture();
 	}
 
-	void TexToolkitTextureView::importLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level)
+	void TexToolkitTextureView::importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level)
 	{
-		auto source = SubTexture::createLevel(texture, 0, 0, 0);
-		auto destination = SubTexture::createLevel(*this->texture, layer, face, level);
+		auto source = GuiSubTexture::createLevel(texture, 0, 0, 0);
+		auto destination = GuiSubTexture::createLevel(*this->texture, layer, face, level);
 		destination.set(source);
 
 		if (auto subentry = this->getLevel(level))
-			subentry->setTexture(std::make_unique<SubTexture>(std::move(destination)));
+			subentry->setTexture(std::make_unique<GuiSubTexture>(std::move(destination)));
 
 		this->canvas->reuploadTexture();
 	}
@@ -563,19 +563,19 @@ namespace textoolkit
 		if (res == wxID_CANCEL)
 			return;
 
-		auto tex = loader.loadTexture(dlg.GetPath().ToStdString());
+		auto tex = GuiTexture(std::move(*loader.loadTexture(dlg.GetPath().ToStdString())));
 
 		auto textureType = event.entry->getTexture()->getType();
 		switch (textureType)
 		{
-		case SubTexture::Type::Layer:
-			this->importLayer(*tex, event.entry->getTexture()->getLayer());
+		case GuiSubTexture::Type::Layer:
+			this->importLayer(tex, event.entry->getTexture()->getLayer());
 			break;
-		case SubTexture::Type::Face:
-			this->importFace(*tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace());
+		case GuiSubTexture::Type::Face:
+			this->importFace(tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace());
 			break;
-		case SubTexture::Type::Level:
-			this->importLevel(*tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace(), event.entry->getTexture()->getLevel());
+		case GuiSubTexture::Type::Level:
+			this->importLevel(tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace(), event.entry->getTexture()->getLevel());
 			break;
 		}
 	}

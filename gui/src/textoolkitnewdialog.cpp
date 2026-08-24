@@ -16,7 +16,7 @@
 namespace
 {
 	using createPanelFnc = wxPanel*(*)(wxWindow* parent);
-	using createTextureFnc = std::unique_ptr<textoolkit::Texture>(*)(wxWindow* panel);
+	using createTextureFnc = std::unique_ptr<textoolkit::GuiTexture>(*)(wxWindow* panel);
 	using panelTuple = std::tuple<std::string, createPanelFnc, createTextureFnc>;
 
 	wxPanel* createBmpPanel(wxWindow* parent)
@@ -24,11 +24,11 @@ namespace
 		return new textoolkit::TexToolkitnewBmpPanel(parent);
 	}
 
-	std::unique_ptr<textoolkit::Texture> createBmp(wxWindow* panel)
+	std::unique_ptr<textoolkit::GuiTexture> createBmp(wxWindow* panel)
 	{
 		auto bmpPanel = static_cast<textoolkit::TexToolkitnewBmpPanel*>(panel);
 		auto bmp = std::make_shared<textoolkit::Bmp>(bmpPanel->getTextureWidth(), bmpPanel->getTextureHeight());
-		return std::make_unique<textoolkit::Texture>(std::move(bmp), bmpPanel->getTextureName());
+		return std::make_unique<textoolkit::GuiTexture>(std::move(bmp), bmpPanel->getTextureName());
 	}
 
 	wxPanel* createDdsPanel(wxWindow* parent)
@@ -36,7 +36,7 @@ namespace
 		return new textoolkit::TexToolkitnewDdsPanel(parent);
 	}
 
-	std::unique_ptr<textoolkit::Texture> createDds(wxWindow* panel)
+	std::unique_ptr<textoolkit::GuiTexture> createDds(wxWindow* panel)
 	{
 		auto ddsPanel = static_cast<textoolkit::TexToolkitnewDdsPanel*>(panel);
 		auto dds = std::make_shared<textoolkit::DDS>(
@@ -47,7 +47,7 @@ namespace
 			ddsPanel->getLayersCount(),
 			ddsPanel->getGenerateMipmaps()
 		);
-		return std::make_unique<textoolkit::Texture>(std::move(dds), ddsPanel->getTextureName());
+		return std::make_unique<textoolkit::GuiTexture>(std::move(dds), ddsPanel->getTextureName());
 	}
 
 	std::map<textoolkit::Image::Type, panelTuple> imageTypes{
@@ -78,7 +78,7 @@ namespace textoolkit
 
 	TexToolkitNewDialog::~TexToolkitNewDialog() = default;
 
-	std::unique_ptr<Texture> TexToolkitNewDialog::createTexture()
+	std::unique_ptr<GuiTexture> TexToolkitNewDialog::createTexture()
 	{
 		auto type = static_cast<Image::Type>(reinterpret_cast<size_t>(this->typeList->GetClientData(this->typeList->GetSelection())));
 		auto it = imageTypes.find(type);
