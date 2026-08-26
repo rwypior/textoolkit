@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 #include <optional>
+#include <map>
 
 namespace textoolkit
 {
@@ -38,6 +39,7 @@ namespace textoolkit
 
 		enum class TextureType
 		{
+			Invalid,
 			Texture2D = 1,
 			Texture3D = 2,
 			TextureCube = 3,
@@ -47,6 +49,7 @@ namespace textoolkit
 
 		enum class CompressionType
 		{
+			Invalid,
 			None,
 			DXT1,
 			DXT3,
@@ -63,6 +66,7 @@ namespace textoolkit
 
 		enum class TextureInternalFormat
 		{
+			Invalid,
 			Rgb8
 		};
 		
@@ -87,6 +91,13 @@ namespace textoolkit
 		virtual ~Image() = default;
 
 		static TextureType translateTextureType(const std::string& name);
+		static std::string translateTextureType(TextureType type);
+		static TextureInternalFormat translateInternalFormat(const std::string& name);
+		static std::string translateInternalFormat(TextureInternalFormat type);
+		static std::map<std::string, TextureInternalFormat> getInternalFormatMap();
+		static CompressionType translateCompression(const std::string& name);
+		static std::string translateCompression(CompressionType type);
+		static std::map<std::string, CompressionType> getCompressionMap();
 
 		virtual Type getType() const = 0;
 		virtual TextureType getTextureType() const = 0;

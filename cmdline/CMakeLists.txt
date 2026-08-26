@@ -22,6 +22,7 @@ target_include_directories(cmdline PUBLIC "include")
 target_include_directories(cmdline PUBLIC "res")
 
 target_link_libraries(cmdline PRIVATE textoolkit::common)
+target_link_libraries(cmdline PRIVATE textoolkit::texture)
 target_link_libraries(cmdline PRIVATE textoolkit::dds)
 target_link_libraries(cmdline PRIVATE textoolkit::bmp)
 

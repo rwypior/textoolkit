@@ -1,3 +1,3 @@
 target_sources(cmdline PRIVATE 
-	"main.cpp"
+	"main.cpp" "info.cpp" "import.cpp" "save.cpp"
 )

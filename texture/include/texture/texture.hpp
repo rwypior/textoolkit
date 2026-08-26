@@ -1,5 +1,5 @@
-#ifndef _h_textoolkit_common_texture
-#define _h_textoolkit_common_texture
+#ifndef _h_textoolkit_texture_texture
+#define _h_textoolkit_texture_texture
 
 #include "common/image.hpp"
 
@@ -29,6 +29,7 @@ namespace textoolkit
 		Image::Type getType() const;
 
 		Image& getImage();
+		const Image& getImage() const;
 		bool hasImage() const;
 
 		virtual bool save(const std::string& path); // Save current image to file

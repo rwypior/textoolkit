@@ -1,6 +1,9 @@
 #include "common/image.hpp"
+#include "common/util.hpp"
 
 #include <fstream>
+#include <algorithm>
+#include <string>
 
 namespace textoolkit
 {
@@ -19,7 +22,83 @@ namespace textoolkit
 			return TextureType::TextureCube;
 
 		assert(!"Invalid texture type");
-		return TextureType::Texture2D;
+		return TextureType::Invalid;
+	}
+
+	std::string Image::translateTextureType(TextureType type)
+	{
+		switch (type)
+		{
+		case TextureType::Texture2D: return "Texture2D";
+		case TextureType::Texture3D: return "Texture3D";
+		case TextureType::TextureCube: return "TextureCube";
+		}
+
+		return "[Invalid]";
+	}
+
+	Image::TextureInternalFormat Image::translateInternalFormat(const std::string& name)
+	{
+		std::string n = trimmed(name);
+		std::transform(n.begin(), n.end(), n.begin(), [](char c) { return std::tolower(c); });
+		if (n == "rgb8")
+			return Image::TextureInternalFormat::Rgb8;
+		return Image::TextureInternalFormat::Invalid;
+	}
+
+	std::string Image::translateInternalFormat(TextureInternalFormat type)
+	{
+		switch (type)
+		{
+		case TextureInternalFormat::Rgb8: return "RGB8";
+		}
+
+		return "[Invalid]";
+	}
+
+	std::map<std::string, Image::TextureInternalFormat> Image::getInternalFormatMap()
+	{
+		return {
+			{ "RGB8", TextureInternalFormat::Rgb8 }
+		};
+	}
+
+	Image::CompressionType Image::translateCompression(const std::string& name)
+	{
+		std::string n = trimmed(name);
+		std::transform(n.begin(), n.end(), n.begin(), [](char c) { return std::tolower(c); });
+		if (n == "none" || n.empty())
+			return Image::CompressionType::None;
+		if (n == "dxt1")
+			return Image::CompressionType::DXT1;
+		if (n == "dxt3")
+			return Image::CompressionType::DXT3;
+		if (n == "dxt5")
+			return Image::CompressionType::DXT5;
+		return Image::CompressionType::Invalid;
+	}
+
+	std::string Image::translateCompression(Image::CompressionType type)
+	{
+		switch (type)
+		{
+		case CompressionType::None: return "None";
+		case CompressionType::DXT1: return "DXT1";
+		case CompressionType::DXT3: return "DXT3";
+		case CompressionType::DXT5: return "DXT5";
+		}
+
+		return "[Invalid]";
+	}
+
+	std::map<std::string, Image::CompressionType> Image::getCompressionMap()
+	{
+		return {
+			{ "None", CompressionType::None },
+			{ "DXT1", CompressionType::DXT1 },
+			{ "DXT3", CompressionType::DXT3 },
+			{ "DXT5", CompressionType::DXT5 }
+		};
 	}
 
 	Image::StorageMode Image::getStorageMode() const

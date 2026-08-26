@@ -69,6 +69,13 @@ namespace textoolkit
 		{
 		}
 
+		Result(Code code, T&& data, Warnings&& warnings = {})
+			: code(code)
+			, data(std::move(data))
+			, warnings(std::move(warnings))
+		{
+		}
+
 		operator bool() const
 		{
 			return this->code == Code::Ok;

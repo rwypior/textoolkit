@@ -23,6 +23,7 @@ target_include_directories(textoolkit PUBLIC "include")
 target_include_directories(textoolkit PUBLIC "res")
 
 target_link_libraries(textoolkit PRIVATE textoolkit::common)
+target_link_libraries(textoolkit PRIVATE textoolkit::texture)
 target_link_libraries(textoolkit PRIVATE textoolkit::dds)
 target_link_libraries(textoolkit PRIVATE textoolkit::bmp)
 target_link_libraries(textoolkit PRIVATE textoolkit::renderer)

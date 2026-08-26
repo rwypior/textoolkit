@@ -36,6 +36,7 @@ endif()
 # Subdirs
 add_subdirectory("common")
 add_subdirectory("operator")
+add_subdirectory("texture")
 add_subdirectory("dds")
 add_subdirectory("bmp")
 add_subdirectory("renderer")

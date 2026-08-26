@@ -1,5 +1,5 @@
-#ifndef _h_textoolkit_gui_textureloader
-#define _h_textoolkit_gui_textureloader
+#ifndef _h_textoolkit_texture_textureloader
+#define _h_textoolkit_texture_textureloader
 
 #include <string>
 #include <memory>

@@ -1,5 +1,5 @@
 #include "gui/texture.hpp"
-#include "common/accessor.hpp"
+#include "texture/accessor.hpp"
 
 #include <wx/dcmemory.h>
 #include <wx/rawbmp.h>

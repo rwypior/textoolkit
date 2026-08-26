@@ -1,4 +1,4 @@
-#include "common/accessor.hpp"
+#include "texture/accessor.hpp"
 #include "common/image.hpp"
 #include "common/pixel.hpp"
 

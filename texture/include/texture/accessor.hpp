@@ -1,5 +1,5 @@
-#ifndef _h_textoolkit_common_accessor
-#define _h_textoolkit_common_accessor
+#ifndef _h_textoolkit_texture_accessor
+#define _h_textoolkit_texture_accessor
 
 #include <memory>
 

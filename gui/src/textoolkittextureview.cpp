@@ -3,7 +3,7 @@
 #include "gui/textoolkitprogressdialog.hpp"
 #include "gui/texture.hpp"
 #include "gui/util.hpp"
-#include "gui/textureloader.hpp"
+#include "texture/textureloader.hpp"
 #include "renderer/modeldatabase.hpp"
 #include "renderer/model.hpp"
 #include "renderer/object.hpp"

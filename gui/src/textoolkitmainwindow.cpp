@@ -3,8 +3,8 @@
 #include "gui/textoolkitnewdialog.hpp"
 #include "gui/textoolkitaboutwindow.hpp"
 #include "gui/texture.hpp"
-#include "gui/textureloader.hpp"
 #include "gui/util.hpp"
+#include "texture/textureloader.hpp"
 
 #include <wx/filedlg.h>
 #include <wx/stdpaths.h>

@@ -2,7 +2,7 @@
 #define _h_textoolkit_gui_texture
 
 #include "common/image.hpp"
-#include "common/texture.hpp"
+#include "texture/texture.hpp"
 
 #include <glm/vec2.hpp>
 

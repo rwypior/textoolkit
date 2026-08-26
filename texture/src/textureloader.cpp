@@ -1,5 +1,5 @@
-#include "gui/textureloader.hpp"
-#include "gui/texture.hpp"
+#include "texture/textureloader.hpp"
+#include "texture/texture.hpp"
 #include "bmp/bmp.hpp"
 #include "dds/dds.hpp"
 

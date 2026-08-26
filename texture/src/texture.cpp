@@ -1,5 +1,5 @@
-#include "common/texture.hpp"
-#include "common/accessor.hpp"
+#include "texture/texture.hpp"
+#include "texture/accessor.hpp"
 
 namespace textoolkit
 {
@@ -60,6 +60,12 @@ namespace textoolkit
 	}
 
 	Image& Texture::getImage()
+	{
+		assert(this->image);
+		return *this->image;
+	}
+
+	const Image& Texture::getImage() const
 	{
 		assert(this->image);
 		return *this->image;
