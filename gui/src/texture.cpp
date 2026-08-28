@@ -131,6 +131,11 @@ namespace textoolkit
 		this->updateBitmap();
 	}
 
+	GuiSubTexture::GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image)
+		: SubTexture(type, layer, face, level, image, "", "", std::make_unique<GuiTexture>(image, "", "", GuiTexture::NoUpdateTag()))
+	{
+	}
+
 	GuiSubTexture GuiSubTexture::createLayer(GuiTexture& texture, unsigned int layer)
 	{
 		return GuiSubTexture(Type::Layer, layer, 0, 0, texture.image, texture.name);
@@ -144,6 +149,21 @@ namespace textoolkit
 	GuiSubTexture GuiSubTexture::createLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level)
 	{
 		return GuiSubTexture(Type::Level, layer, face, level, texture.image, texture.name);
+	}
+
+	GuiSubTexture GuiSubTexture::createInternalLayer(GuiTexture& texture, unsigned int layer)
+	{
+		return GuiSubTexture(Type::Layer, layer, 0, 0, texture.image);
+	}
+
+	GuiSubTexture GuiSubTexture::createInternalFace(GuiTexture& texture, unsigned int layer, unsigned int face)
+	{
+		return GuiSubTexture(Type::Face, layer, face, 0, texture.image);
+	}
+
+	GuiSubTexture GuiSubTexture::createInternalLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level)
+	{
+		return GuiSubTexture(Type::Level, layer, face, level, texture.image);
 	}
 
 	wxBitmap& GuiSubTexture::getBitmap()
@@ -160,7 +180,7 @@ namespace textoolkit
 			return;
 
 		auto bitmapsize = base.bitmap.GetSize();
-		if (bitmapsize.x != base.image->getWidth(this->level) || bitmapsize.y != base.image->getHeight())
+		if (bitmapsize.x != base.image->getWidth(this->level) || bitmapsize.y != base.image->getHeight(this->level))
 			base.bitmap = wxBitmap(base.image->getWidth(this->level), base.image->getHeight(this->level), 32);
 
 		base.setBitmapData(base.bitmap, this->layer, this->face, this->level);

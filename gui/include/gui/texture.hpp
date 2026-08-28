@@ -54,8 +54,15 @@ namespace textoolkit
 		static GuiSubTexture createLayer(GuiTexture& texture, unsigned int layer);
 		static GuiSubTexture createFace(GuiTexture& texture, unsigned int layer, unsigned int face);
 		static GuiSubTexture createLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level);
+		static GuiSubTexture createInternalLayer(GuiTexture& texture, unsigned int layer);
+		static GuiSubTexture createInternalFace(GuiTexture& texture, unsigned int layer, unsigned int face);
+		static GuiSubTexture createInternalLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level);
 
 		virtual void set(const SubTexture& texture) override;
+
+	private:
+		/// For imported textures - no path, name or bitmap update
+		GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image);
 	};
 }
 

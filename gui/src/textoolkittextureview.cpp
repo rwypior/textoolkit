@@ -41,7 +41,12 @@ namespace textoolkit
 		this->flatView->SetScaleMode(wxStaticBitmapBase::ScaleMode::Scale_AspectFit);
 		this->m_notebook2->ChangeSelection(1);
 
-		this->m_notebook2->DeletePage(2); // TODO - remove this when editor is ready
+		// TODO - remove this when editor is ready
+		this->m_notebook2->DeletePage(2);
+		this->m_panel251->Destroy(); // Add buttons
+		this->m_panel2611->Destroy(); // Add buttons
+		this->m_panel261->Destroy(); // Add buttons
+		//
 		
 		this->setupProperties();
 		this->updateModels();
@@ -54,6 +59,7 @@ namespace textoolkit
 		this->refreshDisplayModeListButton->Bind(wxEVT_BUTTON, &TexToolkitTextureView::displayModeUpdateButtonClicked, this);
 		this->displaymode->Bind(wxEVT_COMBOBOX, &TexToolkitTextureView::displayModeSelected, this);
 		this->propertyGrid->Bind(wxEVT_PG_CHANGED, &TexToolkitTextureView::propertyChanged, this);
+		this->selectBaseLink->Bind(wxEVT_HYPERLINK, &TexToolkitTextureView::selectBaseClicked, this);
 	}
 
 	TexToolkitTextureView::~TexToolkitTextureView() = default;
@@ -501,8 +507,8 @@ namespace textoolkit
 
 	void TexToolkitTextureView::importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level)
 	{
-		auto source = GuiSubTexture::createLevel(texture, 0, 0, 0);
-		auto destination = GuiSubTexture::createLevel(*this->texture, layer, face, level);
+		auto source = GuiSubTexture::createInternalLevel(texture, 0, 0, 0);
+		auto destination = GuiSubTexture::createInternalLevel(*this->texture, layer, face, level);
 		destination.set(source);
 
 		if (auto subentry = this->getLevel(level))
@@ -578,6 +584,9 @@ namespace textoolkit
 			this->importLevel(tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace(), event.entry->getTexture()->getLevel());
 			break;
 		}
+
+		this->updateFlatView(event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace(), event.entry->getTexture()->getLevel());
+		this->updateSubimages();
 	}
 
 	void TexToolkitTextureView::displayModeUpdateButtonClicked(wxCommandEvent& event)
@@ -621,6 +630,16 @@ namespace textoolkit
 				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment5))
 				});
 		}
+	}
+
+	void TexToolkitTextureView::selectBaseClicked(wxHyperlinkEvent& event)
+	{
+		if (auto layer = this->getLayer(0))
+			layer->select();
+		if (auto face = this->getFace(0))
+			face->select();
+		if (auto level = this->getLevel(0))
+			level->select();
 	}
 
 	void TexToolkitTextureView::fixAlignments(const wxString& propname)

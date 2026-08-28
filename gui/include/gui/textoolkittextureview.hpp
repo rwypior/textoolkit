@@ -92,6 +92,7 @@ namespace textoolkit
 		void displayModeUpdateButtonClicked(wxCommandEvent& event);
 		void displayModeSelected(wxCommandEvent& event);
 		void propertyChanged(wxPropertyGridEvent& event);
+		void selectBaseClicked(wxHyperlinkEvent& event);
 
 		void fixAlignments(const wxString& propname);
 

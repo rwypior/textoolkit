@@ -40,7 +40,7 @@ namespace
 			switch (compression)
 			{
 			case textoolkit::Image::CompressionType::None:
-				return gli::texture::format_type::FORMAT_RGB8_UINT_PACK8;
+				return gli::texture::format_type::FORMAT_RGBA8_UNORM_PACK8;
 			case textoolkit::Image::CompressionType::DXT1:
 				return gli::texture::format_type::FORMAT_RGBA_DXT1_SRGB_BLOCK8;
 			case textoolkit::Image::CompressionType::DXT3:
@@ -51,7 +51,7 @@ namespace
 		}
 
 		assert(!"Invalid format/compression combination");
-		return gli::texture::format_type::FORMAT_RGB8_UINT_PACK8;
+		return gli::texture::format_type::FORMAT_RGBA8_UNORM_PACK8;
 	}
 
 	unsigned int getFaces(textoolkit::Image::TextureType type)
@@ -96,6 +96,7 @@ namespace textoolkit
 		)
 		, originalFormat(translateFormat(format, compression))
 	{
+		this->updateInfo();
 	}
 
 	DDS::DDS(gli::texture&& dds)
