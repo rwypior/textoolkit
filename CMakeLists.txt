@@ -51,9 +51,9 @@ if(GRAPHVIZ)
     message("Found Graphviz")
 
     add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/_graphviz
-        COMMAND ${CMAKE_COMMAND} "--graphviz=graphviz/game.dot" .
-        COMMAND dot -Tsvg graphviz/game.dot -o deps.svg
-        COMMAND dot -Tpng graphviz/game.dot -o deps.png
+        COMMAND ${CMAKE_COMMAND} "--graphviz=graphviz/textoolkit.dot" .
+        COMMAND dot -Tsvg graphviz/textoolkit.dot -o deps.svg
+        COMMAND dot -Tpng graphviz/textoolkit.dot -o deps.png
         COMMENT "Plotting dependencies graph"
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
     add_custom_target(graphviz ALL
