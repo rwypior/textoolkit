@@ -76,6 +76,16 @@ int main(int argc, char** argv)
 	auto& argImportLayer = parser.addOption("importlayer", cmdline::NoAbbr, "", cmdline::Req::required, "Layer index to which to import an image", cmdline::enableWhenEquals(argOperation, "import"));
 	auto& argImportFace = parser.addOption("importface", cmdline::NoAbbr, "", cmdline::Req::required, "Face index to which to import an image", cmdline::enableWhenEquals(argOperation, "import"));
 	auto& argImportLevel = parser.addOption("importlevel", cmdline::NoAbbr, "", cmdline::Req::required, "Level index to which to import an image", cmdline::enableWhenEquals(argOperation, "import"));
+	auto& argImportMin = parser.addOption("importmin", cmdline::NoAbbr, "", cmdline::Req::required, "Interpolation algorithm for minifying image", cmdline::enableWhenEquals(argOperation, "import"));
+	for (auto [e, s] : textoolkit::getInterpolationMap())
+	{
+		argImportMin.allowedValues.insert(s);
+	}
+	auto& argImportMag = parser.addOption("importmag", cmdline::NoAbbr, "", cmdline::Req::required, "Interpolation algorithm for magnifying image", cmdline::enableWhenEquals(argOperation, "import"));
+	for (auto [e, s] : textoolkit::getInterpolationMap())
+	{
+		argImportMag.allowedValues.insert(s);
+	}
 	auto& argSavePath = parser.addOption("save", 's', "", cmdline::Req::optional, "Path where to save the texture");
 
 	// Parse the stuff
@@ -152,7 +162,11 @@ int main(int argc, char** argv)
 		const auto& importlayer = std::stoul(argImportLayer.value);
 		const auto& importface = std::stoul(argImportFace.value);
 		const auto& importlevel = std::stoul(argImportLevel.value);
-		textoolkit::cmdline::Import imp(*texture, importpath, importlayer, importface, importlevel);
+		auto interpolation = textoolkit::InterpolationMinMag(
+			textoolkit::translateInterpolation(argImportMin.value),
+			textoolkit::translateInterpolation(argImportMag.value)
+		);
+		textoolkit::cmdline::Import imp(*texture, importpath, importlayer, importface, importlevel, interpolation);
 		auto result = imp();
 		auto code = finalize(result);
 		if (code != 0)

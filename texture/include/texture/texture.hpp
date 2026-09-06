@@ -7,9 +7,37 @@
 
 #include <string>
 #include <memory>
+#include <map>
 
 namespace textoolkit
 {
+	enum class Scaling
+	{
+		None,
+		Min,
+		Mag
+	};
+
+	enum class Interpolation
+	{
+		None,
+		NearestNeighbors,
+		Bicubic
+	};
+
+	std::map<Interpolation, std::string> getInterpolationMap();
+	std::map<std::string, Interpolation> getInterpolationMapStr();
+	std::string translateInterpolation(Interpolation interpolation);
+	Interpolation translateInterpolation(const std::string& interpolation);
+
+	struct InterpolationMinMag
+	{
+		Interpolation minInterpolation;
+		Interpolation magInterpolation;
+
+		InterpolationMinMag(Interpolation minInterpolation = Interpolation::Bicubic, Interpolation magInterpolation = Interpolation::NearestNeighbors);
+	};
+
 	class Texture
 	{
 		friend class SubTexture;
@@ -68,7 +96,7 @@ namespace textoolkit
 		bool hasImage() const;
 
 		/// Copy data from another texture into this subtexture
-		virtual void set(const SubTexture& texture);
+		virtual void set(const SubTexture& texture, InterpolationMinMag interpolation);
 
 		glm::uvec2 getSize() const;
 

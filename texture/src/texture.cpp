@@ -1,8 +1,56 @@
 #include "texture/texture.hpp"
 #include "texture/accessor.hpp"
 
+#include <glm/vector_relational.hpp>
+
 namespace textoolkit
 {
+	// Interpolation
+
+	std::map<Interpolation, std::string> getInterpolationMap()
+	{
+		return {
+			{ Interpolation::Bicubic, "Bicubic" },
+			{ Interpolation::NearestNeighbors, "Nearest neighbors" }
+		};
+	}
+
+	std::map<std::string, Interpolation> getInterpolationMapStr()
+	{
+		std::map<std::string, Interpolation> result;
+		for (auto [i, s] : getInterpolationMap())
+		{
+			result[s] = i;
+		}
+		return result;
+	}
+
+	std::string translateInterpolation(Interpolation interpolation)
+	{
+		auto m = getInterpolationMap();
+		auto it = m.find(interpolation);
+		if (it != m.end())
+			return it->second;
+		assert(!"Invalid interpolation");
+		return "";
+	}
+
+	Interpolation translateInterpolation(const std::string& interpolation)
+	{
+		auto m = getInterpolationMapStr();
+		auto it = m.find(interpolation);
+		if (it != m.end())
+			return it->second;
+		assert(!"Invalid interpolation");
+		return Interpolation::None;
+	}
+
+	InterpolationMinMag::InterpolationMinMag(Interpolation minInterpolation, Interpolation magInterpolation)
+		: minInterpolation(minInterpolation)
+		, magInterpolation(magInterpolation)
+	{
+	}
+
 	// Texture
 
 	Texture::Texture() = default;
@@ -171,13 +219,38 @@ namespace textoolkit
 		return this->base->hasImage();
 	}
 
-	void SubTexture::set(const SubTexture& texture)
+	void SubTexture::set(const SubTexture& texture, InterpolationMinMag interpolation)
 	{
 		std::unique_ptr<PixelAccessor> access;
-		if (texture.getSize() == this->getSize())
+
+		Scaling scaling = Scaling::None;
+		if (glm::any(glm::greaterThan(texture.getSize(), this->getSize())))
+			scaling = Scaling::Min;
+		else if (glm::any(glm::lessThan(texture.getSize(), this->getSize())))
+			scaling = Scaling::Mag;
+
+		if (scaling == Scaling::None)
 			access = std::make_unique<SimpleAccessor>(*texture.base->image, this->layer, this->face, this->level);
+		else if (scaling == Scaling::Min)
+			switch (interpolation.minInterpolation)
+			{
+			case Interpolation::NearestNeighbors:
+				access = std::make_unique<NearestNeighborAccessor>(*texture.base->image, this->getSize().x, this->getSize().y, this->layer, this->face, this->level);
+				break;
+			case Interpolation::Bicubic:
+				access = std::make_unique<BicubicAccessor>(*texture.base->image, this->getSize().x, this->getSize().y, this->layer, this->face, this->level);
+				break;
+			}
 		else
-			access = std::make_unique<BicubicAccessor>(*texture.base->image, this->getSize().x, this->getSize().y, this->layer, this->face, this->level);
+			switch (interpolation.magInterpolation)
+			{
+			case Interpolation::NearestNeighbors:
+				access = std::make_unique<NearestNeighborAccessor>(*texture.base->image, this->getSize().x, this->getSize().y, this->layer, this->face, this->level);
+				break;
+			case Interpolation::Bicubic:
+				access = std::make_unique<BicubicAccessor>(*texture.base->image, this->getSize().x, this->getSize().y, this->layer, this->face, this->level);
+				break;
+			}
 
 		if (pickDataOption(this->base->image->getStorageMode(), texture.base->image->getStorageMode()) == DataOption::InvertY)
 			access->setSubAccessor(access->makeSubaccessor<InvertYAccessor>());

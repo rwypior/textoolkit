@@ -161,8 +161,8 @@ namespace textoolkit
 
 		const float ratiox = static_cast<float>(this->subAccessor->getImage().getWidth()) / static_cast<float>(this->scaledWidth);
 		const float ratioy = static_cast<float>(this->subAccessor->getImage().getHeight()) / static_cast<float>(this->scaledHeight);
-		const float srcxreal = (static_cast<float>(x)) * ratiox - 0.5f;
-		const float srcyreal = (static_cast<float>(y)) * ratioy - 0.5f;
+		const float srcxreal = (static_cast<float>(x)) * ratiox;
+		const float srcyreal = (static_cast<float>(y)) * ratioy;
 		const float srcx = std::floor(srcxreal);
 		const float srcy = std::floor(srcyreal);
 		const float srcxfract = srcxreal - srcx;
@@ -181,11 +181,11 @@ namespace textoolkit
 		}
 
 		auto cubic = [](glm::vec4 a, glm::vec4 b, glm::vec4 c, glm::vec4 d, float fract) {
-			const auto s1 = a / -2.0f + b * 3.0f / 2.0f - c * 3.0f / 2.0f + d / 2.0f;
-			const auto s2 = a - b * 5.0f / 2.0f + c * 2.0f - d / 2.0f;
-			const auto s3 = -a / 2.0f + c / 2.0f;
+			const auto s1 = (d - c) - (a - b);
+			const auto s2 = (a - b) - s1;
+			const auto s3 = (c - a);
 			const auto s4 = b;
-			return s1 * std::pow(fract, 3.0f) + s2 * std::pow(fract, 2.0f) + s3 * fract + d;
+			return s4 + fract * (s3 + fract * (s2 + fract * s1));
 		};
 
 		const auto s1 = cubic(samples[0], samples[1], samples[2], samples[3], srcxfract);
@@ -250,6 +250,85 @@ namespace textoolkit
 	}
 
 	PixelAccessor& BicubicAccessor::setLevel(unsigned int level)
+	{
+		this->subAccessor->setLevel(level);
+		return *this;
+	}
+
+	// Nearest neighbor accessor
+
+	NearestNeighborAccessor::NearestNeighborAccessor(const Image& image, unsigned int scaledWidth, unsigned int scaledHeight, unsigned int layer, unsigned int face, unsigned int level)
+		: subAccessor(std::make_unique<SimpleAccessor>(image, layer, face, level))
+		, scaledWidth(scaledWidth)
+		, scaledHeight(scaledHeight)
+	{
+	}
+
+	Pixel NearestNeighborAccessor::getPixel(unsigned int x, unsigned int y) const
+	{
+		assert(this->subAccessor && "This accessor must have a subaccessor");
+
+		const float ratiox = static_cast<float>(this->subAccessor->getImage().getWidth()) / static_cast<float>(this->scaledWidth);
+		const float ratioy = static_cast<float>(this->subAccessor->getImage().getHeight()) / static_cast<float>(this->scaledHeight);
+
+		auto result = this->sample(x * ratiox, y * ratioy).toVec4<glm::vec4, false>();
+
+		return Pixel(result.r, result.g, result.b, result.a);
+	}
+
+	Pixel NearestNeighborAccessor::sample(int x, int y) const
+	{
+		x = std::clamp(x, 0, static_cast<int>(this->subAccessor->getImage().getWidth() - 1));
+		y = std::clamp(y, 0, static_cast<int>(this->subAccessor->getImage().getHeight() - 1));
+
+		return this->subAccessor->getPixel(x, y);
+	}
+
+	PixelAccessor& NearestNeighborAccessor::setSubAccessor(std::unique_ptr<PixelAccessor>&& subAccessor)
+	{
+		this->subAccessor = std::move(subAccessor);
+		return *this;
+	}
+
+	const Image& NearestNeighborAccessor::getImage() const
+	{
+		return this->subAccessor->getImage();
+	}
+
+	unsigned int NearestNeighborAccessor::getLayer() const
+	{
+		return this->subAccessor->getLayer();
+	}
+
+	unsigned int NearestNeighborAccessor::getFace() const
+	{
+		return this->subAccessor->getFace();
+	}
+
+	unsigned int NearestNeighborAccessor::getLevel() const
+	{
+		return this->subAccessor->getLevel();
+	}
+
+	PixelAccessor& NearestNeighborAccessor::setImage(const Image& image)
+	{
+		this->subAccessor->setImage(image);
+		return *this;
+	}
+
+	PixelAccessor& NearestNeighborAccessor::setLayer(unsigned int layer)
+	{
+		this->subAccessor->setLayer(layer);
+		return *this;
+	}
+
+	PixelAccessor& NearestNeighborAccessor::setFace(unsigned int face)
+	{
+		this->subAccessor->setFace(face);
+		return *this;
+	}
+
+	PixelAccessor& NearestNeighborAccessor::setLevel(unsigned int level)
 	{
 		this->subAccessor->setLevel(level);
 		return *this;

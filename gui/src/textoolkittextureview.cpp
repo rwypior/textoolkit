@@ -3,6 +3,7 @@
 #include "gui/textoolkitprogressdialog.hpp"
 #include "gui/texture.hpp"
 #include "gui/util.hpp"
+#include "gui/importdlg.hpp"
 #include "texture/textureloader.hpp"
 #include "renderer/modeldatabase.hpp"
 #include "renderer/model.hpp"
@@ -459,7 +460,7 @@ namespace textoolkit
 		}
 	}
 
-	void TexToolkitTextureView::importLayer(GuiTexture& texture, unsigned int layer)
+	void TexToolkitTextureView::importLayer(GuiTexture& texture, unsigned int layer, InterpolationMinMag interpolation)
 	{
 		auto subentry = this->getLayer(layer);
 		if (!subentry)
@@ -471,7 +472,7 @@ namespace textoolkit
 			{
 				auto source = GuiSubTexture::createLevel(texture, 0, 0, 0);
 				auto destination = GuiSubTexture::createLevel(*this->texture, layer, face, level);
-				destination.set(source);
+				destination.set(source, interpolation);
 
 				if (auto subentry = this->getLevel(level))
 					subentry->updatePreview();
@@ -487,13 +488,13 @@ namespace textoolkit
 		this->canvas->reuploadTexture();
 	}
 
-	void TexToolkitTextureView::importFace(GuiTexture& texture, unsigned int layer, unsigned int face)
+	void TexToolkitTextureView::importFace(GuiTexture& texture, unsigned int layer, unsigned int face, InterpolationMinMag interpolation)
 	{
 		for (unsigned int level = 0; level < this->texture->getImage().getLevels(); level++)
 		{
 			auto source = GuiSubTexture::createLevel(texture, 0, 0, 0);
 			auto destination = GuiSubTexture::createLevel(*this->texture, layer, face, level);
-			destination.set(source);
+			destination.set(source, interpolation);
 
 			if (auto subentry = this->getLevel(level))
 				subentry->updatePreview();
@@ -505,11 +506,11 @@ namespace textoolkit
 		this->canvas->reuploadTexture();
 	}
 
-	void TexToolkitTextureView::importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level)
+	void TexToolkitTextureView::importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, InterpolationMinMag interpolation)
 	{
 		auto source = GuiSubTexture::createInternalLevel(texture, 0, 0, 0);
 		auto destination = GuiSubTexture::createInternalLevel(*this->texture, layer, face, level);
-		destination.set(source);
+		destination.set(source, interpolation);
 
 		if (auto subentry = this->getLevel(level))
 			subentry->setTexture(std::make_unique<GuiSubTexture>(std::move(destination)));
@@ -562,12 +563,14 @@ namespace textoolkit
 		const auto picturesDir = wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir_Pictures);
 		std::string wildcard = loader.getWildcardString();
 
-		wxFileDialog dlg(this, "Open image", picturesDir, wxEmptyString, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		ImportDlg dlg(this, "Open image", picturesDir, wxEmptyString, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 		dlg.SetFilterIndex(loader.getFilterIndexAll());
 
 		auto res = dlg.ShowModal();
 		if (res == wxID_CANCEL)
 			return;
+
+		auto interpolation = dlg.getInterpolation();
 
 		auto tex = GuiTexture(std::move(*loader.loadTexture(dlg.GetPath().ToStdString())));
 
@@ -575,13 +578,13 @@ namespace textoolkit
 		switch (textureType)
 		{
 		case GuiSubTexture::Type::Layer:
-			this->importLayer(tex, event.entry->getTexture()->getLayer());
+			this->importLayer(tex, event.entry->getTexture()->getLayer(), interpolation);
 			break;
 		case GuiSubTexture::Type::Face:
-			this->importFace(tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace());
+			this->importFace(tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace(), interpolation);
 			break;
 		case GuiSubTexture::Type::Level:
-			this->importLevel(tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace(), event.entry->getTexture()->getLevel());
+			this->importLevel(tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace(), event.entry->getTexture()->getLevel(), interpolation);
 			break;
 		}
 

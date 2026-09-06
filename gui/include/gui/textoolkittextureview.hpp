@@ -78,9 +78,9 @@ namespace textoolkit
 		void updateDisplayModes();
 		void updateDisplayModeList();
 
-		void importLayer(GuiTexture& texture, unsigned int layer);
-		void importFace(GuiTexture& texture, unsigned int layer, unsigned int face);
-		void importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level);
+		void importLayer(GuiTexture& texture, unsigned int layer, InterpolationMinMag interpolation);
+		void importFace(GuiTexture& texture, unsigned int layer, unsigned int face, InterpolationMinMag interpolation);
+		void importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, InterpolationMinMag interpolation);
 
 	private:
 		void deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry);

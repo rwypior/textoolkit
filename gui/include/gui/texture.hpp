@@ -58,7 +58,7 @@ namespace textoolkit
 		static GuiSubTexture createInternalFace(GuiTexture& texture, unsigned int layer, unsigned int face);
 		static GuiSubTexture createInternalLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level);
 
-		virtual void set(const SubTexture& texture) override;
+		virtual void set(const SubTexture& texture, InterpolationMinMag interpolation) override;
 
 	private:
 		/// For imported textures - no path, name or bitmap update

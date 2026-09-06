@@ -101,6 +101,32 @@ namespace textoolkit
 		unsigned int scaledHeight;
 		std::unique_ptr<PixelAccessor> subAccessor;
 	};
+
+	/// Accesses image pixels as if the image was scaled to given size
+	/// using nearest neighbor interpolation
+	class NearestNeighborAccessor : public PixelAccessor
+	{
+	public:
+		NearestNeighborAccessor(const Image& image, unsigned int scaledWidth, unsigned int scaledHeight, unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0);
+
+		virtual Pixel getPixel(unsigned int x, unsigned int y) const override;
+		virtual PixelAccessor& setSubAccessor(std::unique_ptr<PixelAccessor>&& subAccessor) override;
+		virtual const Image& getImage() const override;
+		virtual unsigned int getLayer() const override;
+		virtual unsigned int getFace() const override;
+		virtual unsigned int getLevel() const override;
+		virtual PixelAccessor& setImage(const Image& image) override;
+		virtual PixelAccessor& setLayer(unsigned int layer) override;
+		virtual PixelAccessor& setFace(unsigned int face) override;
+		virtual PixelAccessor& setLevel(unsigned int level) override;
+
+	private:
+		Pixel sample(int x, int y) const;
+
+		unsigned int scaledWidth;
+		unsigned int scaledHeight;
+		std::unique_ptr<PixelAccessor> subAccessor;
+	};
 }
 
 #endif

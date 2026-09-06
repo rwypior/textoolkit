@@ -8,8 +8,6 @@
 
 namespace textoolkit
 {
-	// Gui texture
-
 	GuiTexture::GuiTexture()
 		: Texture()
 	{
@@ -198,9 +196,9 @@ namespace textoolkit
 		return base.commitAndSave(path);
 	}
 
-	void GuiSubTexture::set(const SubTexture& texture)
+	void GuiSubTexture::set(const SubTexture& texture, InterpolationMinMag interpolation)
 	{
-		SubTexture::set(texture);
+		SubTexture::set(texture, interpolation);
 		this->updateBitmap();
 	}
 }
