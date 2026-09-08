@@ -24,10 +24,20 @@ namespace textoolkit
 	{
 	}
 
+	Threadpool::~Threadpool()
+	{
+		for (auto& worker : this->workers)
+		{
+			if (worker.thread.joinable())
+				worker.thread.join();
+		}
+	}
+
 	void Threadpool::start()
 	{
 		for (auto& worker : this->workers)
 		{
+			worker.working = true;
 			worker.thread = std::thread(&Threadpool::work, this, &worker);
 		}
 	}
@@ -104,7 +114,9 @@ namespace textoolkit
 		while(!this->aborted)
 		{
 			if (auto task = this->getTask())
+			{
 				task();
+			}
 		}
 		worker->working = false;
 		this->waitcv.notify_one();

@@ -37,6 +37,8 @@ namespace textoolkit
 
 	bool startsWith(const std::string& haystack, const std::string& needle);
 
+	int nearestDivider(int num, int divider);
+
 	namespace model::obj
 	{
 		struct IndexVUN

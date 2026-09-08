@@ -2,9 +2,11 @@
 #include "gui/textoolkittextureview.hpp"
 #include "gui/textoolkitnewdialog.hpp"
 #include "gui/textoolkitaboutwindow.hpp"
+#include "gui/textoolkitprogressdialog.hpp"
 #include "gui/texture.hpp"
 #include "gui/util.hpp"
 #include "texture/textureloader.hpp"
+#include "common/threadpool.hpp"
 
 #include <wx/filedlg.h>
 #include <wx/stdpaths.h>
@@ -36,9 +38,10 @@ namespace textoolkit
 
 	void TexToolkitMainWindow::openTexture(const std::string& path)
 	{
-		TextureLoader loader;
 		auto name = wxFileName(path).GetFullName().ToStdString();
-		if (auto texture = loader.loadTexture(path))
+		auto texture = this->loadTexture(path);
+
+		if (texture)
 		{
 			this->openTexture(std::make_unique<GuiTexture>(std::move(*texture)), name);
 		}
@@ -52,6 +55,22 @@ namespace textoolkit
 		if (!page)
 			return nullptr;
 		return static_cast<TexToolkitTextureView*>(page);
+	}
+
+	std::unique_ptr<Texture> TexToolkitMainWindow::loadTexture(const std::string& path)
+	{
+		TextureLoader loader;
+		std::unique_ptr<Texture> texture;
+
+		FiniteThreadpool tp(1);
+		tp.enqueue([&texture, &loader, &path]() {
+			texture = loader.loadTexture(path);
+		});
+
+		TexToolkitProgressDialog progress(this);
+		progress.wait(tp);
+
+		return texture;
 	}
 
 	void TexToolkitMainWindow::loadRecent()
@@ -233,8 +252,10 @@ namespace textoolkit
 		
 		this->addRecent(path); // Bump up in the recent list
 		auto name = wxFileName(path).GetFullName().ToStdString();
-		TextureLoader loader;
-		this->openTexture(std::make_unique<GuiTexture>(std::move(*loader.loadTexture(path))), name);
+		
+		auto texture = this->loadTexture(path);
+
+		this->openTexture(std::make_unique<GuiTexture>(std::move(*texture)), name);
 	}
 
 	void TexToolkitMainWindow::eventAbout(wxCommandEvent& event)

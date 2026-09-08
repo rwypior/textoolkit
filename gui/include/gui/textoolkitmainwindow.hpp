@@ -9,6 +9,7 @@ namespace textoolkit
 {
 	class GuiTexture;
 	class TexToolkitTextureView;
+	class Texture;
 
 	namespace renderer
 	{
@@ -33,6 +34,8 @@ namespace textoolkit
 		TexToolkitTextureView* getCurrentTextureView();
 
 	private:
+		std::unique_ptr<Texture> loadTexture(const std::string& path);
+
 		void loadRecent();
 		void addRecent(const std::string& path);
 		void saveAs(GuiTexture& texture);

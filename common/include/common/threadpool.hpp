@@ -23,7 +23,7 @@ namespace textoolkit
 		struct Worker
 		{
 			std::thread thread;
-			bool working = true;
+			bool working = false;
 		};
 
 	public:
@@ -41,6 +41,7 @@ namespace textoolkit
 
 	public:
 		Threadpool(std::optional<unsigned int> numThreads = {});
+		~Threadpool();
 		void start();
 		void abort();
 		void enqueue(Task&& task);

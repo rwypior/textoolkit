@@ -138,6 +138,11 @@ namespace textoolkit
 		return haystack.compare(0, needle.length(), needle) == 0;
 	}
 
+	int nearestDivider(int num, int divider)
+	{
+		return ((num / divider) + 1) * divider;
+	}
+
 	namespace model::obj
 	{
 		std::optional<glm::vec3> extractVec3(const std::string& line, unsigned int pos)
@@ -186,7 +191,7 @@ namespace textoolkit
 
 		Face extractFace(const std::string& line, unsigned int pos)
 		{
-			std::regex regex(R"REGEX(f (\d+(?:\/\d+(?:\/\d+)?)? ?){4})REGEX");
+			std::regex regex(R"REGEX(f (\d+(?:\/\d+(?:\/\d+)?)?(?: |$)){4})REGEX");
 			if (std::regex_search(line, regex))
 				return "Only triangulated faces are supported";
 			

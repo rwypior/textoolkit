@@ -12,7 +12,6 @@ Support more formats:
 
 Improve GUI:
 ------------
-- Make progress bar working
 - Make the editor working
 - Add basic navigation tools to flat view (panning, zooming, etc.)
 - Add settings

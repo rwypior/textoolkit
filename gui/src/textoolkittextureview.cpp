@@ -363,10 +363,9 @@ namespace textoolkit
 		filterMagChoices.Add("Nearest", static_cast<int>(renderer::FilteringMag::Nearest));
 		filterMagChoices.Add("Linear", static_cast<int>(renderer::FilteringMag::Linear));
 
-		this->propertyGrid->Append(new wxPropertyCategory("3D display settings", "grp3ddisplaysettings"));
 		this->propertyGrid->Append(new wxPropertyCategory("3D display settings", propGrp3DDisplaySettings));
-		this->propertyGrid->Append(new wxEnumProperty("Wrap S", propDisplayWrapS, wrappingChoices));
-		this->propertyGrid->Append(new wxEnumProperty("Wrap T", propDisplayWrapT, wrappingChoices));
+		this->propertyGrid->Append(new wxEnumProperty("Wrap S", propDisplayWrapS, wrappingChoices, 3));
+		this->propertyGrid->Append(new wxEnumProperty("Wrap T", propDisplayWrapT, wrappingChoices, 3));
 		this->propertyGrid->Append(new wxEnumProperty("Filtering min", propDisplayFilterMin, filterMinChoices));
 		this->propertyGrid->Append(new wxEnumProperty("Filtering mag", propDisplayFilterMag, filterMagChoices));
 		this->propertyGrid->Append(new wxBoolProperty("Show wireframe", propDisplayWireframe));
