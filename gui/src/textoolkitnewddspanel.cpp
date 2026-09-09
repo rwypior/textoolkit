@@ -76,7 +76,7 @@ namespace textoolkit
 	void TexToolkitnewDdsPanel::updateWidgetStates()
 	{
 		auto type = this->typeChoice->GetStringSelection();
-		if (type == "3D Texture" || type == "Array texture")
+		if (type == "3D Texture" || type == "2D array texture")
 			this->layersCount->Enable();
 		else
 			this->layersCount->Disable();

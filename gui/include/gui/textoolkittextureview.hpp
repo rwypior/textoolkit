@@ -35,12 +35,14 @@ namespace textoolkit
 		static constexpr char propDisplayFilterMin[] = "displayfiltermin";
 		static constexpr char propDisplayFilterMag[] = "displayfiltermag";
 		static constexpr char propDisplayWireframe[] = "displaywireframe";
+		static constexpr char propGrp3DCubemapAlignment[] = "grp3dcubemapalignment";
 		static constexpr char propCubeAlignment0[] = "cubeface0";
 		static constexpr char propCubeAlignment1[] = "cubeface1";
 		static constexpr char propCubeAlignment2[] = "cubeface2";
 		static constexpr char propCubeAlignment3[] = "cubeface3";
 		static constexpr char propCubeAlignment4[] = "cubeface4";
 		static constexpr char propCubeAlignment5[] = "cubeface5";
+		static constexpr char propGrp3DUserProperties[] = "grp3duserproperties";
 
 		using SubTextureContainer = std::vector<std::unique_ptr<GuiSubTexture>>;
 
@@ -66,6 +68,9 @@ namespace textoolkit
 		TexToolkitSubimageEntry* getFace(unsigned int face);
 		TexToolkitSubimageEntry* getLevel(unsigned int level);
 
+		renderer::DisplayMode* getDisplayMode();
+		bool isUserProperty(const std::string& propname) const;
+
 		void updateFlatView(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0);
 		void updateSubimages(UpdateTargets targets = UpdateTargets::default(true));
 		void updateLayers(SubTextureContainer* subtextures = nullptr);
@@ -73,6 +78,7 @@ namespace textoolkit
 		void updateLevels(SubTextureContainer* subtextures = nullptr);
 
 		void setupProperties();
+		void setupUserProperties();
 		void update3DView();
 		void updateModels();
 		void updateDisplayModes();

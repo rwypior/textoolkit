@@ -56,6 +56,7 @@ namespace textoolkit
 		this->updateFlatView();
 		this->updateSubimages();
 		this->update3DView();
+		this->setupUserProperties();
 
 		this->refreshDisplayModeListButton->Bind(wxEVT_BUTTON, &TexToolkitTextureView::displayModeUpdateButtonClicked, this);
 		this->displaymode->Bind(wxEVT_COMBOBOX, &TexToolkitTextureView::displayModeSelected, this);
@@ -179,6 +180,29 @@ namespace textoolkit
 				return &subentry;
 		}
 		return nullptr;
+	}
+
+	renderer::DisplayMode* TexToolkitTextureView::getDisplayMode()
+	{
+		unsigned int modeSelection = this->displaymode->GetSelection();
+		if (modeSelection == wxNOT_FOUND)
+			return nullptr;
+		return reinterpret_cast<renderer::DisplayMode*>(this->displaymode->GetClientData(modeSelection));
+	}
+
+	bool TexToolkitTextureView::isUserProperty(const std::string& propname) const
+	{
+		auto prop = this->propertyGrid->GetProperty(propname);
+		if (!prop)
+			return false;
+
+		if (auto parent = prop->GetParent())
+		{
+			auto userpropertiesgrp = this->propertyGrid->GetProperty(propGrp3DUserProperties);
+			return parent->GetName() == userpropertiesgrp->GetName();
+		}
+
+		return false;
 	}
 
 	void TexToolkitTextureView::updateFlatView(unsigned int layer, unsigned int face, unsigned int level)
@@ -378,7 +402,7 @@ namespace textoolkit
 		alignmentChoices.Add("Positive Z", static_cast<int>(renderer::CubeFace::PositiveZ));
 		alignmentChoices.Add("Negative Z", static_cast<int>(renderer::CubeFace::NegativeZ));
 
-		this->propertyGrid->Append(new wxPropertyCategory("Cubemap alignment", "grp3dcubemapalignment"));
+		this->propertyGrid->Append(new wxPropertyCategory("Cubemap alignment", propGrp3DCubemapAlignment));
 		this->propertyGrid->Append(new wxEnumProperty("Face 0", propCubeAlignment0, alignmentChoices, 0));
 		this->propertyGrid->Append(new wxEnumProperty("Face 1", propCubeAlignment1, alignmentChoices, 1));
 		this->propertyGrid->Append(new wxEnumProperty("Face 2", propCubeAlignment2, alignmentChoices, 2));
@@ -386,7 +410,7 @@ namespace textoolkit
 		this->propertyGrid->Append(new wxEnumProperty("Face 4", propCubeAlignment4, alignmentChoices, 4));
 		this->propertyGrid->Append(new wxEnumProperty("Face 5", propCubeAlignment5, alignmentChoices, 5));
 
-		this->propertyGrid->Append(new wxPropertyCategory("Texture properties", "grp3ddisplaysettings"));
+		this->propertyGrid->Append(new wxPropertyCategory("User properties", propGrp3DUserProperties));
 
 		this->canvas->setWrappingS(getProperty<renderer::Wrapping>(this->propertyGrid->GetProperty(propDisplayWrapS)));
 		this->canvas->setWrappingT(getProperty<renderer::Wrapping>(this->propertyGrid->GetProperty(propDisplayWrapT)));
@@ -403,12 +427,39 @@ namespace textoolkit
 		});
 	}
 
+	void TexToolkitTextureView::setupUserProperties()
+	{
+		auto displayMode = this->getDisplayMode();
+		if (!displayMode)
+			return;
+
+		auto userpropertiesgrp = this->propertyGrid->GetProperty(propGrp3DUserProperties);
+		userpropertiesgrp->DeleteChildren();
+
+		for (auto& propname : displayMode->properties)
+		{
+			auto type = *this->canvas->getUserPropertyType(propname);
+			switch (type)
+			{
+			case renderer::UniformType::Int:
+				userpropertiesgrp->AppendChild(new wxIntProperty(propname, propname, 0));
+				break;
+			case renderer::UniformType::Uint:
+				userpropertiesgrp->AppendChild(new wxUIntProperty(propname, propname, 0));
+				break;
+			case renderer::UniformType::Float:
+				userpropertiesgrp->AppendChild(new wxFloatProperty(propname, propname, 0.0));
+				break;
+			}
+		}
+
+		this->propertyGrid->Update();
+		this->propertyGrid->Refresh();
+	}
+
 	void TexToolkitTextureView::update3DView()
 	{
-		unsigned int modelSelection = this->displaymode->GetSelection();
-		if (modelSelection == wxNOT_FOUND)
-			return;
-		auto displayMode = reinterpret_cast<renderer::DisplayMode*>(this->displaymode->GetClientData(modelSelection));
+		auto displayMode = this->getDisplayMode();
 		auto model = this->modelDatabase.findModel(displayMode->model);
 		if (!model)
 			return;
@@ -599,30 +650,37 @@ namespace textoolkit
 	void TexToolkitTextureView::displayModeSelected(wxCommandEvent& event)
 	{
 		this->update3DView();
+		this->setupUserProperties();
 	}
 
 	void TexToolkitTextureView::propertyChanged(wxPropertyGridEvent& event)
 	{
-		if (event.m_propertyName == propDisplayWrapS)
+		const std::string propname = event.m_propertyName.ToStdString();
+		if (this->isUserProperty(propname))
+		{
+			auto prop = createRenderProperty(event.GetValue());
+			this->canvas->setUserProperty(propname, prop);
+		}
+		else if (propname == propDisplayWrapS)
 			this->canvas->setWrappingS(static_cast<renderer::Wrapping>(event.GetValue().GetInteger()));
-		else if (event.m_propertyName == propDisplayWrapT)
+		else if (propname == propDisplayWrapT)
 			this->canvas->setWrappingT(static_cast<renderer::Wrapping>(event.GetValue().GetInteger()));
-		else if (event.m_propertyName == propDisplayFilterMin)
+		else if (propname == propDisplayFilterMin)
 			this->canvas->setFilterMin(static_cast<renderer::FilteringMin>(event.GetValue().GetInteger()));
-		else if (event.m_propertyName == propDisplayFilterMag)
+		else if (propname == propDisplayFilterMag)
 			this->canvas->setFilterMag(static_cast<renderer::FilteringMag>(event.GetValue().GetInteger()));
-		else if (event.m_propertyName == propDisplayWireframe)
+		else if (propname == propDisplayWireframe)
 			this->canvas->setShowWireframe(event.GetValue().GetBool());
 		else if (
-			event.m_propertyName == propCubeAlignment0 ||
-			event.m_propertyName == propCubeAlignment1 ||
-			event.m_propertyName == propCubeAlignment2 ||
-			event.m_propertyName == propCubeAlignment3 ||
-			event.m_propertyName == propCubeAlignment4 ||
-			event.m_propertyName == propCubeAlignment5
+			propname == propCubeAlignment0 ||
+			propname == propCubeAlignment1 ||
+			propname == propCubeAlignment2 ||
+			propname == propCubeAlignment3 ||
+			propname == propCubeAlignment4 ||
+			propname == propCubeAlignment5
 		)
 		{
-			this->fixAlignments(event.m_propertyName);
+			this->fixAlignments(propname);
 			this->canvas->setCubeAlignment({
 				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment0)),
 				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment1)),
@@ -632,6 +690,8 @@ namespace textoolkit
 				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment5))
 				});
 		}
+
+		this->canvas->Refresh();
 	}
 
 	void TexToolkitTextureView::selectBaseClicked(wxHyperlinkEvent& event)

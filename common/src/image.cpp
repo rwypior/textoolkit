@@ -16,6 +16,8 @@ namespace textoolkit
 	{
 		if (name == "Texture2D")
 			return TextureType::Texture2D;
+		if (name == "Texture2DArray")
+			return TextureType::Texture2DArray;
 		if (name == "Texture3D")
 			return TextureType::Texture3D;
 		if (name == "TextureCube")
@@ -30,6 +32,7 @@ namespace textoolkit
 		switch (type)
 		{
 		case TextureType::Texture2D: return "Texture2D";
+		case TextureType::Texture2DArray: return "Texture2DArray";
 		case TextureType::Texture3D: return "Texture3D";
 		case TextureType::TextureCube: return "TextureCube";
 		}

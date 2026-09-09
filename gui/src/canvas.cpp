@@ -287,6 +287,16 @@ namespace textoolkit
 		return glm::uvec2(size.x, size.y);
 	}
 
+	void Canvas::setUserProperty(const std::string& name, const renderer::RenderProperty& prop)
+	{
+		this->renderer.setUserProperty(name, prop);
+	}
+
+	std::optional<renderer::UniformType> Canvas::getUserPropertyType(const std::string& name) const
+	{
+		return this->renderer.getUserPropertyType(name);
+	}
+
 	void Canvas::setDisplayMode(const renderer::DisplayMode& mode)
 	{
 		this->renderer.setDisplayMode(mode);

@@ -63,6 +63,13 @@ namespace textoolkit::renderer
 		Linear
 	};
 
+	enum class UniformType
+	{
+		Int,
+		Uint,
+		Float
+	};
+
 	using CubemapAlignment = std::array<CubeFace, static_cast<int>(CubeFace::_count)>;
 
 	class UniformData
@@ -142,6 +149,7 @@ namespace textoolkit::renderer
 		void set(const glm::mat3& mtx);
 		void set(const glm::mat4& mtx);
 		Visitor getSetter();
+		UniformType getType();
 
 	private:
 		std::unique_ptr<Impl> impl;
@@ -252,6 +260,7 @@ namespace textoolkit::renderer
 
 		void render();
 		Shader* getShader(const std::string& name);
+		const Shader* getShader(const std::string& name) const;
 
 		void enqueue(Object* object);
 
@@ -287,11 +296,15 @@ namespace textoolkit::renderer
 		void setShowWireframe(bool show);
 		void setCubeAlignment(const CubemapAlignment& alignment);
 
+		void setUserProperty(const std::string& name, const RenderProperty& prop);
+		std::optional<UniformType> getUserPropertyType(const std::string& name) const;
+
 	private:
 		std::shared_ptr<Context> context;
 		std::priority_queue<Object*, std::vector<Object*>, RendererPriorityHandler> renderQueue;
 		std::unordered_map<std::string, Shader> shaders;
 		RenderProperties properties{};
+		RenderProperties userProperties{};
 		Camera camera;
 		Light light;
 		std::unique_ptr<textoolkit::renderer::Texture> texture;

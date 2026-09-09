@@ -152,6 +152,8 @@ namespace textoolkit
 		switch (this->dds.target())
 		{
 		case gli::target::TARGET_CUBE: return TextureType::TextureCube;
+		case gli::target::TARGET_2D_ARRAY: return TextureType::Texture2DArray;
+		case gli::target::TARGET_3D: return TextureType::Texture3D;
 		}
 
 		return TextureType::Texture2D;

@@ -1,0 +1,4 @@
+[shader]
+name = array
+fragment = array.frag
+vertex = default.vert

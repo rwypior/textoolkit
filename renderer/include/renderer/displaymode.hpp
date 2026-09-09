@@ -13,12 +13,20 @@ namespace textoolkit::renderer
 		std::string model;
 		std::string shader;
 		std::unordered_set<std::string> defaultFor;
+		std::unordered_set<std::string> properties;
 
-		DisplayMode(const std::string& name, const std::string& model, const std::string& shader, const std::unordered_set<std::string>& defaultFor = {})
+		DisplayMode(
+			const std::string& name, 
+			const std::string& model, 
+			const std::string& shader, 
+			const std::unordered_set<std::string>& defaultFor = {},
+			const std::unordered_set<std::string>& properties = {}
+		)
 			: name(name)
 			, model(model)
 			, shader(shader)
 			, defaultFor(defaultFor)
+			, properties(properties)
 		{
 		}
 		

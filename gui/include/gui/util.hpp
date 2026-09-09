@@ -1,6 +1,8 @@
 #ifndef _h_textoolkit_gui_util
 #define _h_textoolkit_gui_util
 
+#include "renderer/api.hpp"
+
 #include <wx/wx.h>
 #include <wx/dir.h>
 
@@ -22,6 +24,8 @@ namespace textoolkit
 	wxArrayString getShaders();
 
 	std::map<std::string, renderer::DisplayMode> loadDisplayModes(const std::string& path);
+
+	renderer::RenderProperty createRenderProperty(const wxVariant& data);
 
 	/// Bind an event to given class and all of it's children recursively
 	template <typename EventTag, typename Class, typename EventArg, typename EventHandler>

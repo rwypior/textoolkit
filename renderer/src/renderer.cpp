@@ -28,6 +28,7 @@ namespace
 		{
 		case textoolkit::Image::TextureType::TextureCube: return GL_TEXTURE_CUBE_MAP;
 		case textoolkit::Image::TextureType::Texture2D: return GL_TEXTURE_2D;
+		case textoolkit::Image::TextureType::Texture2DArray: return GL_TEXTURE_2D_ARRAY;
 		}
 
 		return GL_TEXTURE_2D;
@@ -155,12 +156,14 @@ namespace textoolkit::renderer
 	class GLUniformData : public UniformData
 	{
 	public:
-		GLUniformData(GLuint id)
+		GLUniformData(GLuint id, GLenum type)
 			: id(id)
+			, type(type)
 		{
 		}
 
 		GLuint id;
+		GLenum type;
 	};
 
 	class Uniform::Impl
@@ -170,6 +173,7 @@ namespace textoolkit::renderer
 	public:
 		Impl(const UniformData& data)
 			: id(static_cast<const GLUniformData&>(data).id)
+			, type(static_cast<const GLUniformData&>(data).type)
 		{
 		}
 
@@ -180,6 +184,7 @@ namespace textoolkit::renderer
 
 	private:
 		GLuint id;
+		GLenum type;
 	};
 
 	// Uniform
@@ -228,6 +233,19 @@ namespace textoolkit::renderer
 	Uniform::Visitor Uniform::getSetter()
 	{
 		return Visitor(*this);
+	}
+
+	UniformType Uniform::getType()
+	{
+		switch (this->impl->type)
+		{
+		case GL_INT: return UniformType::Int;
+		case GL_UNSIGNED_INT: return UniformType::Uint;
+		case GL_FLOAT: return UniformType::Float;
+		}
+
+		assert(!"Invalid uniform type");
+		return UniformType::Int;
 	}
 
 	// Shader impl
@@ -390,9 +408,9 @@ namespace textoolkit::renderer
 			{
 				GLchar name[256];
 				GLint size = 0;
-				GLenum type;
+				GLenum type = 0;
 				glGetActiveUniform(this->program, (GLuint)i, sizeof(name), NULL, &size, &type, name);
-				GLUniformData data(glGetUniformLocation(this->program, name));
+				GLUniformData data(glGetUniformLocation(this->program, name), type);
 				std::string namelower = name;
 				std::transform(namelower.begin(), namelower.end(), namelower.begin(), [](const auto& c) { return std::tolower(c); });
 				this->uniforms[namelower] = std::make_unique<Uniform>(data);
@@ -493,6 +511,7 @@ namespace textoolkit::renderer
 				glCheckError();
 				break;
 			case GL_TEXTURE_3D:
+			case GL_TEXTURE_2D_ARRAY:
 				glTexStorage3D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight(), image.getLayers());
 				glCheckError();
 				break;
@@ -533,6 +552,7 @@ namespace textoolkit::renderer
 				this->setData2D(image);
 				break;
 			case GL_TEXTURE_3D:
+			case GL_TEXTURE_2D_ARRAY:
 				this->setData3D(image);
 				break;
 			case GL_TEXTURE_CUBE_MAP:
@@ -564,6 +584,7 @@ namespace textoolkit::renderer
 			this->bind();
 			this->wrapS = translateWrapping(wrap);
 			glTexParameteri(this->target, GL_TEXTURE_WRAP_S, this->wrapS);
+			glCheckError();
 		}
 
 		void setWrappingT(Wrapping wrap)
@@ -571,6 +592,7 @@ namespace textoolkit::renderer
 			this->bind();
 			this->wrapT = translateWrapping(wrap);
 			glTexParameteri(this->target, GL_TEXTURE_WRAP_T, this->wrapT);
+			glCheckError();
 		}
 
 		void setFilterMin(FilteringMin filter)
@@ -578,6 +600,7 @@ namespace textoolkit::renderer
 			this->bind();
 			this->filterMin = translateFilteringMin(filter);
 			glTexParameteri(this->target, GL_TEXTURE_MIN_FILTER, this->filterMin);
+			glCheckError();
 		}
 
 		void setFilterMag(FilteringMag filter)
@@ -585,6 +608,7 @@ namespace textoolkit::renderer
 			this->bind();
 			this->filterMag = translateFilteringMag(filter);
 			glTexParameteri(this->target, GL_TEXTURE_MAG_FILTER, this->filterMag);
+			glCheckError();
 		}
 
 	private:
@@ -598,26 +622,31 @@ namespace textoolkit::renderer
 				auto width = image.getWidth(level);
 				auto height = image.getHeight(level);
 				if (image.isCompressed())
+				{
 					glCompressedTexSubImage2D(
-						this->target, 
-						level, 
-						0, 0, 
-						width, height, 
-						internalFormat, 
-						image.getSize(0, 0, level), 
+						this->target,
+						level,
+						0, 0,
+						width, height,
+						internalFormat,
+						image.getSize(0, 0, level),
 						image.getBytesPtr(0, 0, level)
 					);
+					glCheckError();
+				}
 				else
+				{
 					glTexSubImage2D(
-						this->target, 
-						level, 
-						0, 0, 
-						width, height, 
+						this->target,
+						level,
+						0, 0,
+						width, height,
 						translateFormat(image.getInfoMode(), image.getFormat()),
-						translateDataType(image.getInfoMode(), image.getDataType()), 
+						translateDataType(image.getInfoMode(), image.getDataType()),
 						image.getBytesPtr(0, 0, level)
 					);
-				glCheckError();
+					glCheckError();
+				}
 			}
 		}
 
@@ -626,32 +655,42 @@ namespace textoolkit::renderer
 			glBindTexture(this->target, this->textureId);
 			glCheckError();
 			GLenum internalFormat = translateInternalFormat(image.getInfoMode(), image.getInternalFormat());
-			for (unsigned int level = 0; level < image.getLevels(); level++)
+			for (unsigned int layer = 0; layer < image.getLayers(); layer++)
 			{
-				auto width = image.getWidth(level);
-				auto height = image.getHeight(level);
-				auto depth = image.getDepth(level);
-				if (image.isCompressed())
-					glCompressedTexSubImage3D(
-						this->target, 
-						level, 
-						0, 0, 0, 
-						width, height, depth, 
-						internalFormat, 
-						image.getSize(0, 0, level), 
-						image.getBytesPtr(0, 0, level)
-					);
-				else
-					glTexSubImage3D(
-						this->target, 
-						level, 
-						0, 0, 0, 
-						width, height, depth, 
-						internalFormat, 
-						translateDataType(image.getInfoMode(), image.getDataType()), 
-						image.getBytesPtr(0, 0, level)
-					);
-				glCheckError();
+				for (unsigned int level = 0; level < image.getLevels(); level++)
+				{
+					auto width = image.getWidth(level);
+					auto height = image.getHeight(level);
+					auto depth = image.getDepth(level);
+					if (image.isCompressed())
+					{
+						glCompressedTexSubImage3D(
+							this->target,
+							level,
+							0, 0, layer,
+							width, height, 1,
+							//width, height, depth,
+							internalFormat,
+							image.getSize(layer, 0, level),
+							image.getBytesPtr(layer, 0, level)
+						);
+						glCheckError();
+					}
+					else
+					{
+						glTexSubImage3D(
+							this->target,
+							level,
+							0, 0, layer,
+							width, height, 1,
+							//width, height, depth,
+							translateFormat(image.getInfoMode(), image.getFormat()),
+							translateDataType(image.getInfoMode(), image.getDataType()),
+							image.getBytesPtr(layer, 0, level)
+						);
+						glCheckError();
+					}
+				}
 			}
 		}
 
@@ -668,26 +707,31 @@ namespace textoolkit::renderer
 					auto width = image.getWidth(level);
 					auto height = image.getHeight(level);
 					if (image.isCompressed())
+					{
 						glCompressedTexSubImage2D(
-							target, 
-							level, 
-							0, 0, 
-							width, height, 
-							internalFormat, 
-							image.getSize(0, face, level), 
+							target,
+							level,
+							0, 0,
+							width, height,
+							internalFormat,
+							image.getSize(0, face, level),
 							image.getBytesPtr(0, face, level)
 						);
+						glCheckError();
+					}
 					else
+					{
 						glTexSubImage2D(
-							target, 
-							level, 
-							0, 0, 
-							width, height, 
-							translateFormat(image.getInfoMode(), image.getFormat()), 
-							translateDataType(image.getInfoMode(), image.getDataType()), 
+							target,
+							level,
+							0, 0,
+							width, height,
+							translateFormat(image.getInfoMode(), image.getFormat()),
+							translateDataType(image.getInfoMode(), image.getDataType()),
 							image.getBytesPtr(0, face, level)
 						);
-					glCheckError();
+						glCheckError();
+					}
 				}
 			}
 		}
@@ -1143,7 +1187,7 @@ namespace textoolkit::renderer
 
 			// Set uniforms
 			const auto& properties = object->getProperties();
-			for (const auto& container : { this->properties, properties })
+			for (const auto& container : { this->userProperties, this->properties, properties })
 			{
 				for (const auto& [name, prop] : container)
 				{
@@ -1184,6 +1228,11 @@ namespace textoolkit::renderer
 		if (it == this->shaders.end())
 			return nullptr;
 		return &it->second;
+	}
+
+	const Shader* Renderer::getShader(const std::string& name) const
+	{
+		return const_cast<const Shader*>(const_cast<Renderer*>(this)->getShader(name));
 	}
 
 	void Renderer::enqueue(Object* object)
@@ -1361,5 +1410,22 @@ namespace textoolkit::renderer
 	void Renderer::setCubeAlignment(const CubemapAlignment& alignment)
 	{
 		this->texture->setCubemapAlignment(alignment);
+	}
+
+	void Renderer::setUserProperty(const std::string& name, const RenderProperty& prop)
+	{
+		this->userProperties[name] = prop;
+	}
+
+	std::optional<UniformType> Renderer::getUserPropertyType(const std::string& name) const
+	{
+		auto shader = this->getShader(this->displayMode.shader);
+		if (!shader)
+			return {};
+
+		if (auto uniform = shader->getUniform(name))
+			return uniform->getType();
+
+		return {};
 	}
 }

@@ -53,6 +53,8 @@ namespace textoolkit
         void clearObjects();
 
         glm::uvec2 getViewportSize() const;
+        void setUserProperty(const std::string& name, const renderer::RenderProperty& prop);
+        std::optional<renderer::UniformType> getUserPropertyType(const std::string& name) const;
 
         void setDisplayMode(const renderer::DisplayMode& mode);
         void setWrappingS(renderer::Wrapping wrap);

@@ -81,6 +81,7 @@ namespace textoolkit
 			auto itModel = section.second.find("model");
 			auto itShader = section.second.find("shader");
 			auto itDefault = section.second.find("default");
+			auto itProperties = section.second.find("properties");
 
 			if (itName == section.second.end())
 			{
@@ -106,15 +107,46 @@ namespace textoolkit
 				defaults.insert(splitted.begin(), splitted.end());
 			}
 
+			std::unordered_set<std::string> properties;
+			if (itProperties != section.second.end())
+			{
+				auto splitted = split(itProperties->second->toString(), ",");
+				std::transform(splitted.begin(), splitted.end(), splitted.begin(), [](std::string& el) { return trimmed(el); });
+				properties.insert(splitted.begin(), splitted.end());
+			}
+
 			displayModes[key] = renderer::DisplayMode(
 				trimmed(itName->second->toString()),
 				trimmed(itModel->second->toString()),
 				trimmed(itShader->second->toString()),
-				defaults
+				defaults,
+				properties
 			);
 		}
 
 		return displayModes;
+	}
+
+	renderer::RenderProperty createRenderProperty(const wxVariant& data)
+	{
+		if (
+			data.IsType("long") ||
+			data.IsType("longlong") ||
+			data.IsType("char")
+			)
+			return data.GetInteger();
+
+		if (
+			data.IsType("double")
+			)
+			return static_cast<float>(data.GetDouble());
+
+		if (
+			data.IsType("bool")
+			)
+			return data.GetBool();
+
+		return data.GetInteger();
 	}
 
 	// Model traverser
