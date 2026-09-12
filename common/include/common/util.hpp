@@ -13,6 +13,7 @@
 #include <variant>
 #include <tuple>
 #include <functional>
+#include <map>
 
 #ifdef TEXTOOLKIT_WINDOWS
 #	define breakpoint() __debugbreak()
@@ -35,9 +36,23 @@ namespace textoolkit
 	std::string trimmed(std::string s);
 	std::vector<std::string> split(const std::string& string, const std::string& delimiter);
 
+	bool isNumber(const std::string& str);
+
 	bool startsWith(const std::string& haystack, const std::string& needle);
 
 	int nearestDivider(int num, int divider);
+
+	template<typename Key, typename Value>
+	[[nodiscard]]
+	std::map<Value, Key> flipMap(const std::map<Key, Value>& container)
+	{
+		std::map<Value, Key> result;
+		for (const auto& pair : container)
+		{
+			result[pair.second] = pair.first;
+		}
+		return result;
+	}
 
 	namespace model::obj
 	{

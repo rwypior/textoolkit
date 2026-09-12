@@ -40,7 +40,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.h")
     file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.h" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/include/gui")
 endif()
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.cpp")
-    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.cpp"  DESTINATION"${CMAKE_CURRENT_SOURCE_DIR}/src")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.cpp"  DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/src")
 endif()
 
 # Copy DLLs to exe directory

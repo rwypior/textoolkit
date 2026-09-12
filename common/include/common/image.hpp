@@ -87,17 +87,35 @@ namespace textoolkit
 			BottomTop // 0, 0 coordinate will point to bottom left pixel on the texture
 		};
 
+		enum class CubeFace
+		{
+			PositiveX,
+			NegativeX,
+			PositiveY,
+			NegativeY,
+			PositiveZ,
+			NegativeZ,
+			_count,
+			Invalid,
+		};
+
 	public:
 		virtual ~Image() = default;
 
 		static TextureType translateTextureType(const std::string& name);
 		static std::string translateTextureType(TextureType type);
+		
 		static TextureInternalFormat translateInternalFormat(const std::string& name);
 		static std::string translateInternalFormat(TextureInternalFormat type);
 		static std::map<std::string, TextureInternalFormat> getInternalFormatMap();
+		
 		static CompressionType translateCompression(const std::string& name);
 		static std::string translateCompression(CompressionType type);
 		static std::map<std::string, CompressionType> getCompressionMap();
+		
+		static CubeFace translateCubeFace(const std::string& name);
+		static std::string translateCubeFace(CubeFace face);
+		static std::map<std::string, CubeFace> getCubeFaceMap();
 
 		virtual Type getType() const = 0;
 		virtual TextureType getTextureType() const = 0;

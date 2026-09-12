@@ -27,6 +27,10 @@ namespace textoolkit
 
 	renderer::RenderProperty createRenderProperty(const wxVariant& data);
 
+	/// Match a string to a wildcard, where wildcard follows the syntax
+	/// (string)|(string)[;(string)...]
+	bool matchWildcard(const std::string& string, const std::string& wildcard);
+
 	/// Bind an event to given class and all of it's children recursively
 	template <typename EventTag, typename Class, typename EventArg, typename EventHandler>
 	void bindRecursively(

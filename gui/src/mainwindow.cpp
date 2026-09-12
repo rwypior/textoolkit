@@ -5,6 +5,8 @@
 // PLEASE DO *NOT* EDIT THIS FILE!
 ///////////////////////////////////////////////////////////////////////////
 
+#include "gui/autowraplabel.hpp"
+
 #include "gui/mainwindow.h"
 
 ///////////////////////////////////////////////////////////////////////////
@@ -24,10 +26,6 @@ MainWindow::MainWindow( wxWindow* parent, wxWindowID id, const wxString& title, 
 	open = new wxMenuItem( file, ID_OPEN, wxString( _("Open") ) + wxT('\t') + wxT("Ctrl+O"), wxEmptyString, wxITEM_NORMAL );
 	file->Append( open );
 
-	wxMenuItem* recent;
-	recent = new wxMenuItem( file, ID_RECENT, wxString( _("Recent...") ) + wxT('\t') + wxT("Alt+R"), wxEmptyString, wxITEM_NORMAL );
-	file->Append( recent );
-
 	wxMenuItem* save;
 	save = new wxMenuItem( file, ID_SAVE, wxString( _("Save") ) + wxT('\t') + wxT("Ctrl+S"), wxEmptyString, wxITEM_NORMAL );
 	file->Append( save );
@@ -43,6 +41,17 @@ MainWindow::MainWindow( wxWindow* parent, wxWindowID id, const wxString& title, 
 	file->Append( exit );
 
 	mainmenu->Append( file, _("File") );
+
+	tools = new wxMenu();
+	wxMenuItem* importImage;
+	importImage = new wxMenuItem( tools, ID_IMPORT_IMAGE, wxString( _("Import image") ) + wxT('\t') + wxT("Ctrl+I"), wxEmptyString, wxITEM_NORMAL );
+	tools->Append( importImage );
+
+	wxMenuItem* batchImport;
+	batchImport = new wxMenuItem( tools, ID_BATCH_IMPORT, wxString( _("Batch import") ) + wxT('\t') + wxT("Ctrl+B"), wxEmptyString, wxITEM_NORMAL );
+	tools->Append( batchImport );
+
+	mainmenu->Append( tools, _("Tools") );
 
 	help = new wxMenu();
 	wxMenuItem* about;
@@ -932,5 +941,161 @@ ProgressDialog::ProgressDialog( wxWindow* parent, wxWindowID id, const wxString&
 }
 
 ProgressDialog::~ProgressDialog()
+{
+}
+
+BatchImportDialog::BatchImportDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+
+	wxBoxSizer* bSizer44;
+	bSizer44 = new wxBoxSizer( wxVERTICAL );
+
+	m_panel47 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer51;
+	bSizer51 = new wxBoxSizer( wxVERTICAL );
+
+	m_staticText24 = new wxStaticText( m_panel47, wxID_ANY, _("Select directory or files to import"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText24->Wrap( -1 );
+	bSizer51->Add( m_staticText24, 0, wxALL, 5 );
+
+
+	m_panel47->SetSizer( bSizer51 );
+	m_panel47->Layout();
+	bSizer51->Fit( m_panel47 );
+	bSizer44->Add( m_panel47, 0, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 5 );
+
+	m_panel40 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer45;
+	bSizer45 = new wxBoxSizer( wxHORIZONTAL );
+
+	m_panel42 = new wxPanel( m_panel40, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer46;
+	bSizer46 = new wxBoxSizer( wxVERTICAL );
+
+	importFolderButton = new wxButton( m_panel42, wxID_ANY, _("Import folder"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer46->Add( importFolderButton, 0, wxALIGN_CENTER|wxALL, 5 );
+
+	m_staticText18 = new wxStaticText( m_panel42, wxID_ANY, _("Import all images from selected directory."), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText18->Wrap( -1 );
+	bSizer46->Add( m_staticText18, 0, wxALIGN_CENTER|wxALL, 5 );
+
+
+	m_panel42->SetSizer( bSizer46 );
+	m_panel42->Layout();
+	bSizer46->Fit( m_panel42 );
+	bSizer45->Add( m_panel42, 1, wxEXPAND | wxALL, 0 );
+
+	m_panel43 = new wxPanel( m_panel40, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer47;
+	bSizer47 = new wxBoxSizer( wxVERTICAL );
+
+	importFilesButton = new wxButton( m_panel43, wxID_ANY, _("Import files"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer47->Add( importFilesButton, 0, wxALIGN_CENTER|wxALL, 5 );
+
+	m_staticText19 = new wxStaticText( m_panel43, wxID_ANY, _("Import a set of selected files."), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText19->Wrap( -1 );
+	bSizer47->Add( m_staticText19, 0, wxALIGN_CENTER|wxALL, 5 );
+
+
+	m_panel43->SetSizer( bSizer47 );
+	m_panel43->Layout();
+	bSizer47->Fit( m_panel43 );
+	bSizer45->Add( m_panel43, 1, wxEXPAND | wxALL, 0 );
+
+
+	m_panel40->SetSizer( bSizer45 );
+	m_panel40->Layout();
+	bSizer45->Fit( m_panel40 );
+	bSizer44->Add( m_panel40, 0, wxEXPAND | wxALL, 5 );
+
+	m_panel44 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer48;
+	bSizer48 = new wxBoxSizer( wxVERTICAL );
+
+	infoLabel = new textoolkit::AutowrapLabel( m_panel44, wxID_ANY, _("Once a directory or files are selected, a set of images must be picked to be used in the texture. A default set will be picked based on file name patterns.\n\n%pattern_info%\n"), wxDefaultPosition, wxDefaultSize, 0 );
+	infoLabel->Wrap( -1 );
+	bSizer48->Add( infoLabel, 0, wxALL, 5 );
+
+
+	m_panel44->SetSizer( bSizer48 );
+	m_panel44->Layout();
+	bSizer48->Fit( m_panel44 );
+	bSizer44->Add( m_panel44, 0, wxEXPAND | wxALL, 5 );
+
+	m_panel41 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer50;
+	bSizer50 = new wxBoxSizer( wxVERTICAL );
+
+	imageList = new wxDataViewListCtrl( m_panel41, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_ROW_LINES );
+	bSizer50->Add( imageList, 1, wxALL|wxEXPAND, 5 );
+
+
+	m_panel41->SetSizer( bSizer50 );
+	m_panel41->Layout();
+	bSizer50->Fit( m_panel41 );
+	bSizer44->Add( m_panel41, 1, wxEXPAND | wxALL, 5 );
+
+	m_panel46 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxGridSizer* gSizer2;
+	gSizer2 = new wxGridSizer( 0, 3, 0, 0 );
+
+
+	gSizer2->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	m_staticText21 = new wxStaticText( m_panel46, wxID_ANY, _("Minification filter"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText21->Wrap( -1 );
+	gSizer2->Add( m_staticText21, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5 );
+
+	wxArrayString filterMinChoices;
+	filterMin = new wxChoice( m_panel46, wxID_ANY, wxDefaultPosition, wxDefaultSize, filterMinChoices, 0 );
+	filterMin->SetSelection( 0 );
+	gSizer2->Add( filterMin, 0, wxALL|wxEXPAND, 5 );
+
+
+	gSizer2->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	m_staticText22 = new wxStaticText( m_panel46, wxID_ANY, _("Magnification filter"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText22->Wrap( -1 );
+	gSizer2->Add( m_staticText22, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxALL, 5 );
+
+	wxArrayString filterMagChoices;
+	filterMag = new wxChoice( m_panel46, wxID_ANY, wxDefaultPosition, wxDefaultSize, filterMagChoices, 0 );
+	filterMag->SetSelection( 0 );
+	gSizer2->Add( filterMag, 0, wxALL|wxEXPAND, 5 );
+
+
+	m_panel46->SetSizer( gSizer2 );
+	m_panel46->Layout();
+	gSizer2->Fit( m_panel46 );
+	bSizer44->Add( m_panel46, 0, wxEXPAND | wxALL, 5 );
+
+	m_panel45 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer49;
+	bSizer49 = new wxBoxSizer( wxHORIZONTAL );
+
+
+	bSizer49->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	importButton = new wxButton( m_panel45, wxID_ANY, _("Import"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer49->Add( importButton, 0, wxALL, 5 );
+
+	cancelButton = new wxButton( m_panel45, wxID_ANY, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer49->Add( cancelButton, 0, wxALL, 5 );
+
+
+	m_panel45->SetSizer( bSizer49 );
+	m_panel45->Layout();
+	bSizer49->Fit( m_panel45 );
+	bSizer44->Add( m_panel45, 0, wxEXPAND | wxALL, 5 );
+
+
+	this->SetSizer( bSizer44 );
+	this->Layout();
+
+	this->Centre( wxBOTH );
+}
+
+BatchImportDialog::~BatchImportDialog()
 {
 }

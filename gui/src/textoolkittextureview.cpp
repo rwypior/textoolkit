@@ -4,6 +4,7 @@
 #include "gui/texture.hpp"
 #include "gui/util.hpp"
 #include "gui/importdlg.hpp"
+#include "common/image.hpp"
 #include "texture/textureloader.hpp"
 #include "renderer/modeldatabase.hpp"
 #include "renderer/model.hpp"
@@ -12,6 +13,7 @@
 #include <wx/stdpaths.h>
 
 #include <unordered_set>
+#include <sstream>
 
 namespace
 {
@@ -69,6 +71,40 @@ namespace textoolkit
 	GuiTexture& TexToolkitTextureView::getTexture()
 	{
 		return *this->texture;
+	}
+
+	std::string TexToolkitTextureView::getDescription() const
+	{
+		if (!this->texture)
+			return "Blank texture";
+
+		std::stringstream str;
+
+		str << Image::translateTextureType(this->texture->getImage().getTextureType());
+
+		if (!this->texture->getPath().empty())
+			str << ", " << this->texture->getPath();
+		else
+			str << ", " << this->texture->getName();
+
+		str << this->texture->getImage().getWidth() << "px x " << this->texture->getImage().getHeight();
+
+		return str.str();
+	}
+
+	bool TexToolkitTextureView::batchImportCompatible() const
+	{
+		if (!this->texture)
+			return false;
+
+		switch (this->texture->getImage().getTextureType())
+		{
+		case Image::TextureType::TextureCube:
+		case Image::TextureType::Texture2DArray:
+			return true;
+		default:
+			return false;
+		}
 	}
 
 	TexToolkitTextureView::SubTextureContainer TexToolkitTextureView::createLayers(ProgressNotifier progressNotifier) const
@@ -180,6 +216,20 @@ namespace textoolkit
 				return &subentry;
 		}
 		return nullptr;
+	}
+
+	unsigned int TexToolkitTextureView::getFaceIndex(Image::CubeFace face) const
+	{
+		const auto alignmentProp = this->propertyGrid->GetProperty(propGrp3DCubemapAlignment);
+		const unsigned int childCount = alignmentProp->GetChildCount();
+		for (unsigned int i = 0; i < childCount; i++)
+		{
+			const auto prop = alignmentProp->Item(i);
+			const auto propAlignment = getProperty<Image::CubeFace>(prop);
+			if (propAlignment == face)
+				return i;
+		}
+		return 0;
 	}
 
 	renderer::DisplayMode* TexToolkitTextureView::getDisplayMode()
@@ -366,6 +416,32 @@ namespace textoolkit
 		this->levelScroller->Layout();
 	}
 
+	void TexToolkitTextureView::updateAllPreviews()
+	{
+		for (unsigned int layer = 0; layer < this->texture->getImage().getLayers(); layer++)
+		{
+			this->getLayer(layer)->updatePreview();
+		}
+
+		for (unsigned int face = 0; face < this->texture->getImage().getFaces(); face++)
+		{
+			this->getFace(face)->updatePreview();
+		}
+
+		for (unsigned int level = 0; level < this->texture->getImage().getLevels(); level++)
+		{
+			this->getLevel(level)->updatePreview();
+		}
+
+		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel);
+		this->updateSubimages();
+	}
+
+	void TexToolkitTextureView::reuploadTexture()
+	{
+		this->canvas->reuploadTexture();
+	}
+
 	void TexToolkitTextureView::setupProperties()
 	{
 		wxPGChoices wrappingChoices;
@@ -395,12 +471,12 @@ namespace textoolkit
 		this->propertyGrid->Append(new wxBoolProperty("Show wireframe", propDisplayWireframe));
 
 		wxPGChoices alignmentChoices;
-		alignmentChoices.Add("Positive X", static_cast<int>(renderer::CubeFace::PositiveX));
-		alignmentChoices.Add("Negative X", static_cast<int>(renderer::CubeFace::NegativeX));
-		alignmentChoices.Add("Positive Y", static_cast<int>(renderer::CubeFace::PositiveY));
-		alignmentChoices.Add("Negative Y", static_cast<int>(renderer::CubeFace::NegativeY));
-		alignmentChoices.Add("Positive Z", static_cast<int>(renderer::CubeFace::PositiveZ));
-		alignmentChoices.Add("Negative Z", static_cast<int>(renderer::CubeFace::NegativeZ));
+		alignmentChoices.Add("Positive X", static_cast<int>(Image::CubeFace::PositiveX));
+		alignmentChoices.Add("Negative X", static_cast<int>(Image::CubeFace::NegativeX));
+		alignmentChoices.Add("Positive Y", static_cast<int>(Image::CubeFace::PositiveY));
+		alignmentChoices.Add("Negative Y", static_cast<int>(Image::CubeFace::NegativeY));
+		alignmentChoices.Add("Positive Z", static_cast<int>(Image::CubeFace::PositiveZ));
+		alignmentChoices.Add("Negative Z", static_cast<int>(Image::CubeFace::NegativeZ));
 
 		this->propertyGrid->Append(new wxPropertyCategory("Cubemap alignment", propGrp3DCubemapAlignment));
 		this->propertyGrid->Append(new wxEnumProperty("Face 0", propCubeAlignment0, alignmentChoices, 0));
@@ -418,12 +494,12 @@ namespace textoolkit
 		this->canvas->setFilterMag(getProperty<renderer::FilteringMag>(this->propertyGrid->GetProperty(propDisplayFilterMag)));
 		this->canvas->setShowWireframe(getBoolProperty(this->propertyGrid->GetProperty(propDisplayWireframe)));
 		this->canvas->setCubeAlignment({ 
-			getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment0)),
-			getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment1)),
-			getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment2)),
-			getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment3)),
-			getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment4)),
-			getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment5))
+			getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment0)),
+			getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment1)),
+			getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment2)),
+			getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment3)),
+			getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment4)),
+			getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment5))
 		});
 	}
 
@@ -510,12 +586,47 @@ namespace textoolkit
 		}
 	}
 
-	void TexToolkitTextureView::importLayer(GuiTexture& texture, unsigned int layer, InterpolationMinMag interpolation)
+	void TexToolkitTextureView::importImage(SubTexture::Type type, unsigned int layer, unsigned int face, unsigned int level)
 	{
-		auto subentry = this->getLayer(layer);
-		if (!subentry)
+		TextureLoader loader;
+
+		const auto picturesDir = wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir_Pictures);
+		std::string wildcard = loader.getWildcardString();
+
+		ImportDlg dlg(this, "Open image", picturesDir, wxEmptyString, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		dlg.SetFilterIndex(loader.getFilterIndexAll());
+
+		auto res = dlg.ShowModal();
+		if (res == wxID_CANCEL)
 			return;
 
+		auto interpolation = dlg.getInterpolation();
+
+		auto tex = GuiTexture(std::move(*loader.loadTexture(dlg.GetPath().ToStdString())));
+		switch (type)
+		{
+		case GuiSubTexture::Type::Layer:
+			this->importLayer(tex, layer, interpolation);
+			break;
+		case GuiSubTexture::Type::Face:
+			this->importFace(tex, layer, face, interpolation);
+			break;
+		case GuiSubTexture::Type::Level:
+			this->importLevel(tex, layer, face, level, interpolation);
+			break;
+		}
+
+		this->updateFlatView(layer, face, level);
+		this->updateSubimages();
+	}
+
+	void TexToolkitTextureView::importImage()
+	{
+		this->importImage(this->currentType, this->currentLayer, this->currentFace, this->currentLevel);
+	}
+
+	void TexToolkitTextureView::importLayer(GuiTexture& texture, unsigned int layer, InterpolationMinMag interpolation, bool performUpdate, bool reupload)
+	{
 		for (unsigned int face = 0; face < this->texture->getImage().getFaces(); face++)
 		{
 			for (unsigned int level = 0; level < this->texture->getImage().getLevels(); level++)
@@ -524,21 +635,25 @@ namespace textoolkit
 				auto destination = GuiSubTexture::createLevel(*this->texture, layer, face, level);
 				destination.set(source, interpolation);
 
-				if (auto subentry = this->getLevel(level))
+				auto subentry = this->getLevel(level);
+				if (performUpdate && subentry)
 					subentry->updatePreview();
 			}
 
-			if (auto subentry = this->getFace(face))
+			auto subentry = this->getFace(face);
+			if (performUpdate && subentry)
 				subentry->updatePreview();
 		}
 
-		if (auto subentry = this->getLayer(layer))
+		auto subentry = this->getLayer(layer);
+		if (performUpdate && subentry)
 			subentry->updatePreview();
 
-		this->canvas->reuploadTexture();
+		if (reupload)
+			this->canvas->reuploadTexture();
 	}
 
-	void TexToolkitTextureView::importFace(GuiTexture& texture, unsigned int layer, unsigned int face, InterpolationMinMag interpolation)
+	void TexToolkitTextureView::importFace(GuiTexture& texture, unsigned int layer, unsigned int face, InterpolationMinMag interpolation, bool performUpdate, bool reupload)
 	{
 		for (unsigned int level = 0; level < this->texture->getImage().getLevels(); level++)
 		{
@@ -546,26 +661,31 @@ namespace textoolkit
 			auto destination = GuiSubTexture::createLevel(*this->texture, layer, face, level);
 			destination.set(source, interpolation);
 
-			if (auto subentry = this->getLevel(level))
+			auto subentry = this->getLevel(level);
+			if (performUpdate && subentry)
 				subentry->updatePreview();
 		}
 
-		if (auto subentry = this->getFace(face))
+		auto subentry = this->getFace(face);
+		if (performUpdate && subentry)
 			subentry->updatePreview();
 
-		this->canvas->reuploadTexture();
+		if (reupload)
+			this->canvas->reuploadTexture();
 	}
 
-	void TexToolkitTextureView::importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, InterpolationMinMag interpolation)
+	void TexToolkitTextureView::importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, InterpolationMinMag interpolation, bool performUpdate, bool reupload)
 	{
 		auto source = GuiSubTexture::createInternalLevel(texture, 0, 0, 0);
 		auto destination = GuiSubTexture::createInternalLevel(*this->texture, layer, face, level);
 		destination.set(source, interpolation);
 
-		if (auto subentry = this->getLevel(level))
-			subentry->setTexture(std::make_unique<GuiSubTexture>(std::move(destination)));
+		auto subentry = this->getLevel(level);
+		if (performUpdate && subentry)
+			subentry->updatePreview();
 
-		this->canvas->reuploadTexture();
+		if (reupload)
+			this->canvas->reuploadTexture();
 	}
 
 	void TexToolkitTextureView::deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry)
@@ -583,6 +703,7 @@ namespace textoolkit
 	void TexToolkitTextureView::layerSelected(TexToolkitSubimageEvent& event)
 	{
 		this->deselectOthers(this->layerScroller, event.entry);
+		this->currentType = SubTexture::Type::Layer;
 		this->currentLayer = event.entry->getTexture()->getLayer();
 		this->currentFace = 0;
 		this->currentLevel = 0;
@@ -593,6 +714,7 @@ namespace textoolkit
 	void TexToolkitTextureView::faceSelected(TexToolkitSubimageEvent& event)
 	{
 		this->deselectOthers(this->faceScroller, event.entry);
+		this->currentType = SubTexture::Type::Face;
 		this->currentFace = event.entry->getTexture()->getFace();
 		this->currentLevel = 0;
 		this->updateSubimages({ UpdateTarget::Levels });
@@ -602,44 +724,15 @@ namespace textoolkit
 	void TexToolkitTextureView::levelSelected(TexToolkitSubimageEvent& event)
 	{
 		this->deselectOthers(this->levelScroller, event.entry);
+		this->currentType = SubTexture::Type::Level;
 		this->currentLevel = event.entry->getTexture()->getLevel();
 		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel);
 	}
 
 	void TexToolkitTextureView::importRequested(TexToolkitSubimageEvent& event)
 	{
-		TextureLoader loader;
-
-		const auto picturesDir = wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir_Pictures);
-		std::string wildcard = loader.getWildcardString();
-
-		ImportDlg dlg(this, "Open image", picturesDir, wxEmptyString, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-		dlg.SetFilterIndex(loader.getFilterIndexAll());
-
-		auto res = dlg.ShowModal();
-		if (res == wxID_CANCEL)
-			return;
-
-		auto interpolation = dlg.getInterpolation();
-
-		auto tex = GuiTexture(std::move(*loader.loadTexture(dlg.GetPath().ToStdString())));
-
-		auto textureType = event.entry->getTexture()->getType();
-		switch (textureType)
-		{
-		case GuiSubTexture::Type::Layer:
-			this->importLayer(tex, event.entry->getTexture()->getLayer(), interpolation);
-			break;
-		case GuiSubTexture::Type::Face:
-			this->importFace(tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace(), interpolation);
-			break;
-		case GuiSubTexture::Type::Level:
-			this->importLevel(tex, event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace(), event.entry->getTexture()->getLevel(), interpolation);
-			break;
-		}
-
-		this->updateFlatView(event.entry->getTexture()->getLayer(), event.entry->getTexture()->getFace(), event.entry->getTexture()->getLevel());
-		this->updateSubimages();
+		auto texture = event.entry->getTexture();		
+		this->importImage(texture->getType(), texture->getLayer(), texture->getFace(), texture->getLevel());
 	}
 
 	void TexToolkitTextureView::displayModeUpdateButtonClicked(wxCommandEvent& event)
@@ -682,12 +775,12 @@ namespace textoolkit
 		{
 			this->fixAlignments(propname);
 			this->canvas->setCubeAlignment({
-				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment0)),
-				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment1)),
-				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment2)),
-				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment3)),
-				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment4)),
-				getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment5))
+				getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment0)),
+				getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment1)),
+				getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment2)),
+				getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment3)),
+				getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment4)),
+				getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment5))
 				});
 		}
 
@@ -706,24 +799,24 @@ namespace textoolkit
 
 	void TexToolkitTextureView::fixAlignments(const wxString& propname)
 	{
-		auto currentAlignment = getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propname));
+		auto currentAlignment = getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propname));
 
-		std::unordered_map<std::string, renderer::CubeFace> properties{
-			{ propCubeAlignment0, getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment0)) },
-			{ propCubeAlignment1, getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment1)) },
-			{ propCubeAlignment2, getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment2)) },
-			{ propCubeAlignment3, getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment3)) },
-			{ propCubeAlignment4, getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment4)) },
-			{ propCubeAlignment5, getProperty<renderer::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment5)) }
+		std::unordered_map<std::string, Image::CubeFace> properties{
+			{ propCubeAlignment0, getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment0)) },
+			{ propCubeAlignment1, getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment1)) },
+			{ propCubeAlignment2, getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment2)) },
+			{ propCubeAlignment3, getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment3)) },
+			{ propCubeAlignment4, getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment4)) },
+			{ propCubeAlignment5, getProperty<Image::CubeFace>(this->propertyGrid->GetProperty(propCubeAlignment5)) }
 		};
 
-		std::unordered_set<renderer::CubeFace> alignments{
-			renderer::CubeFace::PositiveX,
-			renderer::CubeFace::NegativeX,
-			renderer::CubeFace::PositiveY,
-			renderer::CubeFace::NegativeY,
-			renderer::CubeFace::PositiveZ,
-			renderer::CubeFace::NegativeZ,
+		std::unordered_set<Image::CubeFace> alignments{
+			Image::CubeFace::PositiveX,
+			Image::CubeFace::NegativeX,
+			Image::CubeFace::PositiveY,
+			Image::CubeFace::NegativeY,
+			Image::CubeFace::PositiveZ,
+			Image::CubeFace::NegativeZ,
 		};
 
 		std::string propToChange;

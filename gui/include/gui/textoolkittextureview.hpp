@@ -59,6 +59,8 @@ namespace textoolkit
 		~TexToolkitTextureView();
 
 		GuiTexture& getTexture();
+		std::string getDescription() const;
+		bool batchImportCompatible() const;
 
 		SubTextureContainer createLayers(ProgressNotifier progressNotifier = {}) const;
 		SubTextureContainer createFaces(ProgressNotifier progressNotifier = {}) const;
@@ -68,6 +70,8 @@ namespace textoolkit
 		TexToolkitSubimageEntry* getFace(unsigned int face);
 		TexToolkitSubimageEntry* getLevel(unsigned int level);
 
+		unsigned int getFaceIndex(Image::CubeFace face) const;
+
 		renderer::DisplayMode* getDisplayMode();
 		bool isUserProperty(const std::string& propname) const;
 
@@ -76,6 +80,8 @@ namespace textoolkit
 		void updateLayers(SubTextureContainer* subtextures = nullptr);
 		void updateFaces(SubTextureContainer* subtextures = nullptr);
 		void updateLevels(SubTextureContainer* subtextures = nullptr);
+		void updateAllPreviews();
+		void reuploadTexture();
 
 		void setupProperties();
 		void setupUserProperties();
@@ -84,9 +90,11 @@ namespace textoolkit
 		void updateDisplayModes();
 		void updateDisplayModeList();
 
-		void importLayer(GuiTexture& texture, unsigned int layer, InterpolationMinMag interpolation);
-		void importFace(GuiTexture& texture, unsigned int layer, unsigned int face, InterpolationMinMag interpolation);
-		void importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, InterpolationMinMag interpolation);
+		void importImage(SubTexture::Type type, unsigned int layer, unsigned int face, unsigned int level);
+		void importImage();
+		void importLayer(GuiTexture& texture, unsigned int layer, InterpolationMinMag interpolation, bool performUpdate = true, bool reupload = true);
+		void importFace(GuiTexture& texture, unsigned int layer, unsigned int face, InterpolationMinMag interpolation, bool performUpdate = true, bool reupload = true);
+		void importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, InterpolationMinMag interpolation, bool performUpdate = true, bool reupload = true);
 
 	private:
 		void deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry);
@@ -115,6 +123,7 @@ namespace textoolkit
 		unsigned int currentLayer = 0;
 		unsigned int currentFace = 0;
 		unsigned int currentLevel = 0;
+		SubTexture::Type currentType = SubTexture::Type::Layer;
 	};
 }
 

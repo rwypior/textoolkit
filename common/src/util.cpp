@@ -133,6 +133,13 @@ namespace textoolkit
 		return result;
 	}
 
+	bool isNumber(const std::string& str)
+	{
+		return 
+			!str.empty() && 
+			std::find_if(str.begin(), str.end(), [](unsigned char c) { return !std::isdigit(c); }) == str.end();
+	}
+
 	bool startsWith(const std::string& haystack, const std::string& needle)
 	{
 		return haystack.compare(0, needle.length(), needle) == 0;

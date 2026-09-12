@@ -27,17 +27,6 @@ namespace textoolkit::renderer
 	class Model;
 	class Object;
 
-	enum class CubeFace
-	{
-		PositiveX,
-		NegativeX,
-		PositiveY,
-		NegativeY,
-		PositiveZ,
-		NegativeZ,
-		_count
-	};
-
 	enum class Wrapping
 	{
 		ClampToEdge,
@@ -70,7 +59,7 @@ namespace textoolkit::renderer
 		Float
 	};
 
-	using CubemapAlignment = std::array<CubeFace, static_cast<int>(CubeFace::_count)>;
+	using CubemapAlignment = std::array<Image::CubeFace, static_cast<int>(Image::CubeFace::_count)>;
 
 	class UniformData
 	{

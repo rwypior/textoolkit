@@ -104,6 +104,36 @@ namespace textoolkit
 		};
 	}
 
+	Image::CubeFace Image::translateCubeFace(const std::string& name)
+	{
+		const auto map = getCubeFaceMap();
+		const auto it = map.find(name);
+		if (it == map.end())
+			return CubeFace::Invalid;
+		return it->second;
+	}
+
+	std::string Image::translateCubeFace(Image::CubeFace face)
+	{
+		const auto map = flipMap(getCubeFaceMap());
+		const auto it = map.find(face);
+		if (it == map.end())
+			return "";
+		return it->second;
+	}
+
+	std::map<std::string, Image::CubeFace> Image::getCubeFaceMap()
+	{
+		return {
+			{ "PositiveX", CubeFace::PositiveX },
+			{ "NegativeX", CubeFace::NegativeX },
+			{ "PositiveY", CubeFace::PositiveY },
+			{ "NegativeY", CubeFace::NegativeY },
+			{ "PositiveZ", CubeFace::PositiveZ },
+			{ "NegativeZ", CubeFace::NegativeZ }
+		};
+	}
+
 	Image::StorageMode Image::getStorageMode() const
 	{
 		return StorageMode::TopBottom;

@@ -35,6 +35,7 @@ namespace textoolkit
 
 	private:
 		std::unique_ptr<Texture> loadTexture(const std::string& path);
+		void updateMenus();
 
 		void loadRecent();
 		void addRecent(const std::string& path);
@@ -47,6 +48,9 @@ namespace textoolkit
 		void eventOpenRecent(wxCommandEvent& event);
 		void eventSave(wxCommandEvent& event);
 		void eventSaveAs(wxCommandEvent& event);
+		void eventImportImage(wxCommandEvent& event);
+		void eventBatchImport(wxCommandEvent& event);
+		void eventExit(wxCommandEvent& event);
 		void eventAbout(wxCommandEvent& event);
 
 		renderer::ModelDatabase& modelDatabase;

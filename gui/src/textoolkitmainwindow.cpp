@@ -2,6 +2,7 @@
 #include "gui/textoolkittextureview.hpp"
 #include "gui/textoolkitnewdialog.hpp"
 #include "gui/textoolkitaboutwindow.hpp"
+#include "gui/textoolkitbatchimportdialog.hpp"
 #include "gui/textoolkitprogressdialog.hpp"
 #include "gui/texture.hpp"
 #include "gui/util.hpp"
@@ -20,20 +21,30 @@ namespace textoolkit
 		, modelDatabase(modelDatabase)
 	{
 		this->loadRecent();
+		this->updateMenus();
 
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventNew, this, ID_NEW);
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventOpen, this, ID_OPEN);
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventSave, this, ID_SAVE);
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventSaveAs, this, ID_SAVE_AS);
+		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventExit, this, ID_EXIT);
+
+		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventImportImage, this, ID_IMPORT_IMAGE);
+		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventBatchImport, this, ID_BATCH_IMPORT);
+
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventAbout, this, ID_ABOUT);
 	}
 
 	void TexToolkitMainWindow::openTexture(std::unique_ptr<GuiTexture>&& texture, const std::string& name)
 	{
 		this->notebook->Freeze();
-		this->notebook->AddPage(new TexToolkitTextureView(std::move(texture), this->modelDatabase, this->notebook), name, true);
+		auto newPage = new TexToolkitTextureView(std::move(texture), this->modelDatabase, this->notebook);
+		this->notebook->AddPage(newPage, name, true);
+		this->notebook->SetPageToolTip(this->notebook->GetPageCount() - 1, newPage->getDescription());
 		this->notebook->Thaw();
 		this->notebook->Layout();
+
+		this->updateMenus();
 	}
 
 	void TexToolkitMainWindow::openTexture(const std::string& path)
@@ -71,6 +82,18 @@ namespace textoolkit
 		progress.wait(tp);
 
 		return texture;
+	}
+
+	void TexToolkitMainWindow::updateMenus()
+	{
+		auto view = this->getCurrentTextureView();
+		bool viewOpened = !!view;
+
+		this->GetMenuBar()->FindItem(ID_SAVE)->Enable(viewOpened);
+		this->GetMenuBar()->FindItem(ID_SAVE_AS)->Enable(viewOpened);
+
+		this->GetMenuBar()->FindItem(ID_IMPORT_IMAGE)->Enable(viewOpened);
+		this->GetMenuBar()->FindItem(ID_BATCH_IMPORT)->Enable(viewOpened && view->batchImportCompatible());
 	}
 
 	void TexToolkitMainWindow::loadRecent()
@@ -256,6 +279,59 @@ namespace textoolkit
 		auto texture = this->loadTexture(path);
 
 		this->openTexture(std::make_unique<GuiTexture>(std::move(*texture)), name);
+	}
+
+	void TexToolkitMainWindow::eventExit(wxCommandEvent& event)
+	{
+		this->Close();
+	}
+
+	void TexToolkitMainWindow::eventImportImage(wxCommandEvent& event)
+	{
+		if (auto texview = this->getCurrentTextureView())
+			texview->importImage();
+	}
+
+	void TexToolkitMainWindow::eventBatchImport(wxCommandEvent& event)
+	{
+		auto textureView = this->getCurrentTextureView();
+		if (!textureView)
+			return;
+		auto textureType = textureView->getTexture().getImage().getTextureType();
+		auto batchDialog = new TexToolkitBatchImportDialog(textureType, this);
+		if (batchDialog->ShowModal() == wxID_CANCEL)
+			return;
+
+		auto items = batchDialog->getItems();
+		InterpolationMinMag interpolation(
+			batchDialog->getMinInterpolation(),
+			batchDialog->getMagInterpolation()
+		);
+
+		TextureLoader loader;
+		FiniteThreadpool tp;
+
+		for (auto& item : items)
+		{
+			tp.enqueue([&textureView, &item, &loader, interpolation]() {
+				auto tex = GuiTexture(std::move(*loader.loadTexture(item.path)));
+				switch (item.type)
+				{
+				case TexToolkitBatchImportDialog::ImportItem::Type::Face:
+					textureView->importFace(tex, 0, textureView->getFaceIndex(item.face), interpolation, false, false);
+					break;
+				case TexToolkitBatchImportDialog::ImportItem::Type::Layer:
+					textureView->importLayer(tex, item.layer, interpolation, false, false);
+					break;
+				}
+			});
+		}
+
+		TexToolkitProgressDialog progress(this);
+		progress.wait(tp);
+
+		textureView->updateAllPreviews();
+		textureView->reuploadTexture();
 	}
 
 	void TexToolkitMainWindow::eventAbout(wxCommandEvent& event)

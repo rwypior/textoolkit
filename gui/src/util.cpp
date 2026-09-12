@@ -149,6 +149,18 @@ namespace textoolkit
 		return data.GetInteger();
 	}
 
+	bool matchWildcard(const std::string& string, const std::string& wildcard)
+	{
+		const auto splitted = split(wildcard, "|");
+		const auto wildcards = splitted.size() == 1 ? splitted : split(splitted.at(1), ";");
+		for (const auto& wildcard : wildcards)
+		{
+			if (wxMatchWild(wildcard, string))
+				return true;
+		}
+		return false;
+	}
+
 	// Model traverser
 
 	WildcardFileTraverser::WildcardFileTraverser(const std::string& wildcard)
@@ -158,7 +170,8 @@ namespace textoolkit
 
 	wxDirTraverseResult WildcardFileTraverser::OnFile(const wxString& filename)
 	{
-		if (wxMatchWild("*.obj", filename))
+		//if (wxMatchWild(this->wildcard, filename))
+		if (matchWildcard(filename.ToStdString(), this->wildcard))
 			this->files.Add(filename);
 		return wxDIR_CONTINUE;
 	}

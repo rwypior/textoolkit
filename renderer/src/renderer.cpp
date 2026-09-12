@@ -76,16 +76,16 @@ namespace
 		return GL_UNSIGNED_BYTE;
 	}
 
-	GLenum translateCubeFace(textoolkit::renderer::CubeFace face)
+	GLenum translateCubeFace(textoolkit::Image::CubeFace face)
 	{
 		switch (face)
 		{
-		case textoolkit::renderer::CubeFace::PositiveX: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-		case textoolkit::renderer::CubeFace::NegativeX: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
-		case textoolkit::renderer::CubeFace::PositiveY: return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
-		case textoolkit::renderer::CubeFace::NegativeY: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
-		case textoolkit::renderer::CubeFace::PositiveZ: return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
-		case textoolkit::renderer::CubeFace::NegativeZ: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+		case textoolkit::Image::CubeFace::PositiveX: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+		case textoolkit::Image::CubeFace::NegativeX: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+		case textoolkit::Image::CubeFace::PositiveY: return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+		case textoolkit::Image::CubeFace::NegativeY: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+		case textoolkit::Image::CubeFace::PositiveZ: return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+		case textoolkit::Image::CubeFace::NegativeZ: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
 		}
 
 		assert(!"Invalid cubemap face");
@@ -521,12 +521,12 @@ namespace textoolkit::renderer
 			}
 
 			this->cubemapAlignment = {
-				CubeFace::PositiveX,
-				CubeFace::NegativeX,
-				CubeFace::PositiveY,
-				CubeFace::NegativeY,
-				CubeFace::PositiveZ,
-				CubeFace::NegativeZ
+				Image::CubeFace::PositiveX,
+				Image::CubeFace::NegativeX,
+				Image::CubeFace::PositiveY,
+				Image::CubeFace::NegativeY,
+				Image::CubeFace::PositiveZ,
+				Image::CubeFace::NegativeZ
 			};
 
 			this->change(image);

@@ -92,7 +92,7 @@ namespace textoolkit
 		: dds(
 			translateTarget(type),
 			translateFormat(format, compression),
-			extents, layers, ::getFaces(type), generateMipmaps ? ::getLevels(extents) : 1
+			extents, layers, ::getFaces(type), generateMipmaps ? ::getLevels(extents) + 1 : 1
 		)
 		, originalFormat(translateFormat(format, compression))
 	{

@@ -10,6 +10,8 @@
 #include <wx/artprov.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/intl.h>
+namespace textoolkit{ class AutowrapLabel; }
+
 #include <wx/string.h>
 #include <wx/bitmap.h>
 #include <wx/image.h>
@@ -44,6 +46,7 @@
 #include <wx/choice.h>
 #include <wx/statline.h>
 #include <wx/gauge.h>
+#include <wx/dataview.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -61,15 +64,17 @@ namespace textoolkit
 			{
 				ID_NEW = 6000,
 				ID_OPEN,
-				ID_RECENT,
 				ID_SAVE,
 				ID_SAVE_AS,
 				ID_EXIT,
+				ID_IMPORT_IMAGE,
+				ID_BATCH_IMPORT,
 				ID_ABOUT,
 			};
 
 			wxMenuBar* mainmenu;
 			wxMenu* file;
+			wxMenu* tools;
 			wxMenu* help;
 			wxPanel* m_panel27;
 			wxAuiNotebook* notebook;
@@ -316,6 +321,44 @@ namespace textoolkit
 			ProgressDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Loading..."), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 377,111 ), long style = wxDEFAULT_DIALOG_STYLE );
 
 			~ProgressDialog();
+
+	};
+
+	///////////////////////////////////////////////////////////////////////////////
+	/// Class BatchImportDialog
+	///////////////////////////////////////////////////////////////////////////////
+	class BatchImportDialog : public wxDialog
+	{
+		private:
+
+		protected:
+			wxPanel* m_panel47;
+			wxStaticText* m_staticText24;
+			wxPanel* m_panel40;
+			wxPanel* m_panel42;
+			wxButton* importFolderButton;
+			wxStaticText* m_staticText18;
+			wxPanel* m_panel43;
+			wxButton* importFilesButton;
+			wxStaticText* m_staticText19;
+			wxPanel* m_panel44;
+			textoolkit::AutowrapLabel* infoLabel;
+			wxPanel* m_panel41;
+			wxDataViewListCtrl* imageList;
+			wxPanel* m_panel46;
+			wxStaticText* m_staticText21;
+			wxChoice* filterMin;
+			wxStaticText* m_staticText22;
+			wxChoice* filterMag;
+			wxPanel* m_panel45;
+			wxButton* importButton;
+			wxButton* cancelButton;
+
+		public:
+
+			BatchImportDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Batch import"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 456,576 ), long style = wxDEFAULT_DIALOG_STYLE|wxMINIMIZE_BOX|wxRESIZE_BORDER );
+
+			~BatchImportDialog();
 
 	};
 
