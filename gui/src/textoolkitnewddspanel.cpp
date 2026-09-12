@@ -222,7 +222,7 @@ namespace textoolkit
 			dlg = &this->batchImportCubemap;
 			break;
 		case Image::TextureType::Texture2DArray:
-			this->batchImport2DArray.setFaces(this->getLayersCount());
+			this->batchImport2DArray.setLayers(this->getLayersCount());
 			dlg = &this->batchImport2DArray;
 			break;
 		}
