@@ -27,8 +27,7 @@ namespace
 	std::unique_ptr<textoolkit::GuiTexture> createBmp(wxWindow* panel)
 	{
 		auto bmpPanel = static_cast<textoolkit::TexToolkitnewBmpPanel*>(panel);
-		auto bmp = std::make_shared<textoolkit::Bmp>(bmpPanel->getTextureWidth(), bmpPanel->getTextureHeight());
-		return std::make_unique<textoolkit::GuiTexture>(std::move(bmp), bmpPanel->getTextureName());
+		return bmpPanel->createTexture();
 	}
 
 	wxPanel* createDdsPanel(wxWindow* parent)
@@ -39,15 +38,7 @@ namespace
 	std::unique_ptr<textoolkit::GuiTexture> createDds(wxWindow* panel)
 	{
 		auto ddsPanel = static_cast<textoolkit::TexToolkitnewDdsPanel*>(panel);
-		auto dds = std::make_shared<textoolkit::DDS>(
-			ddsPanel->getTextureType(),
-			ddsPanel->getFormat(),
-			ddsPanel->getCompression(),
-			glm::vec3(ddsPanel->getTextureWidth(), ddsPanel->getTextureHeight(), ddsPanel->getTextureDepth()),
-			ddsPanel->getLayersCount(),
-			ddsPanel->getGenerateMipmaps()
-		);
-		return std::make_unique<textoolkit::GuiTexture>(std::move(dds), ddsPanel->getTextureName());
+		return ddsPanel->createTexture();
 	}
 
 	std::map<textoolkit::Image::Type, panelTuple> imageTypes{

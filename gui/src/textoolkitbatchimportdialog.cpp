@@ -67,11 +67,19 @@ namespace
 
 namespace textoolkit
 {
-	TexToolkitBatchImportDialog::TexToolkitBatchImportDialog(Image::TextureType textureType, wxWindow* parent)
+	TexToolkitBatchImportDialog::TexToolkitBatchImportDialog(
+		Image::TextureType textureType, 
+		unsigned int layers,
+		unsigned int faces,
+		unsigned int levels,
+		wxWindow* parent
+	)
 		: BatchImportDialog(parent)
 		, textureType(textureType)
+		, layers(layers)
+		, faces(faces)
+		, levels(levels)
 	{
-		//this->imageList->AppendTextColumn("Path", wxDATAVIEW_CELL_INERT, 200);
 		this->imageList->AppendColumn(new wxDataViewColumn("Path", new FileNameRenderer(), ColumnPath, 200));
 		this->imageList->AppendToggleColumn("Import", wxDATAVIEW_CELL_ACTIVATABLE, 50, wxAlignment::wxALIGN_CENTER);
 
@@ -84,7 +92,7 @@ namespace textoolkit
 				"\n" R"INFO(For example name_positive_x, name_negative_x, name_positive_y, name_negative_y, etc.)INFO";
 			this->regexes.push_back(R"REGEX((.+)_((?:positive|negative)_(?:[xyz]))\.(?:.*))REGEX");
 			this->regexes.push_back(R"REGEX((.+)_([wnesud])\.(?:.*))REGEX");
-			this->maxItems = 6;
+			this->maxItems = faces;
 			wxArrayString choices;
 			for (auto& [s, e] : Image::getCubeFaceMap())
 			{
@@ -97,8 +105,11 @@ namespace textoolkit
 			typeInfo = "\n" R"INFO(Array textures follow the pattern name_[n], eg. name_0, name_1, name_2, etc.)INFO";
 			this->regexes.push_back(R"REGEX((.+)_(\d+)\.(?:.*))REGEX");
 			this->imageList->AppendColumn(new wxDataViewColumn("Target", new wxDataViewSpinRenderer(0, std::numeric_limits<int>::max()), ColumnTarget, 100));
+			this->maxItems = layers;
 			break;
 		}
+
+		this->updateMax();
 
 		wxString info = this->infoLabel->GetLabel();
 		info.Replace("%pattern_info", typeInfo);
@@ -189,6 +200,24 @@ namespace textoolkit
 		return count;
 	}
 
+	void TexToolkitBatchImportDialog::setLayers(unsigned int n)
+	{
+		this->layers = n;
+		this->updateMax();
+	}
+
+	void TexToolkitBatchImportDialog::setFaces(unsigned int n)
+	{
+		this->faces = n;
+		this->updateMax();
+	}
+
+	void TexToolkitBatchImportDialog::setLevels(unsigned int n)
+	{
+		this->levels = n;
+		this->updateMax();
+	}
+
 	void TexToolkitBatchImportDialog::loadList(const wxArrayString& paths)
 	{
 		using Path_t = std::string;
@@ -272,6 +301,62 @@ namespace textoolkit
 				target
 			};
 			this->imageList->AppendItem(entry);
+		}
+
+		// Fix selections
+		using Index_t = size_t;
+		std::vector<std::tuple<Index_t, Path_t>> selection;
+		for (unsigned int i = 0; i < this->imageList->GetItemCount(); i++)
+		{
+			wxVariant valPath;
+			wxVariant valImport;
+			this->imageList->GetValue(valPath, i, ColumnPath);
+			this->imageList->GetValue(valImport, i, ColumnImport);
+
+			if (!valImport.GetBool())
+				continue;
+
+			selection.push_back({ i, valPath.GetString().ToStdString() });
+		}
+		
+		std::sort(selection.begin(), selection.end(), [&pathMap](const auto& a, const auto& b) {
+			auto targetStrA = std::get<1>(pathMap.at(std::get<1>(a))->second);
+			auto targetStrB = std::get<1>(pathMap.at(std::get<1>(b))->second);
+			if (isNumber(targetStrA) && isNumber(targetStrB))
+			{
+				return std::stoi(targetStrA) < std::stoi(targetStrB);
+			}
+			return targetStrA < targetStrB;
+		});
+
+		int selectedCount = 0;
+		for (auto& tuple : selection)
+		{
+			auto idx = std::get<0>(tuple);
+
+			wxVariant valTarget;
+			this->imageList->GetValue(valTarget, idx, ColumnTarget);
+			
+			this->imageList->SetValue(selectedCount < this->maxItems, idx, ColumnImport);
+			if (valTarget.IsType("long"))
+				this->imageList->SetValue(selectedCount, idx, ColumnTarget);
+
+			selectedCount++;
+		}
+	}
+
+	void TexToolkitBatchImportDialog::updateMax()
+	{
+		switch (this->textureType)
+		{
+		case Image::TextureType::TextureCube:
+		{
+			this->maxItems = this->faces;
+			break;
+		}
+		case Image::TextureType::Texture2DArray:
+			this->maxItems = this->layers;
+			break;
 		}
 	}
 

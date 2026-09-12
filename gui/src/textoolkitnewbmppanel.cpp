@@ -1,4 +1,5 @@
 #include "gui/textoolkitnewbmppanel.hpp"
+#include "bmp/bmp.hpp"
 
 namespace textoolkit
 {
@@ -6,6 +7,12 @@ namespace textoolkit
 		:
 		newBmpPanel(parent)
 	{
+	}
+
+	std::unique_ptr<textoolkit::GuiTexture> TexToolkitnewBmpPanel::createTexture()
+	{
+		auto bmp = std::make_shared<textoolkit::Bmp>(this->getTextureWidth(), this->getTextureHeight());
+		return std::make_unique<textoolkit::GuiTexture>(std::move(bmp), this->getTextureName());
 	}
 
 	std::string TexToolkitnewBmpPanel::getTextureName() const

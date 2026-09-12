@@ -248,6 +248,8 @@ namespace textoolkit
 			wxPanel* additionalPanel;
 			wxStaticText* m_staticText15;
 			wxSpinCtrl* layersCount;
+			wxButton* selectImagesButton;
+			wxStaticText* importedImagesLabel;
 
 		public:
 

@@ -748,6 +748,18 @@ newDdsPanel::newDdsPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	bSizer24->Add( layersCount, 0, wxALL, 5 );
 
 
+	bSizer24->Add( 32, 0, 0, wxEXPAND, 5 );
+
+	selectImagesButton = new wxButton( additionalPanel, wxID_ANY, _("Select images"), wxDefaultPosition, wxDefaultSize, 0 );
+	selectImagesButton->SetToolTip( _("(Optional) Allows user to select images to be imported during texture creation") );
+
+	bSizer24->Add( selectImagesButton, 0, wxALL, 5 );
+
+	importedImagesLabel = new wxStaticText( additionalPanel, wxID_ANY, _("Selected 0 images"), wxDefaultPosition, wxDefaultSize, 0 );
+	importedImagesLabel->Wrap( -1 );
+	bSizer24->Add( importedImagesLabel, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+
 	additionalPanel->SetSizer( bSizer24 );
 	additionalPanel->Layout();
 	bSizer24->Fit( additionalPanel );

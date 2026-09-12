@@ -297,8 +297,13 @@ namespace textoolkit
 		auto textureView = this->getCurrentTextureView();
 		if (!textureView)
 			return;
+
+		auto layersCount = textureView->getTexture().getImage().getLayers();
+		auto facesCount = textureView->getTexture().getImage().getFaces();
+		auto levelsCount = textureView->getTexture().getImage().getLevels();
+
 		auto textureType = textureView->getTexture().getImage().getTextureType();
-		auto batchDialog = new TexToolkitBatchImportDialog(textureType, this);
+		auto batchDialog = new TexToolkitBatchImportDialog(textureType, layersCount, facesCount, levelsCount, this);
 		if (batchDialog->ShowModal() == wxID_CANCEL)
 			return;
 
