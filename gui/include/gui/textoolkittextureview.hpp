@@ -66,6 +66,7 @@ namespace textoolkit
 		SubTextureContainer createFaces(ProgressNotifier progressNotifier = {}) const;
 		SubTextureContainer createLevels(ProgressNotifier progressNotifier = {}) const;
 
+		unsigned int getLevels(const Image& image) const; /// Get amount of levels (taking current depth into consideration)
 		TexToolkitSubimageEntry* getLayer(unsigned int layer);
 		TexToolkitSubimageEntry* getFace(unsigned int face);
 		TexToolkitSubimageEntry* getLevel(unsigned int level);
@@ -75,13 +76,14 @@ namespace textoolkit
 		renderer::DisplayMode* getDisplayMode();
 		bool isUserProperty(const std::string& propname) const;
 
-		void updateFlatView(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0);
+		void updateFlatView(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0, unsigned int depth = 0);
 		void updateSubimages(UpdateTargets targets = UpdateTargets::default(true));
 		void updateLayers(SubTextureContainer* subtextures = nullptr);
 		void updateFaces(SubTextureContainer* subtextures = nullptr);
 		void updateLevels(SubTextureContainer* subtextures = nullptr);
 		void updateAllPreviews();
 		void reuploadTexture();
+		void refreshView();
 
 		void setupProperties();
 		void setupUserProperties();
@@ -98,6 +100,8 @@ namespace textoolkit
 
 	private:
 		void deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry);
+		void updateUserProperties();
+		void selectDepth(unsigned int depth);
 
 		void layerSelected(TexToolkitSubimageEvent& event);
 		void faceSelected(TexToolkitSubimageEvent& event);
@@ -107,6 +111,8 @@ namespace textoolkit
 		void displayModeSelected(wxCommandEvent& event);
 		void propertyChanged(wxPropertyGridEvent& event);
 		void selectBaseClicked(wxHyperlinkEvent& event);
+		void depthSliderChanged(wxCommandEvent& event);
+		void depthSpinChanged(wxSpinEvent& event);
 
 		void fixAlignments(const wxString& propname);
 
@@ -123,6 +129,7 @@ namespace textoolkit
 		unsigned int currentLayer = 0;
 		unsigned int currentFace = 0;
 		unsigned int currentLevel = 0;
+		unsigned int currentDepth = 0;
 		SubTexture::Type currentType = SubTexture::Type::Layer;
 	};
 }

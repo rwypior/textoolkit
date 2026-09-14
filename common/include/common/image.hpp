@@ -124,18 +124,22 @@ namespace textoolkit
 		virtual bool save(const std::string& path) const;
 		virtual bool save(std::ostream& stream) const = 0;
 
-		virtual std::optional<unsigned char> getByte(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const = 0;
+		virtual std::optional<unsigned char> getByte(unsigned int x, unsigned int y, unsigned int z, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const = 0;
+		virtual std::optional<unsigned char> getByte(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const;
 		virtual std::optional<unsigned char> getByte(unsigned int x, unsigned int y, DataOption mode = DataOption::Normal) const;
 		virtual std::vector<unsigned char> getBytes(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const = 0;
 		virtual std::vector<unsigned char> getBytes(DataOption mode = DataOption::Normal) const;
 		virtual const void* getBytesPtr(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const = 0;
-		virtual std::optional<Pixel> getPixel(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const = 0;
+		virtual std::optional<Pixel> getPixel(unsigned int x, unsigned int y, unsigned int z, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const = 0;
+		virtual std::optional<Pixel> getPixel(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const;
 		virtual std::optional<Pixel> getPixel(unsigned int x, unsigned int y, DataOption mode = DataOption::Normal) const;
 		virtual std::vector<Pixel> getPixels(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const = 0;
 		virtual std::vector<Pixel> getPixels(DataOption mode = DataOption::Normal) const;
-		virtual bool setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) = 0;
+		virtual bool setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int z, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) = 0;
+		virtual bool setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal);
 		virtual bool setByte(unsigned char byte, unsigned int x, unsigned int y, DataOption mode = DataOption::Normal);
-		virtual bool setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) = 0;
+		virtual bool setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int z, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) = 0;
+		virtual bool setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal);
 		virtual bool setPixel(Pixel pixel, unsigned int x, unsigned int y, DataOption mode = DataOption::Normal);
 
 		virtual unsigned int getWidth(unsigned int level = 0) const = 0;

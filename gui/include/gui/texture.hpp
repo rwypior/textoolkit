@@ -34,7 +34,7 @@ namespace textoolkit
 		virtual bool commitAndSave(const std::string& path);
 
 	private:
-		void setBitmapData(wxBitmap& bmp, unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0);
+		void setBitmapData(wxBitmap& bmp, unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0, unsigned int depth = 0);
 
 		wxBitmap bitmap;
 	};
@@ -43,26 +43,26 @@ namespace textoolkit
 	{
 	public:
 		GuiSubTexture();
-		GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& name);
-		GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& path, const std::string& name);
+		GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image, const std::string& name);
+		GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image, const std::string& path, const std::string& name);
 
 		wxBitmap& getBitmap();
 		virtual void updateBitmap(); // Update wxBitmap with data from texture
 		virtual void commit(); // Copy data from bitmap to image
 		virtual bool commitAndSave(const std::string& path);
 
-		static GuiSubTexture createLayer(GuiTexture& texture, unsigned int layer);
-		static GuiSubTexture createFace(GuiTexture& texture, unsigned int layer, unsigned int face);
-		static GuiSubTexture createLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level);
-		static GuiSubTexture createInternalLayer(GuiTexture& texture, unsigned int layer);
-		static GuiSubTexture createInternalFace(GuiTexture& texture, unsigned int layer, unsigned int face);
-		static GuiSubTexture createInternalLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level);
+		static GuiSubTexture createLayer(GuiTexture& texture, unsigned int layer, unsigned int depth = 0);
+		static GuiSubTexture createFace(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int depth = 0);
+		static GuiSubTexture createLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth = 0);
+		static GuiSubTexture createInternalLayer(GuiTexture& texture, unsigned int layer, unsigned int depth = 0);
+		static GuiSubTexture createInternalFace(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int depth = 0);
+		static GuiSubTexture createInternalLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth = 0);
 
 		virtual void set(const SubTexture& texture, InterpolationMinMag interpolation) override;
 
 	private:
 		/// For imported textures - no path, name or bitmap update
-		GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image);
+		GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image);
 	};
 }
 

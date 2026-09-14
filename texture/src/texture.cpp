@@ -145,17 +145,18 @@ namespace textoolkit
 		, layer(std::move(subtexture.layer))
 		, face(std::move(subtexture.face))
 		, level(std::move(subtexture.level))
+		, depth(std::move(subtexture.depth))
 		, base(std::move(subtexture.base))
 	{
 	}
 
-	SubTexture::SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& name)
-		: SubTexture(type, layer, face, level, image, name, std::make_unique<Texture>(image, name))
+	SubTexture::SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image, const std::string& name)
+		: SubTexture(type, layer, face, level, depth, image, name, std::make_unique<Texture>(image, name))
 	{
 	}
 
-	SubTexture::SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& path, const std::string& name)
-		: SubTexture(type, layer, face, level, image, path, name, std::make_unique<Texture>(image, name))
+	SubTexture::SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image, const std::string& path, const std::string& name)
+		: SubTexture(type, layer, face, level, depth, image, path, name, std::make_unique<Texture>(image, name))
 	{
 	}
 
@@ -164,20 +165,22 @@ namespace textoolkit
 	{
 	}
 
-	SubTexture::SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& name, std::unique_ptr<Texture>&& base)
+	SubTexture::SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image, const std::string& name, std::unique_ptr<Texture>&& base)
 		: type(type)
 		, layer(layer)
 		, face(face)
 		, level(level)
+		, depth(depth)
 		, base(std::move(base))
 	{
 	}
 
-	SubTexture::SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& path, const std::string& name, std::unique_ptr<Texture>&& base)
+	SubTexture::SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image, const std::string& path, const std::string& name, std::unique_ptr<Texture>&& base)
 		: type(type)
 		, layer(layer)
 		, face(face)
 		, level(level)
+		, depth(depth)
 		, base(std::move(base))
 	{
 	}
@@ -190,23 +193,24 @@ namespace textoolkit
 		this->layer = std::move(subtexture.layer);
 		this->face = std::move(subtexture.face);
 		this->level = std::move(subtexture.level);
+		this->depth = std::move(subtexture.depth);
 		this->base = std::move(subtexture.base);
 		return *this;
 	}
 
-	SubTexture SubTexture::createLayer(Texture& texture, unsigned int layer)
+	SubTexture SubTexture::createLayer(Texture& texture, unsigned int layer, unsigned int depth)
 	{
-		return SubTexture(Type::Layer, layer, 0, 0, texture.image, texture.name);
+		return SubTexture(Type::Layer, layer, 0, 0, depth, texture.image, texture.name);
 	}
 
-	SubTexture SubTexture::createFace(Texture& texture, unsigned int layer, unsigned int face)
+	SubTexture SubTexture::createFace(Texture& texture, unsigned int layer, unsigned int face, unsigned int depth)
 	{
-		return SubTexture(Type::Face, layer, face, 0, texture.image, texture.name);
+		return SubTexture(Type::Face, layer, face, 0, depth, texture.image, texture.name);
 	}
 
-	SubTexture SubTexture::createLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level)
+	SubTexture SubTexture::createLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth)
 	{
-		return SubTexture(Type::Level, layer, face, level, texture.image, texture.name);
+		return SubTexture(Type::Level, layer, face, level, depth, texture.image, texture.name);
 	}
 
 	Image& SubTexture::getImage()
@@ -259,7 +263,7 @@ namespace textoolkit
 		{
 			for (unsigned int y = 0; y < this->getSize().y; y++)
 			{
-				this->base->image->setPixel(access->getPixel(x, y), x, y, this->layer, this->face, this->level);
+				this->base->image->setPixel(access->getPixel(x, y, texture.depth), x, y, this->depth, this->layer, this->face, this->level);
 			}
 		}
 	}
@@ -290,5 +294,10 @@ namespace textoolkit
 	unsigned int SubTexture::getLevel() const
 	{
 		return this->level;
+	}
+
+	unsigned int SubTexture::getDepth() const
+	{
+		return this->depth;
 	}
 }

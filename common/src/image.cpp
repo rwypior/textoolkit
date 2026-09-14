@@ -151,6 +151,11 @@ namespace textoolkit
 		return false;
 	}
 
+	std::optional<unsigned char> Image::getByte(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const
+	{
+		return getByte(x, y, 0, layer, face, level, mode);
+	}
+
 	std::optional<unsigned char> Image::getByte(unsigned int x, unsigned int y, DataOption mode) const
 	{
 		return getByte(x, y, 0, 0, 0, mode);
@@ -159,6 +164,11 @@ namespace textoolkit
 	std::vector<unsigned char> Image::getBytes(DataOption mode) const
 	{
 		return getBytes(0, 0, 0, mode);
+	}
+
+	std::optional<Pixel> Image::getPixel(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const
+	{
+		return getPixel(x, y, 0, layer, face, level, mode);
 	}
 
 	std::optional<Pixel> Image::getPixel(unsigned int x, unsigned int y, DataOption mode) const
@@ -171,9 +181,19 @@ namespace textoolkit
 		return getPixels(0, 0, 0, mode);
 	}
 
+	bool Image::setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode)
+	{
+		return setByte(byte, x, y, 0, layer, face, level, mode);
+	}
+
 	bool Image::setByte(unsigned char byte, unsigned int x, unsigned int y, DataOption mode)
 	{
 		return setByte(byte, x, y, 0, 0, 0, mode);
+	}
+
+	bool Image::setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode)
+	{
+		return setPixel(pixel, x, y, 0, layer, face, level, mode);
 	}
 
 	bool Image::setPixel(Pixel pixel, unsigned int x, unsigned int y, DataOption mode)

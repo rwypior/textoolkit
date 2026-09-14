@@ -36,14 +36,15 @@ namespace textoolkit{ class AutowrapLabel; }
 #include <wx/scrolwin.h>
 #include <wx/statbox.h>
 #include <wx/splitter.h>
+#include <wx/slider.h>
+#include <wx/spinctrl.h>
 #include <wx/propgrid/propgrid.h>
 #include <wx/propgrid/advprops.h>
 #include <wx/listbox.h>
 #include <wx/dialog.h>
 #include <wx/textctrl.h>
-#include <wx/spinctrl.h>
-#include <wx/checkbox.h>
 #include <wx/choice.h>
+#include <wx/checkbox.h>
 #include <wx/statline.h>
 #include <wx/gauge.h>
 #include <wx/dataview.h>
@@ -145,6 +146,8 @@ namespace textoolkit
 			wxPanel* m_panel261;
 			wxBitmapButton* addLevelButton;
 			wxBitmapButton* removeLevelButton;
+			wxSlider* depthSlider;
+			wxSpinCtrl* depthSpin;
 			wxPanel* propertiesTab;
 			wxPropertyGrid* propertyGrid;
 
@@ -180,8 +183,8 @@ namespace textoolkit
 			wxListBox* typeList;
 			wxPanel* propertiesPanel;
 			wxPanel* m_panel7;
-			wxButton* cancelButton;
 			wxButton* okButton;
+			wxButton* cancelButton;
 
 		public:
 
@@ -235,10 +238,13 @@ namespace textoolkit
 			wxStaticText* m_staticText17;
 			wxSpinCtrl* depthEdit;
 			wxPanel* m_panel15;
-			wxCheckBox* mipmapsCheckbox;
+			wxPanel* m_panel48;
+			wxStaticText* m_staticText15;
+			wxSpinCtrl* layersCount;
 			wxStaticText* m_staticText14;
 			wxChoice* typeChoice;
 			wxPanel* m_panel40;
+			wxCheckBox* mipmapsCheckbox;
 			wxStaticText* m_staticText151;
 			wxChoice* formatChoice;
 			wxPanel* m_panel41;
@@ -246,8 +252,6 @@ namespace textoolkit
 			wxChoice* compressionChoice;
 			wxPanel* m_panel16;
 			wxPanel* additionalPanel;
-			wxStaticText* m_staticText15;
-			wxSpinCtrl* layersCount;
 			wxButton* selectImagesButton;
 			wxStaticText* importedImagesLabel;
 

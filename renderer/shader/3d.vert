@@ -1,0 +1,35 @@
+#version 330
+
+layout (location = 0) in vec3 vertexLocation;
+layout (location = 1) in vec3 vertexNormal;
+layout (location = 2) in vec2 vertexUv;
+
+out vec3 position;
+out vec3 normal;
+out vec3 uv;
+
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
+uniform float UVXScale;
+uniform float UVYScale;
+uniform float UVZScale;
+uniform bool locationAsUv;
+
+void main()
+{          
+    mat4 mv = viewMatrix * modelMatrix;
+	mat4 mvp = projectionMatrix * mv;
+    gl_Position = mvp * vec4(vertexLocation, 1.0);
+    position = gl_Position.xyz;
+
+    mat3 normalMatrix = mat3(transpose(inverse(mv)));
+    normal = normalize(vec3(vec4(normalMatrix * vertexNormal, 0.0)));
+
+    if (locationAsUv)
+        uv = vertexLocation;
+    else
+        uv = vec3(vertexUv.x, vertexUv.y, vertexLocation.z);
+
+    uv *= vec3(UVXScale, UVYScale, UVZScale);
+}

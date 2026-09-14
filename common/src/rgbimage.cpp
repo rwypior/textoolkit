@@ -58,7 +58,7 @@ namespace textoolkit
 		}
 	}
 
-	std::optional<unsigned char> RgbImage::getByte(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const
+	std::optional<unsigned char> RgbImage::getByte(unsigned int x, unsigned int y, unsigned int /*z*/, unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const
 	{
 		auto idx = this->getIndex(x, y, layer, face, level, mode);
 		if (!idx)
@@ -79,7 +79,7 @@ namespace textoolkit
 		return this->getData(layer, face, level);
 	}
 
-	std::optional<Pixel> RgbImage::getPixel(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const
+	std::optional<Pixel> RgbImage::getPixel(unsigned int x, unsigned int y, unsigned int /*z*/, unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const
 	{
 		auto idx = this->getIndex(x, y, layer, face, level, mode);
 		const auto size = this->getSize(layer, face, level);
@@ -116,7 +116,7 @@ namespace textoolkit
 		return result;
 	}
 
-	bool RgbImage::setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode)
+	bool RgbImage::setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int /*z*/, unsigned int layer, unsigned int face, unsigned int level, DataOption mode)
 	{
 		auto idx = this->getIndex(x, y, layer, face, level, mode);
 		if (!idx)
@@ -128,7 +128,7 @@ namespace textoolkit
 		return true;
 	}
 
-	bool RgbImage::setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode)
+	bool RgbImage::setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int /*z*/, unsigned int layer, unsigned int face, unsigned int level, DataOption mode)
 	{
 		auto idx = this->getIndex(x, y, layer, face, level, mode);
 		if (!idx || *idx + 2 >= this->getSize(layer, face, level))

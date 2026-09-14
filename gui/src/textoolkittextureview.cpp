@@ -5,6 +5,7 @@
 #include "gui/util.hpp"
 #include "gui/importdlg.hpp"
 #include "common/image.hpp"
+#include "common/logger.hpp"
 #include "texture/textureloader.hpp"
 #include "renderer/modeldatabase.hpp"
 #include "renderer/model.hpp"
@@ -38,6 +39,8 @@ namespace textoolkit
 		, progressNotifier(progressNotifier)
 		, modelDatabase(modelDatabase)
 	{
+		auto asd = this->texture->getImage().getTextureType();
+
 		this->object = this->canvas->addObject(std::make_unique<renderer::Object>(mainObjectName));
 		this->canvas->setImage(this->texture->getImage());
 
@@ -50,6 +53,13 @@ namespace textoolkit
 		this->m_panel2611->Destroy(); // Add buttons
 		this->m_panel261->Destroy(); // Add buttons
 		//
+
+		this->depthSlider->SetMin(0);
+		this->depthSlider->SetMax(this->texture->getImage().getDepth() - 1);
+		this->depthSlider->SetValue(0);
+		this->depthSpin->SetMin(0);
+		this->depthSpin->SetMax(this->texture->getImage().getDepth() - 1);
+		this->depthSpin->SetValue(0);
 		
 		this->setupProperties();
 		this->updateModels();
@@ -64,6 +74,8 @@ namespace textoolkit
 		this->displaymode->Bind(wxEVT_COMBOBOX, &TexToolkitTextureView::displayModeSelected, this);
 		this->propertyGrid->Bind(wxEVT_PG_CHANGED, &TexToolkitTextureView::propertyChanged, this);
 		this->selectBaseLink->Bind(wxEVT_HYPERLINK, &TexToolkitTextureView::selectBaseClicked, this);
+		this->depthSlider->Bind(wxEVT_SLIDER, &TexToolkitTextureView::depthSliderChanged, this);
+		this->depthSpin->Bind(wxEVT_SPINCTRL, &TexToolkitTextureView::depthSpinChanged, this);
 	}
 
 	TexToolkitTextureView::~TexToolkitTextureView() = default;
@@ -87,7 +99,10 @@ namespace textoolkit
 		else
 			str << ", " << this->texture->getName();
 
-		str << this->texture->getImage().getWidth() << "px x " << this->texture->getImage().getHeight();
+		str << ", " << 
+			"w " << this->texture->getImage().getWidth() << "px, " <<
+			"h " << this->texture->getImage().getHeight() << "px, " <<
+			"d " << this->texture->getImage().getDepth() << "px";
 
 		return str.str();
 	}
@@ -116,7 +131,7 @@ namespace textoolkit
 		for (unsigned int layer = 0; layer < layers; layer++)
 		{
 			threadpool.enqueue([this, layer, &subtextures, &threadpool]() {
-				auto subtexture = std::make_unique<GuiSubTexture>(GuiSubTexture::createLayer(*this->texture, layer));
+				auto subtexture = std::make_unique<GuiSubTexture>(GuiSubTexture::createLayer(*this->texture, layer, this->currentDepth));
 				auto lck = threadpool.lock();
 				subtextures.push_back(std::move(subtexture));
 				});
@@ -140,7 +155,7 @@ namespace textoolkit
 		for (unsigned int face = 0; face < faces; face++)
 		{
 			threadpool.enqueue([this, face, &subtextures, &threadpool]() {
-				auto subtexture = std::make_unique<GuiSubTexture>(GuiSubTexture::createFace(*this->texture, this->currentLayer, face));
+				auto subtexture = std::make_unique<GuiSubTexture>(GuiSubTexture::createFace(*this->texture, this->currentLayer, face, this->currentDepth));
 				auto lck = threadpool.lock();
 				subtextures.push_back(std::move(subtexture));
 			});
@@ -158,13 +173,14 @@ namespace textoolkit
 	TexToolkitTextureView::SubTextureContainer TexToolkitTextureView::createLevels(ProgressNotifier progressNotifier) const
 	{
 		auto& image = this->texture->getImage();
-		unsigned int levels = image.getLevels();
+		//unsigned int levels = image.getLevels();
+		unsigned int levels = this->getLevels(image);
 		FiniteThreadpool threadpool(progressNotifier);
 		TexToolkitTextureView::SubTextureContainer subtextures;
 		for (unsigned int level = 0; level < levels; level++)
 		{
 			threadpool.enqueue([this, level, &subtextures, &threadpool]() {
-				auto subtexture = std::make_unique<GuiSubTexture>(GuiSubTexture::createLevel(*this->texture, this->currentLayer, this->currentFace, level));
+				auto subtexture = std::make_unique<GuiSubTexture>(GuiSubTexture::createLevel(*this->texture, this->currentLayer, this->currentFace, level, this->currentDepth));
 				auto lck = threadpool.lock();
 				subtextures.push_back(std::move(subtexture));
 			});
@@ -177,6 +193,27 @@ namespace textoolkit
 		});
 
 		return subtextures;
+	}
+
+	unsigned int TexToolkitTextureView::getLevels(const Image& image) const
+	{
+		auto levels = image.getLevels();
+		/*auto depth = image.getDepth();
+
+		if (this->currentDepth == 0)
+			return levels;*/
+
+		// GLI_ASSERT(glm::all(glm::lessThan(TexelCoord, this->extent(Level))));
+
+		unsigned int count = 0;
+		for (unsigned int i = 0; i < levels; i++)
+		{
+			count += this->currentDepth < image.getDepth(i);
+		}
+		return count;
+			//levels = std::min(levels, depth - this->currentDepth);
+			//levels = std::min(levels, static_cast<unsigned int>(std::log2(depth - this->currentDepth)) + 1);
+		//return levels;
 	}
 
 	TexToolkitSubimageEntry* TexToolkitTextureView::getLayer(unsigned int layer)
@@ -255,20 +292,24 @@ namespace textoolkit
 		return false;
 	}
 
-	void TexToolkitTextureView::updateFlatView(unsigned int layer, unsigned int face, unsigned int level)
+	void TexToolkitTextureView::updateFlatView(unsigned int layer, unsigned int face, unsigned int level, unsigned int depth)
 	{
 		if (!this->texture)
 			return;
 
 		auto& image = this->texture->getImage();
-		this->mainTexture = GuiSubTexture::createLevel(*this->texture, this->currentLayer, this->currentFace, level);
+		this->mainTexture = GuiSubTexture::createLevel(*this->texture, layer, face, level, depth);
 		this->flatViewBitmap = this->mainTexture.getBitmap();
 
+		wxString type = Image::translateTextureType(image.getTextureType());
+
 		this->flatViewImageDetails->SetLabel(
-			wxString::Format("Layer %d; Face %d; Level %d; %dx%d",
+			wxString::Format("%s; Layer %d; Face %d; Level %d; Depth %d; %dx%d px",
+				type,
 				this->mainTexture.getLayer(),
 				this->mainTexture.getFace(),
 				this->mainTexture.getLevel(),
+				this->mainTexture.getDepth(),
 				this->mainTexture.getSize().x,
 				this->mainTexture.getSize().y
 			));
@@ -433,13 +474,19 @@ namespace textoolkit
 			this->getLevel(level)->updatePreview();
 		}
 
-		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel);
+		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel, this->currentDepth);
 		this->updateSubimages();
 	}
 
 	void TexToolkitTextureView::reuploadTexture()
 	{
 		this->canvas->reuploadTexture();
+	}
+
+	void TexToolkitTextureView::refreshView()
+	{
+		this->updateSubimages({ UpdateTarget::Layers, UpdateTarget::Faces, UpdateTarget::Levels });
+		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel, this->currentDepth);
 	}
 
 	void TexToolkitTextureView::setupProperties()
@@ -512,25 +559,42 @@ namespace textoolkit
 		auto userpropertiesgrp = this->propertyGrid->GetProperty(propGrp3DUserProperties);
 		userpropertiesgrp->DeleteChildren();
 
-		for (auto& propname : displayMode->properties)
+		for (auto& propstr : displayMode->properties)
 		{
-			auto type = *this->canvas->getUserPropertyType(propname);
+			auto splitted = split(propstr, ":");
+			std::string propname = splitted[0];
+			std::string propval;
+			if (splitted.size() == 2)
+				propval = splitted[1];
+			auto prop = this->canvas->getUserPropertyType(propname);
+			if (!prop)
+			{
+				textoolkit::Logger::getLogger() << "Cannot find user property " << propname << " in current shader";
+				continue;
+			}
+
+			auto type = *prop;
 			switch (type)
 			{
 			case renderer::UniformType::Int:
-				userpropertiesgrp->AppendChild(new wxIntProperty(propname, propname, 0));
+				userpropertiesgrp->AppendChild(new wxIntProperty(propname, propname, propval.empty() ? 0 : std::stoi(propval)));
 				break;
 			case renderer::UniformType::Uint:
-				userpropertiesgrp->AppendChild(new wxUIntProperty(propname, propname, 0));
+				userpropertiesgrp->AppendChild(new wxUIntProperty(propname, propname, propval.empty() ? 0 : std::stoi(propval)));
 				break;
 			case renderer::UniformType::Float:
-				userpropertiesgrp->AppendChild(new wxFloatProperty(propname, propname, 0.0));
+				userpropertiesgrp->AppendChild(new wxFloatProperty(propname, propname, propval.empty() ? 0 : std::stof(propval)));
+				break;
+			case renderer::UniformType::Bool:
+				userpropertiesgrp->AppendChild(new wxBoolProperty(propname, propname, propval.empty() ? 0 : std::stoi(propval)));
 				break;
 			}
 		}
 
 		this->propertyGrid->Update();
 		this->propertyGrid->Refresh();
+
+		this->updateUserProperties();
 	}
 
 	void TexToolkitTextureView::update3DView()
@@ -616,7 +680,7 @@ namespace textoolkit
 			break;
 		}
 
-		this->updateFlatView(layer, face, level);
+		this->updateFlatView(layer, face, level, this->currentDepth);
 		this->updateSubimages();
 	}
 
@@ -629,10 +693,10 @@ namespace textoolkit
 	{
 		for (unsigned int face = 0; face < this->texture->getImage().getFaces(); face++)
 		{
-			for (unsigned int level = 0; level < this->texture->getImage().getLevels(); level++)
+			for (unsigned int level = 0; level < this->getLevels(this->texture->getImage()); level++)
 			{
 				auto source = GuiSubTexture::createLevel(texture, 0, 0, 0);
-				auto destination = GuiSubTexture::createLevel(*this->texture, layer, face, level);
+				auto destination = GuiSubTexture::createLevel(*this->texture, layer, face, level, this->currentDepth);
 				destination.set(source, interpolation);
 
 				auto subentry = this->getLevel(level);
@@ -655,10 +719,10 @@ namespace textoolkit
 
 	void TexToolkitTextureView::importFace(GuiTexture& texture, unsigned int layer, unsigned int face, InterpolationMinMag interpolation, bool performUpdate, bool reupload)
 	{
-		for (unsigned int level = 0; level < this->texture->getImage().getLevels(); level++)
+		for (unsigned int level = 0; level < this->getLevels(this->texture->getImage()); level++)
 		{
 			auto source = GuiSubTexture::createLevel(texture, 0, 0, 0);
-			auto destination = GuiSubTexture::createLevel(*this->texture, layer, face, level);
+			auto destination = GuiSubTexture::createLevel(*this->texture, layer, face, level, this->currentDepth);
 			destination.set(source, interpolation);
 
 			auto subentry = this->getLevel(level);
@@ -677,7 +741,7 @@ namespace textoolkit
 	void TexToolkitTextureView::importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, InterpolationMinMag interpolation, bool performUpdate, bool reupload)
 	{
 		auto source = GuiSubTexture::createInternalLevel(texture, 0, 0, 0);
-		auto destination = GuiSubTexture::createInternalLevel(*this->texture, layer, face, level);
+		auto destination = GuiSubTexture::createInternalLevel(*this->texture, layer, face, level, this->currentDepth);
 		destination.set(source, interpolation);
 
 		auto subentry = this->getLevel(level);
@@ -700,6 +764,25 @@ namespace textoolkit
 		}
 	}
 
+	void TexToolkitTextureView::updateUserProperties()
+	{
+		auto userpropertiesgrp = this->propertyGrid->GetProperty(propGrp3DUserProperties);
+		for (unsigned int i = 0; i < userpropertiesgrp->GetChildCount(); i++)
+		{
+			auto prop = userpropertiesgrp->Item(i);
+			auto renderprop = createRenderProperty(prop->GetValue());
+			auto propname = prop->GetBaseName();
+			this->canvas->setUserProperty(propname.ToStdString(), renderprop);
+		}
+	}
+
+	void TexToolkitTextureView::selectDepth(unsigned int depth)
+	{
+		this->depthSlider->SetValue(0);
+		this->depthSpin->SetValue(0);
+		this->currentDepth = this->depthSlider->GetValue();
+	}
+
 	void TexToolkitTextureView::layerSelected(TexToolkitSubimageEvent& event)
 	{
 		this->deselectOthers(this->layerScroller, event.entry);
@@ -708,7 +791,7 @@ namespace textoolkit
 		this->currentFace = 0;
 		this->currentLevel = 0;
 		this->updateSubimages({UpdateTarget::Faces, UpdateTarget::Levels });
-		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel);
+		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel, this->currentDepth);
 	}
 
 	void TexToolkitTextureView::faceSelected(TexToolkitSubimageEvent& event)
@@ -718,7 +801,7 @@ namespace textoolkit
 		this->currentFace = event.entry->getTexture()->getFace();
 		this->currentLevel = 0;
 		this->updateSubimages({ UpdateTarget::Levels });
-		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel);
+		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel, this->currentDepth);
 	}
 
 	void TexToolkitTextureView::levelSelected(TexToolkitSubimageEvent& event)
@@ -726,7 +809,7 @@ namespace textoolkit
 		this->deselectOthers(this->levelScroller, event.entry);
 		this->currentType = SubTexture::Type::Level;
 		this->currentLevel = event.entry->getTexture()->getLevel();
-		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel);
+		this->updateFlatView(this->currentLayer, this->currentFace, this->currentLevel, this->currentDepth);
 	}
 
 	void TexToolkitTextureView::importRequested(TexToolkitSubimageEvent& event)
@@ -789,12 +872,32 @@ namespace textoolkit
 
 	void TexToolkitTextureView::selectBaseClicked(wxHyperlinkEvent& event)
 	{
+		this->selectDepth(0);
 		if (auto layer = this->getLayer(0))
-			layer->select();
+			layer->select(false);
 		if (auto face = this->getFace(0))
-			face->select();
+			face->select(false);
+		if (auto level = this->getLevel(0))
+			level->select(false);
+		this->refreshView();
+	}
+
+	void TexToolkitTextureView::depthSliderChanged(wxCommandEvent& event)
+	{
+		this->depthSpin->SetValue(this->depthSlider->GetValue());
+		this->currentDepth = this->depthSlider->GetValue();
 		if (auto level = this->getLevel(0))
 			level->select();
+		this->refreshView();
+	}
+
+	void TexToolkitTextureView::depthSpinChanged(wxSpinEvent& event)
+	{
+		this->depthSlider->SetValue(this->depthSpin->GetValue());
+		this->currentDepth = this->depthSpin->GetValue();
+		if (auto level = this->getLevel(0))
+			level->select();
+		this->refreshView();
 	}
 
 	void TexToolkitTextureView::fixAlignments(const wxString& propname)

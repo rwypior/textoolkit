@@ -62,7 +62,7 @@ namespace
 	unsigned int getLevels(const glm::vec3& extents)
 	{
 		float smallerDimension = std::min(extents.x, extents.y);
-		return static_cast<unsigned int>(std::log2(smallerDimension));
+		return static_cast<unsigned int>(std::log2(smallerDimension)) + 1;
 	}
 }
 
@@ -92,7 +92,7 @@ namespace textoolkit
 		: dds(
 			translateTarget(type),
 			translateFormat(format, compression),
-			extents, layers, ::getFaces(type), generateMipmaps ? ::getLevels(extents) + 1 : 1
+			extents, layers, ::getFaces(type), generateMipmaps ? ::getLevels(extents) : 1
 		)
 		, originalFormat(translateFormat(format, compression))
 	{
@@ -167,10 +167,10 @@ namespace textoolkit
 		return true;
 	}
 
-	std::optional<unsigned char> DDS::getByte(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const
+	std::optional<unsigned char> DDS::getByte(unsigned int x, unsigned int y, unsigned int z, unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const
 	{
 		const unsigned char* data = static_cast<const unsigned char*>(this->dds.data(layer, face, level));
-		if (auto opt = getIndex(x, y, level))
+		if (auto opt = getIndex(x, y, z, level))
 		{
 			unsigned int idx = *opt;
 			return data[idx];
@@ -191,10 +191,10 @@ namespace textoolkit
 		return this->dds.data(layer, face, level);
 	}
 
-	std::optional<Pixel> DDS::getPixel(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const
+	std::optional<Pixel> DDS::getPixel(unsigned int x, unsigned int y, unsigned int z, unsigned int layer, unsigned int face, unsigned int level, DataOption mode) const
 	{
 		const unsigned char* data = static_cast<const unsigned char*>(this->dds.data(layer, face, level));
-		if (auto opt = getIndex(x, y, level))
+		if (auto opt = getIndex(x, y, z, level))
 		{
 			unsigned int idx = *opt;
 			Pixel pixel;
@@ -227,10 +227,10 @@ namespace textoolkit
 		return result;
 	}
 
-	bool DDS::setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode)
+	bool DDS::setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int z, unsigned int layer, unsigned int face, unsigned int level, DataOption mode)
 	{
 		unsigned char* data = static_cast<unsigned char*>(this->dds.data(layer, face, level));
-		if (auto opt = getIndex(x, y, level))
+		if (auto opt = getIndex(x, y, z, level))
 		{
 			unsigned int idx = *opt;
 			data[idx] = byte;
@@ -240,19 +240,19 @@ namespace textoolkit
 		return false;
 	}
 
-	bool DDS::setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode)
+	bool DDS::setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int z, unsigned int layer, unsigned int face, unsigned int level, DataOption mode)
 	{
 		auto blocksize = gli::block_size(this->dds.format());
 		switch (blocksize)
 		{
 			case sizeof(glm::vec4):
-				this->dds.store(gli::texture::extent_type(x, y, 0), layer, face, level, glm::vec4(pixel.r, pixel.g, pixel.b, pixel.a));
+				this->dds.store(gli::texture::extent_type(x, y, z), layer, face, level, glm::vec4(pixel.r, pixel.g, pixel.b, pixel.a));
 				break;
 			case sizeof(glm::u8vec3):
-				this->dds.store(gli::texture::extent_type(x, y, 0), layer, face, level, glm::u8vec3(pixel.r, pixel.g, pixel.b));
+				this->dds.store(gli::texture::extent_type(x, y, z), layer, face, level, glm::u8vec3(pixel.r, pixel.g, pixel.b));
 				break;
 			case sizeof(glm::u8vec4):
-				this->dds.store(gli::texture::extent_type(x, y, 0), layer, face, level, glm::u8vec4(pixel.r, pixel.g, pixel.b, pixel.a));
+				this->dds.store(gli::texture::extent_type(x, y, z), layer, face, level, glm::u8vec4(pixel.r, pixel.g, pixel.b, pixel.a));
 				break;
 			default:
 				return false;
@@ -419,10 +419,10 @@ namespace textoolkit
 		return this->dds;
 	}
 
-	std::optional<size_t> DDS::getIndex(unsigned int x, unsigned int y, unsigned int level) const
+	std::optional<size_t> DDS::getIndex(unsigned int x, unsigned int y, unsigned int z, unsigned int level) const
 	{
 		auto extent = this->dds.extent(level);
-		unsigned int idx = x * bytesPerPixel + y * extent.x * bytesPerPixel;
+		unsigned int idx = x * bytesPerPixel + y * extent.x * bytesPerPixel + z * bytesPerPixel * extent.x * extent.y;
 		return idx;
 	}
 

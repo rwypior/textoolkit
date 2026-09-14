@@ -7,7 +7,7 @@
 
 #include "gui/autowraplabel.hpp"
 
-#include "gui/mainwindow.h"
+#include "mainwindow.h"
 
 ///////////////////////////////////////////////////////////////////////////
 using namespace textoolkit;
@@ -444,6 +444,18 @@ TextureView::TextureView( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	m_splitter1->SplitHorizontally( m_panel35, m_panel36, 200 );
 	bSizer36->Add( m_splitter1, 1, wxEXPAND, 0 );
 
+	wxStaticBoxSizer* sbSizer41;
+	sbSizer41 = new wxStaticBoxSizer( new wxStaticBox( subImagesTab, wxID_ANY, _("Depth") ), wxHORIZONTAL );
+
+	depthSlider = new wxSlider( sbSizer41->GetStaticBox(), wxID_ANY, 0, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_MIN_MAX_LABELS );
+	sbSizer41->Add( depthSlider, 1, wxALL, 5 );
+
+	depthSpin = new wxSpinCtrl( sbSizer41->GetStaticBox(), wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0 );
+	sbSizer41->Add( depthSpin, 0, wxALL, 5 );
+
+
+	bSizer36->Add( sbSizer41, 0, wxEXPAND, 5 );
+
 
 	subImagesTab->SetSizer( bSizer36 );
 	subImagesTab->Layout();
@@ -514,11 +526,11 @@ NewDialog::NewDialog( wxWindow* parent, wxWindowID id, const wxString& title, co
 
 	bSizer8->Add( 0, 0, 1, wxEXPAND, 5 );
 
-	cancelButton = new wxButton( m_panel7, wxID_ANY, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer8->Add( cancelButton, 0, wxALL, 5 );
-
 	okButton = new wxButton( m_panel7, wxID_ANY, _("Ok"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer8->Add( okButton, 0, wxALL, 5 );
+
+	cancelButton = new wxButton( m_panel7, wxID_ANY, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer8->Add( cancelButton, 0, wxALL, 5 );
 
 
 	m_panel7->SetSizer( bSizer8 );
@@ -662,9 +674,24 @@ newDdsPanel::newDdsPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	wxBoxSizer* bSizer22;
 	bSizer22 = new wxBoxSizer( wxHORIZONTAL );
 
-	mipmapsCheckbox = new wxCheckBox( m_panel15, wxID_ANY, _("Generate mipmaps"), wxDefaultPosition, wxDefaultSize, 0 );
-	mipmapsCheckbox->SetValue(true);
-	bSizer22->Add( mipmapsCheckbox, 0, wxALIGN_CENTER|wxALL, 5 );
+	m_panel48 = new wxPanel( m_panel15, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer52;
+	bSizer52 = new wxBoxSizer( wxHORIZONTAL );
+
+	m_staticText15 = new wxStaticText( m_panel48, wxID_ANY, _("Layers"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText15->Wrap( -1 );
+	bSizer52->Add( m_staticText15, 0, wxALIGN_CENTER|wxALL, 5 );
+
+	layersCount = new wxSpinCtrl( m_panel48, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 1000000, 0 );
+	layersCount->SetMinSize( wxSize( 100,-1 ) );
+
+	bSizer52->Add( layersCount, 0, wxALL, 5 );
+
+
+	m_panel48->SetSizer( bSizer52 );
+	m_panel48->Layout();
+	bSizer52->Fit( m_panel48 );
+	bSizer22->Add( m_panel48, 0, wxEXPAND | wxALL, 0 );
 
 
 	bSizer22->Add( 0, 0, 1, wxEXPAND, 5 );
@@ -689,6 +716,10 @@ newDdsPanel::newDdsPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	m_panel40 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer42;
 	bSizer42 = new wxBoxSizer( wxHORIZONTAL );
+
+	mipmapsCheckbox = new wxCheckBox( m_panel40, wxID_ANY, _("Generate mipmaps"), wxDefaultPosition, wxDefaultSize, 0 );
+	mipmapsCheckbox->SetValue(true);
+	bSizer42->Add( mipmapsCheckbox, 0, wxALIGN_CENTER|wxALL, 5 );
 
 
 	bSizer42->Add( 0, 0, 1, wxEXPAND, 5 );
@@ -737,18 +768,6 @@ newDdsPanel::newDdsPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	additionalPanel = new wxPanel( m_panel16, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer24;
 	bSizer24 = new wxBoxSizer( wxHORIZONTAL );
-
-	m_staticText15 = new wxStaticText( additionalPanel, wxID_ANY, _("Layers"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_staticText15->Wrap( -1 );
-	bSizer24->Add( m_staticText15, 0, wxALIGN_CENTER|wxALL, 5 );
-
-	layersCount = new wxSpinCtrl( additionalPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 1000000, 0 );
-	layersCount->SetMinSize( wxSize( 100,-1 ) );
-
-	bSizer24->Add( layersCount, 0, wxALL, 5 );
-
-
-	bSizer24->Add( 32, 0, 0, wxEXPAND, 5 );
 
 	selectImagesButton = new wxButton( additionalPanel, wxID_ANY, _("Select images"), wxDefaultPosition, wxDefaultSize, 0 );
 	selectImagesButton->SetToolTip( _("(Optional) Allows user to select images to be imported during texture creation") );

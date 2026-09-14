@@ -63,7 +63,7 @@ namespace textoolkit
 		this->setBitmapData(this->bitmap);
 	}
 
-	void GuiTexture::setBitmapData(wxBitmap& bmp, unsigned int layer, unsigned int face, unsigned int level)
+	void GuiTexture::setBitmapData(wxBitmap& bmp, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth)
 	{
 		wxAlphaPixelData data(bmp);
 		wxAlphaPixelData::Iterator datait(data);
@@ -72,7 +72,7 @@ namespace textoolkit
 		{
 			for (unsigned int y = 0; y < bmp.GetHeight(); y++)
 			{
-				auto color = this->image->getPixel(x, y, layer, face, level, textoolkit::DataOption::InvertY);
+				auto color = this->image->getPixel(x, y, depth, layer, face, level, textoolkit::DataOption::InvertY);
 
 				datait.MoveTo(data, x, y);
 				datait.Red() = color->r;
@@ -117,51 +117,51 @@ namespace textoolkit
 	{
 	}
 
-	GuiSubTexture::GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& name)
-		: SubTexture(type, layer, face, level, image, name, std::make_unique<GuiTexture>(image, name, GuiTexture::NoUpdateTag()))
+	GuiSubTexture::GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image, const std::string& name)
+		: SubTexture(type, layer, face, level, depth, image, name, std::make_unique<GuiTexture>(image, name, GuiTexture::NoUpdateTag()))
 	{
 		this->updateBitmap();
 	}
 
-	GuiSubTexture::GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& path, const std::string& name)
-		: SubTexture(type, layer, face, level, image, path, name, std::make_unique<GuiTexture>(image, path, name, GuiTexture::NoUpdateTag()))
+	GuiSubTexture::GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image, const std::string& path, const std::string& name)
+		: SubTexture(type, layer, face, level, depth, image, path, name, std::make_unique<GuiTexture>(image, path, name, GuiTexture::NoUpdateTag()))
 	{
 		this->updateBitmap();
 	}
 
-	GuiSubTexture::GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image)
-		: SubTexture(type, layer, face, level, image, "", "", std::make_unique<GuiTexture>(image, "", "", GuiTexture::NoUpdateTag()))
+	GuiSubTexture::GuiSubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image)
+		: SubTexture(type, layer, face, level, depth, image, "", "", std::make_unique<GuiTexture>(image, "", "", GuiTexture::NoUpdateTag()))
 	{
 	}
 
-	GuiSubTexture GuiSubTexture::createLayer(GuiTexture& texture, unsigned int layer)
+	GuiSubTexture GuiSubTexture::createLayer(GuiTexture& texture, unsigned int layer, unsigned int depth)
 	{
-		return GuiSubTexture(Type::Layer, layer, 0, 0, texture.image, texture.name);
+		return GuiSubTexture(Type::Layer, layer, 0, 0, depth, texture.image, texture.name);
 	}
 
-	GuiSubTexture GuiSubTexture::createFace(GuiTexture& texture, unsigned int layer, unsigned int face)
+	GuiSubTexture GuiSubTexture::createFace(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int depth)
 	{
-		return GuiSubTexture(Type::Face, layer, face, 0, texture.image, texture.name);
+		return GuiSubTexture(Type::Face, layer, face, 0, depth, texture.image, texture.name);
 	}
 
-	GuiSubTexture GuiSubTexture::createLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level)
+	GuiSubTexture GuiSubTexture::createLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth)
 	{
-		return GuiSubTexture(Type::Level, layer, face, level, texture.image, texture.name);
+		return GuiSubTexture(Type::Level, layer, face, level, depth, texture.image, texture.name);
 	}
 
-	GuiSubTexture GuiSubTexture::createInternalLayer(GuiTexture& texture, unsigned int layer)
+	GuiSubTexture GuiSubTexture::createInternalLayer(GuiTexture& texture, unsigned int layer, unsigned int depth)
 	{
-		return GuiSubTexture(Type::Layer, layer, 0, 0, texture.image);
+		return GuiSubTexture(Type::Layer, layer, 0, 0, depth, texture.image);
 	}
 
-	GuiSubTexture GuiSubTexture::createInternalFace(GuiTexture& texture, unsigned int layer, unsigned int face)
+	GuiSubTexture GuiSubTexture::createInternalFace(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int depth)
 	{
-		return GuiSubTexture(Type::Face, layer, face, 0, texture.image);
+		return GuiSubTexture(Type::Face, layer, face, 0, depth, texture.image);
 	}
 
-	GuiSubTexture GuiSubTexture::createInternalLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level)
+	GuiSubTexture GuiSubTexture::createInternalLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth)
 	{
-		return GuiSubTexture(Type::Level, layer, face, level, texture.image);
+		return GuiSubTexture(Type::Level, layer, face, level, depth, texture.image);
 	}
 
 	wxBitmap& GuiSubTexture::getBitmap()
@@ -181,7 +181,7 @@ namespace textoolkit
 		if (bitmapsize.x != base.image->getWidth(this->level) || bitmapsize.y != base.image->getHeight(this->level))
 			base.bitmap = wxBitmap(base.image->getWidth(this->level), base.image->getHeight(this->level), 32);
 
-		base.setBitmapData(base.bitmap, this->layer, this->face, this->level);
+		base.setBitmapData(base.bitmap, this->layer, this->face, this->level, this->depth);
 	}
 
 	void GuiSubTexture::commit()

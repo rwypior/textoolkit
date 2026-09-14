@@ -33,13 +33,13 @@ namespace textoolkit
 		/// Fill whole image with given color
 		void fill(const Pixel& baseColor);
 
-		virtual std::optional<unsigned char> getByte(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
+		virtual std::optional<unsigned char> getByte(unsigned int x, unsigned int y, unsigned int z, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
 		virtual std::vector<unsigned char> getBytes(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
 		virtual const void* getBytesPtr(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
-		virtual std::optional<Pixel> getPixel(unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
+		virtual std::optional<Pixel> getPixel(unsigned int x, unsigned int y, unsigned int z, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
 		virtual std::vector<Pixel> getPixels(unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) const override;
-		virtual bool setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) override;
-		virtual bool setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) override;
+		virtual bool setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int z, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) override;
+		virtual bool setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int z, unsigned int layer, unsigned int face, unsigned int level, DataOption mode = DataOption::Normal) override;
 
 		virtual unsigned int getWidth(unsigned int level = 0) const override;
 		virtual unsigned int getHeight(unsigned int level = 0) const override;

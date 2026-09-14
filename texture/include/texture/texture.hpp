@@ -82,15 +82,15 @@ namespace textoolkit
 	public:
 		SubTexture();
 		SubTexture(SubTexture&& subtexture) noexcept;
-		SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& name);
-		SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& path, const std::string& name);
+		SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image, const std::string& name);
+		SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image, const std::string& path, const std::string& name);
 		virtual ~SubTexture();
 
 		SubTexture& operator=(SubTexture&& subtexture) noexcept;
 
-		static SubTexture createLayer(Texture& texture, unsigned int layer);
-		static SubTexture createFace(Texture& texture, unsigned int layer, unsigned int face);
-		static SubTexture createLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level);
+		static SubTexture createLayer(Texture& texture, unsigned int layer, unsigned int depth = 0);
+		static SubTexture createFace(Texture& texture, unsigned int layer, unsigned int face, unsigned int depth = 0);
+		static SubTexture createLevel(Texture& texture, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth = 0);
 
 		Image& getImage();
 		bool hasImage() const;
@@ -104,16 +104,18 @@ namespace textoolkit
 		unsigned int getLayer() const;
 		unsigned int getFace() const;
 		unsigned int getLevel() const;
+		unsigned int getDepth() const;
 
 	protected:
 		SubTexture(std::unique_ptr<Texture>&& base);
-		SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& name, std::unique_ptr<Texture>&& base);
-		SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, std::shared_ptr<Image> image, const std::string& path, const std::string& name, std::unique_ptr<Texture>&& base);
+		SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image, const std::string& name, std::unique_ptr<Texture>&& base);
+		SubTexture(Type type, unsigned int layer, unsigned int face, unsigned int level, unsigned int depth, std::shared_ptr<Image> image, const std::string& path, const std::string& name, std::unique_ptr<Texture>&& base);
 
 		Type type = Type::Face;
 		unsigned int layer = 0;
 		unsigned int face = 0;
 		unsigned int level = 0;
+		unsigned int depth = 0;
 		std::unique_ptr<Texture> base;
 	};
 }

@@ -306,7 +306,7 @@ namespace textoolkit
 		return this->calculateDataSize(layer, face, level);
 	}
 
-	std::optional<unsigned char> Bmp::getByte(unsigned int x, unsigned int y, unsigned int /*layer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption mode) const
+	std::optional<unsigned char> Bmp::getByte(unsigned int x, unsigned int y, unsigned int /*z*/, unsigned int /*layer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption mode) const
 	{
 		auto idx = this->getIndex(x, y, mode);
 		if (!idx)
@@ -325,7 +325,7 @@ namespace textoolkit
 		return this->bytes.data();
 	}
 
-	std::optional<Pixel> Bmp::getPixel(unsigned int x, unsigned int y, unsigned int /*layer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption mode) const
+	std::optional<Pixel> Bmp::getPixel(unsigned int x, unsigned int y, unsigned int /*z*/, unsigned int /*layer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption mode) const
 	{
 		auto idx = this->getIndex(x, y, mode);
 		if (!idx)
@@ -358,7 +358,7 @@ namespace textoolkit
 		return result;
 	}
 
-	bool Bmp::setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int /*layer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption mode)
+	bool Bmp::setByte(unsigned char byte, unsigned int x, unsigned int y, unsigned int /*z*/, unsigned int /*layer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption mode)
 	{
 		auto idx = this->getIndex(x, y, mode);
 		if (!idx)
@@ -369,7 +369,7 @@ namespace textoolkit
 		return true;
 	}
 
-	bool Bmp::setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int /*slayer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption mode)
+	bool Bmp::setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int /*z*/, unsigned int /*slayer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption mode)
 	{
 		auto idx = this->getIndex(x, y, mode);
 		if (!idx || *idx + 2 < this->bytes.size())

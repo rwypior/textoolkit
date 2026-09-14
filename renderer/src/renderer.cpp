@@ -28,7 +28,11 @@ namespace
 		{
 		case textoolkit::Image::TextureType::TextureCube: return GL_TEXTURE_CUBE_MAP;
 		case textoolkit::Image::TextureType::Texture2D: return GL_TEXTURE_2D;
+		case textoolkit::Image::TextureType::Texture3D: return GL_TEXTURE_3D;
 		case textoolkit::Image::TextureType::Texture2DArray: return GL_TEXTURE_2D_ARRAY;
+		default:
+			assert(!"Invalid texture type");
+			break;
 		}
 
 		return GL_TEXTURE_2D;
@@ -242,6 +246,7 @@ namespace textoolkit::renderer
 		case GL_INT: return UniformType::Int;
 		case GL_UNSIGNED_INT: return UniformType::Uint;
 		case GL_FLOAT: return UniformType::Float;
+		case GL_BOOL: return UniformType::Bool;
 		}
 
 		assert(!"Invalid uniform type");
@@ -511,6 +516,9 @@ namespace textoolkit::renderer
 				glCheckError();
 				break;
 			case GL_TEXTURE_3D:
+				glTexStorage3D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight(), image.getDepth());
+				glCheckError();
+				break;
 			case GL_TEXTURE_2D_ARRAY:
 				glTexStorage3D(this->target, image.getLevels(), internalFormat, image.getWidth(), image.getHeight(), image.getLayers());
 				glCheckError();
@@ -682,7 +690,7 @@ namespace textoolkit::renderer
 							this->target,
 							level,
 							0, 0, layer,
-							width, height, 1,
+							width, height, depth,
 							//width, height, depth,
 							translateFormat(image.getInfoMode(), image.getFormat()),
 							translateDataType(image.getInfoMode(), image.getDataType()),

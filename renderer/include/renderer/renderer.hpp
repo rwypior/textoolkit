@@ -56,7 +56,8 @@ namespace textoolkit::renderer
 	{
 		Int,
 		Uint,
-		Float
+		Float,
+		Bool
 	};
 
 	using CubemapAlignment = std::array<Image::CubeFace, static_cast<int>(Image::CubeFace::_count)>;

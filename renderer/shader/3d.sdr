@@ -1,0 +1,4 @@
+[shader]
+name = 3d
+fragment = 3d.frag
+vertex = 3d.vert

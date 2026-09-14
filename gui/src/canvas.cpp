@@ -185,6 +185,9 @@ namespace textoolkit
 
 	void Canvas::onPaint(wxPaintEvent& event)
 	{
+		if (!this->IsShownOnScreen())
+			return;
+
 		bool success = this->api.getContext()->setCurrent();
 		assert(success && "Failed to set context");
 

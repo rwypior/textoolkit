@@ -107,7 +107,6 @@ namespace textoolkit
 	{
 		auto type = this->typeChoice->GetStringSelection();
 		if (
-			this->getTextureType() == Image::TextureType::Texture3D ||
 			this->getTextureType() == Image::TextureType::Texture2DArray
 			)
 			this->layersCount->Enable();

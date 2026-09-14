@@ -20,12 +20,12 @@ namespace textoolkit
 	{
 	}
 
-	Pixel SimpleAccessor::getPixel(unsigned int x, unsigned int y) const
+	Pixel SimpleAccessor::getPixel(unsigned int x, unsigned int y, unsigned int z) const
 	{
 		if (this->subAccessor)
-			return this->subAccessor->getPixel(x, y);
+			return this->subAccessor->getPixel(x, y, z);
 
-		auto pixel = this->image->getPixel(x, y, this->layer, this->face, this->level);
+		auto pixel = this->image->getPixel(x, y, z, this->layer, this->face, this->level);
 		if (pixel)
 			return *pixel;
 		return Pixel(0);
@@ -88,12 +88,12 @@ namespace textoolkit
 	{
 	}
 
-	Pixel InvertYAccessor::getPixel(unsigned int x, unsigned int y) const
+	Pixel InvertYAccessor::getPixel(unsigned int x, unsigned int y, unsigned int z) const
 	{
 		assert(this->subAccessor && "This accessor must have a subaccessor");
 
 		unsigned int y2 = this->subAccessor->getImage().getHeight() - y - 1;
-		return this->subAccessor->getPixel(x, y2);
+		return this->subAccessor->getPixel(x, y2, z);
 	}
 
 	PixelAccessor& InvertYAccessor::setSubAccessor(std::unique_ptr<PixelAccessor>&& subAccessor)
@@ -155,7 +155,7 @@ namespace textoolkit
 	{
 	}
 
-	Pixel BicubicAccessor::getPixel(unsigned int x, unsigned int y) const
+	Pixel BicubicAccessor::getPixel(unsigned int x, unsigned int y, unsigned int z) const
 	{
 		assert(this->subAccessor && "This accessor must have a subaccessor");
 
@@ -176,7 +176,7 @@ namespace textoolkit
 				int idx = (sampley + 1) * 4 + (samplex + 1);
 				int idxx = srcx + samplex;
 				int idxy = srcy + sampley;
-				samples[idx] = this->sample(idxx, idxy).toVec4<glm::vec4, false>();
+				samples[idx] = this->sample(idxx, idxy, z).toVec4<glm::vec4, false>();
 			}
 		}
 
@@ -197,12 +197,12 @@ namespace textoolkit
 		return Pixel(result.r, result.g, result.b, result.a);
 	}
 
-	Pixel BicubicAccessor::sample(int x, int y) const
+	Pixel BicubicAccessor::sample(int x, int y, int z) const
 	{
 		x = std::clamp(x, 0, static_cast<int>(this->subAccessor->getImage().getWidth() - 1));
 		y = std::clamp(y, 0, static_cast<int>(this->subAccessor->getImage().getHeight() - 1));
 
-		return this->subAccessor->getPixel(x, y);
+		return this->subAccessor->getPixel(x, y, z);
 	}
 
 	PixelAccessor& BicubicAccessor::setSubAccessor(std::unique_ptr<PixelAccessor>&& subAccessor)
@@ -264,24 +264,24 @@ namespace textoolkit
 	{
 	}
 
-	Pixel NearestNeighborAccessor::getPixel(unsigned int x, unsigned int y) const
+	Pixel NearestNeighborAccessor::getPixel(unsigned int x, unsigned int y, unsigned int z) const
 	{
 		assert(this->subAccessor && "This accessor must have a subaccessor");
 
 		const float ratiox = static_cast<float>(this->subAccessor->getImage().getWidth()) / static_cast<float>(this->scaledWidth);
 		const float ratioy = static_cast<float>(this->subAccessor->getImage().getHeight()) / static_cast<float>(this->scaledHeight);
 
-		auto result = this->sample(x * ratiox, y * ratioy).toVec4<glm::vec4, false>();
+		auto result = this->sample(x * ratiox, y * ratioy, z).toVec4<glm::vec4, false>();
 
 		return Pixel(result.r, result.g, result.b, result.a);
 	}
 
-	Pixel NearestNeighborAccessor::sample(int x, int y) const
+	Pixel NearestNeighborAccessor::sample(int x, int y, int z) const
 	{
 		x = std::clamp(x, 0, static_cast<int>(this->subAccessor->getImage().getWidth() - 1));
 		y = std::clamp(y, 0, static_cast<int>(this->subAccessor->getImage().getHeight() - 1));
 
-		return this->subAccessor->getPixel(x, y);
+		return this->subAccessor->getPixel(x, y, z);
 	}
 
 	PixelAccessor& NearestNeighborAccessor::setSubAccessor(std::unique_ptr<PixelAccessor>&& subAccessor)

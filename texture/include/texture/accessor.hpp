@@ -12,7 +12,7 @@ namespace textoolkit
 	{
 	public:
 		virtual ~PixelAccessor() = default;
-		virtual Pixel getPixel(unsigned int x, unsigned int y) const = 0;
+		virtual Pixel getPixel(unsigned int x, unsigned int y, unsigned int z = 0) const = 0;
 		virtual PixelAccessor& setSubAccessor(std::unique_ptr<PixelAccessor>&& subAccessor) = 0;
 		virtual const Image& getImage() const = 0;
 		virtual unsigned int getLayer() const = 0;
@@ -36,7 +36,7 @@ namespace textoolkit
 	public:
 		SimpleAccessor(const Image& image, unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0);
 
-		virtual Pixel getPixel(unsigned int x, unsigned int y) const override;
+		virtual Pixel getPixel(unsigned int x, unsigned int y, unsigned int z = 0) const override;
 		virtual PixelAccessor& setSubAccessor(std::unique_ptr<PixelAccessor>&& subAccessor) override;
 		virtual const Image& getImage() const override;
 		virtual unsigned int getLayer() const override;
@@ -61,7 +61,7 @@ namespace textoolkit
 	public:
 		InvertYAccessor(const Image& image, unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0);
 
-		virtual Pixel getPixel(unsigned int x, unsigned int y) const override;
+		virtual Pixel getPixel(unsigned int x, unsigned int y, unsigned int z = 0) const override;
 		virtual PixelAccessor& setSubAccessor(std::unique_ptr<PixelAccessor>&& subAccessor) override;
 		virtual const Image& getImage() const override;
 		virtual unsigned int getLayer() const override;
@@ -83,7 +83,7 @@ namespace textoolkit
 	public:
 		BicubicAccessor(const Image& image, unsigned int scaledWidth, unsigned int scaledHeight, unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0);
 
-		virtual Pixel getPixel(unsigned int x, unsigned int y) const override;
+		virtual Pixel getPixel(unsigned int x, unsigned int y, unsigned int z = 0) const override;
 		virtual PixelAccessor& setSubAccessor(std::unique_ptr<PixelAccessor>&& subAccessor) override;
 		virtual const Image& getImage() const override;
 		virtual unsigned int getLayer() const override;
@@ -95,7 +95,7 @@ namespace textoolkit
 		virtual PixelAccessor& setLevel(unsigned int level) override;
 
 	private:
-		Pixel sample(int x, int y) const;
+		Pixel sample(int x, int y, int z) const;
 
 		unsigned int scaledWidth;
 		unsigned int scaledHeight;
@@ -109,7 +109,7 @@ namespace textoolkit
 	public:
 		NearestNeighborAccessor(const Image& image, unsigned int scaledWidth, unsigned int scaledHeight, unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0);
 
-		virtual Pixel getPixel(unsigned int x, unsigned int y) const override;
+		virtual Pixel getPixel(unsigned int x, unsigned int y, unsigned int z = 0) const override;
 		virtual PixelAccessor& setSubAccessor(std::unique_ptr<PixelAccessor>&& subAccessor) override;
 		virtual const Image& getImage() const override;
 		virtual unsigned int getLayer() const override;
@@ -121,7 +121,7 @@ namespace textoolkit
 		virtual PixelAccessor& setLevel(unsigned int level) override;
 
 	private:
-		Pixel sample(int x, int y) const;
+		Pixel sample(int x, int y, int z) const;
 
 		unsigned int scaledWidth;
 		unsigned int scaledHeight;
