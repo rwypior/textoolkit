@@ -21,6 +21,7 @@ namespace textoolkit
 	std::string getDisplayModePath();
 	std::string getRecentPath();
 	std::string getDialogChoicesPath();
+	std::string getWindowGeometryPath();
 	wxArrayString getModels();
 	wxArrayString getShaders();
 

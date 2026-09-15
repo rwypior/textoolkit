@@ -2,6 +2,7 @@
 #define _h_textoolkit_gui_mainwindow
 
 #include "mainwindow.h"
+#include "windowgeometry.hpp"
 
 #include <memory>
 #include <vector>
@@ -42,6 +43,9 @@ namespace textoolkit
 		void updateMenus();
 		wxString getPageTitle(const GuiTexture& texture);
 
+		void loadGeometry();
+		void saveGeometry();
+
 		void loadRecent();
 		void addRecent(const std::string& path);
 		bool saveAs(GuiTexture& texture);
@@ -63,6 +67,7 @@ namespace textoolkit
 		void eventWindowClose(wxCloseEvent& event);
 
 		renderer::ModelDatabase& modelDatabase;
+		WindowGeometrySerializer geometrySerializer;
 	};
 }
 

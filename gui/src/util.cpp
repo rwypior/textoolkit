@@ -53,6 +53,12 @@ namespace textoolkit
 		return path.GetFullPath().ToStdString();
 	}
 
+	std::string getWindowGeometryPath()
+	{
+		wxFileName path(wxStandardPaths::Get().GetUserLocalDataDir(), "perspective.xml");
+		return path.GetFullPath().ToStdString();
+	}
+
 	wxArrayString getModels()
 	{
 		WildcardFileTraverser trav("*.obj");

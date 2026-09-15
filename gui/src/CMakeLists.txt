@@ -3,4 +3,5 @@ target_sources(textoolkit PRIVATE
 	"textoolkitnewbmppanel.cpp" "textoolkitnewddspanel.cpp" "textoolkitnewdialog.cpp" "textoolkitsubimageentry.cpp"
 	"textoolkitprogressdialog.cpp" "textoolkitbatchimportdialog.cpp" "textoolkitconfirmdialog.cpp"
 	"main.cpp" "canvas.cpp" "texture.cpp" "util.cpp" "importdlg.cpp" "autowraplabel.cpp" "dialogchoices.cpp" "xmlutil.cpp"
+	"windowgeometry.cpp"
 )

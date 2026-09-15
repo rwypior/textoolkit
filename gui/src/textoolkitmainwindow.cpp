@@ -32,6 +32,7 @@ namespace textoolkit
 	{
 		this->loadRecent();
 		this->updateMenus();
+		this->loadGeometry();
 
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventNew, this, ID_NEW);
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventOpen, this, ID_OPEN);
@@ -132,6 +133,16 @@ namespace textoolkit
 		if (texture.isModified())
 			name = "* " + name;
 		return name;
+	}
+
+	void TexToolkitMainWindow::loadGeometry()
+	{
+		this->RestoreToGeometry(this->geometrySerializer);
+	}
+
+	void TexToolkitMainWindow::saveGeometry()
+	{
+		this->SaveGeometry(this->geometrySerializer);
 	}
 
 	void TexToolkitMainWindow::loadRecent()
@@ -439,6 +450,7 @@ namespace textoolkit
 		auto modifiedViews = this->getModifiedTextureViews();
 		if (modifiedViews.empty())
 		{
+			this->saveGeometry();
 			event.Skip();
 			return;
 		}
@@ -475,6 +487,7 @@ namespace textoolkit
 			}
 		}
 		
+		this->saveGeometry();
 		event.Skip();
 	}
 }

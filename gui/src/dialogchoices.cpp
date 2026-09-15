@@ -16,14 +16,12 @@ namespace textoolkit
 {
 	DialogChoices::DialogChoices()
 	{
-		wxXmlParseError err;
-
 		bool success = false;
 
 		wxFileName fn(getDialogChoicesPath());
 		
 		if (fn.Exists())
-			success = this->doc.Load(getDialogChoicesPath(), wxXMLDOC_NONE, &err);
+			success = this->doc.Load(getDialogChoicesPath(), wxXMLDOC_NONE);
 
 		if (!success)
 			this->doc.SetRoot(new wxXmlNode(wxXmlNodeType::wxXML_ELEMENT_NODE, XmlRoot));
