@@ -4,6 +4,8 @@
 #include "gui/textoolkitaboutwindow.hpp"
 #include "gui/textoolkitbatchimportdialog.hpp"
 #include "gui/textoolkitprogressdialog.hpp"
+#include "gui/textoolkitconfirmdialog.hpp"
+#include "gui/dialogchoices.hpp"
 #include "gui/texture.hpp"
 #include "gui/util.hpp"
 #include "texture/textureloader.hpp"
@@ -13,6 +15,14 @@
 #include <wx/stdpaths.h>
 
 #include <fstream>
+
+namespace
+{
+	constexpr char SaveDlgId[] = "save";
+	constexpr char SaveDlgFilter[] = "savefilter";
+	constexpr char LoadDlgId[] = "load";
+	constexpr char LoadDlgFilter[] = "loadfilter";
+}
 
 namespace textoolkit
 {
@@ -33,12 +43,17 @@ namespace textoolkit
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventBatchImport, this, ID_BATCH_IMPORT);
 
 		this->Bind(wxEVT_MENU, &TexToolkitMainWindow::eventAbout, this, ID_ABOUT);
+
+		this->Bind(wxEVT_CLOSE_WINDOW, &TexToolkitMainWindow::eventWindowClose, this);
+
+		this->notebook->Bind(wxEVT_AUINOTEBOOK_PAGE_CLOSE, &TexToolkitMainWindow::eventTabClose, this);
 	}
 
 	void TexToolkitMainWindow::openTexture(std::unique_ptr<GuiTexture>&& texture, const std::string& name)
 	{
 		this->notebook->Freeze();
 		auto newPage = new TexToolkitTextureView(std::move(texture), this->modelDatabase, this->notebook);
+		newPage->Bind(texEVT_TEXTUREVIEW_MODIFIED, &TexToolkitMainWindow::eventModified, this);
 		this->notebook->AddPage(newPage, name, true);
 		this->notebook->SetPageToolTip(this->notebook->GetPageCount() - 1, newPage->getDescription());
 		this->notebook->Thaw();
@@ -49,8 +64,8 @@ namespace textoolkit
 
 	void TexToolkitMainWindow::openTexture(const std::string& path)
 	{
-		auto name = wxFileName(path).GetFullName().ToStdString();
 		auto texture = this->loadTexture(path);
+		auto name = texture->getName();
 
 		if (texture)
 		{
@@ -66,6 +81,21 @@ namespace textoolkit
 		if (!page)
 			return nullptr;
 		return static_cast<TexToolkitTextureView*>(page);
+	}
+
+	std::vector<TexToolkitTextureView*> TexToolkitMainWindow::getModifiedTextureViews()
+	{
+		std::vector<TexToolkitTextureView*> result;
+		for (unsigned int i = 0; i < this->notebook->GetPageCount(); i++)
+		{
+			auto view = dynamic_cast<TexToolkitTextureView*>(this->notebook->GetPage(i));
+			if (!view)
+				continue;
+			auto& texture = view->getTexture();
+			if (texture.isModified())
+				result.push_back(view);
+		}
+		return result;
 	}
 
 	std::unique_ptr<Texture> TexToolkitMainWindow::loadTexture(const std::string& path)
@@ -94,6 +124,14 @@ namespace textoolkit
 
 		this->GetMenuBar()->FindItem(ID_IMPORT_IMAGE)->Enable(viewOpened);
 		this->GetMenuBar()->FindItem(ID_BATCH_IMPORT)->Enable(viewOpened && view->batchImportCompatible());
+	}
+
+	wxString TexToolkitMainWindow::getPageTitle(const GuiTexture& texture)
+	{
+		wxString name = texture.getName();
+		if (texture.isModified())
+			name = "* " + name;
+		return name;
 	}
 
 	void TexToolkitMainWindow::loadRecent()
@@ -180,33 +218,39 @@ namespace textoolkit
 		this->loadRecent();
 	}
 
-	void TexToolkitMainWindow::saveAs(GuiTexture& texture)
+	bool TexToolkitMainWindow::saveAs(GuiTexture& texture)
 	{
 		TextureLoader loader;
+		DialogChoices choices;
 
 		const auto picturesDir = wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir_Pictures);
 		std::string wildcard = loader.getWildcardString();
 
-		wxFileDialog dlg(this, "Save image", picturesDir, texture.getName(), wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-		dlg.SetFilterIndex(loader.getFilterIndexAll());
+		wxFileDialog dlg(this, "Save image", choices.getChoice(SaveDlgId, picturesDir.ToStdString()), texture.getName(), wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+		dlg.SetFilterIndex(choices.getChoiceInt(SaveDlgFilter, loader.getFilterIndexAll()));
 
 		auto res = dlg.ShowModal();
 		if (res == wxID_CANCEL)
-			return;
+			return false;
+
+		choices.saveChoice(SaveDlgId, dlg.GetDirectory().ToStdString());
+		choices.saveChoiceInt(SaveDlgFilter, dlg.GetFilterIndex());
 
 		auto path = dlg.GetPath().ToStdString();
 		this->save(texture, path);
+
+		return true;
 	}
 
-	void TexToolkitMainWindow::save(GuiTexture& texture)
+	bool TexToolkitMainWindow::save(GuiTexture& texture)
 	{
 		if (texture.getPath().empty())
-			this->saveAs(texture);
+			return this->saveAs(texture);
 		else
-			this->save(texture, texture.getPath());
+			return this->save(texture, texture.getPath());
 	}
 
-	void TexToolkitMainWindow::save(GuiTexture& texture, const std::string& path)
+	bool TexToolkitMainWindow::save(GuiTexture& texture, const std::string& path)
 	{
 		texture.save(path);
 
@@ -222,8 +266,11 @@ namespace textoolkit
 				continue;
 
 			auto name = wxFileName(path).GetFullName().ToStdString();
-			this->notebook->SetPageText(i, name);
+			view->getTexture().setName(name);
+			this->notebook->SetPageText(i, this->getPageTitle(texture));
 		}
+
+		return true;
 	}
 
 	void TexToolkitMainWindow::eventNew(wxCommandEvent& event)
@@ -238,16 +285,20 @@ namespace textoolkit
 	void TexToolkitMainWindow::eventOpen(wxCommandEvent& event)
 	{
 		TextureLoader loader;
+		DialogChoices choices;
 
 		const auto picturesDir = wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir_Pictures);
 		std::string wildcard = loader.getWildcardString();
 
-		wxFileDialog dlg(this, "Open image", picturesDir, wxEmptyString, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-		dlg.SetFilterIndex(loader.getFilterIndexAll());
+		wxFileDialog dlg(this, "Open image", choices.getChoice(LoadDlgId, picturesDir.ToStdString()), wxEmptyString, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		dlg.SetFilterIndex(choices.getChoiceInt(LoadDlgFilter, loader.getFilterIndexAll()));
 
 		auto res = dlg.ShowModal();
 		if (res == wxID_CANCEL)
 			return;
+
+		choices.saveChoice(LoadDlgId, dlg.GetDirectory().ToStdString());
+		choices.saveChoiceInt(LoadDlgFilter, dlg.GetFilterIndex());
 
 		auto path = dlg.GetPath().ToStdString();
 		this->addRecent(path);
@@ -343,5 +394,87 @@ namespace textoolkit
 	{
 		auto about = new TexToolkitAboutWindow(this);
 		about->Show();
+	}
+
+	void TexToolkitMainWindow::eventModified(TexToolkitTextureViewEvent& event)
+	{
+		auto pageid = this->notebook->FindPage(event.view);
+		if (pageid == wxNOT_FOUND)
+			return;
+		auto& texture = event.view->getTexture();
+		this->notebook->SetPageText(pageid, this->getPageTitle(texture));
+	}
+
+	void TexToolkitMainWindow::eventTabClose(wxAuiNotebookEvent& event)
+	{
+		auto view = dynamic_cast<TexToolkitTextureView*>(this->notebook->GetPage(event.GetSelection()));
+		if (view)
+		{
+			auto& texture = view->getTexture();
+			if (texture.isModified())
+			{
+				auto choice = wxMessageBox(wxString::Format("Texture \"%s\" has unsaved changes. Save before closing?", texture.getName()),
+					"Confirm", wxICON_QUESTION | wxYES_NO | wxCANCEL);
+				switch (choice)
+				{
+				case wxYES:
+					if (this->save(texture))
+						event.Skip();
+					else
+						event.Veto();
+					break;
+				case wxNO:
+					event.Skip();
+					break;
+				case wxCANCEL:
+					event.Veto();
+					break;
+				}
+			}
+		}
+	}
+
+	void TexToolkitMainWindow::eventWindowClose(wxCloseEvent& event)
+	{
+		auto modifiedViews = this->getModifiedTextureViews();
+		if (modifiedViews.empty())
+		{
+			event.Skip();
+			return;
+		}
+
+		bool applyForAll = false;
+		int choice = std::numeric_limits<int>::max();
+
+		for (auto& view : modifiedViews)
+		{
+			auto& texture = view->getTexture();
+			auto dlg = new TexToolkitConfirmDialog(this, wxString::Format("Texture \"%s\" has unsaved changes. Save before closing?", texture.getName()),
+				"Confirm");
+			
+			if (!applyForAll)
+			{
+				choice = dlg->ShowModal();
+				applyForAll = dlg->applyForAll();
+			}
+
+			switch (choice)
+			{
+			case wxYES:
+				if (!this->save(texture))
+				{
+					event.Veto();
+					return;
+				}
+				break;
+			case wxNO:
+				break;
+			case wxCANCEL:
+				event.Veto();
+				return;
+			}
+		}
+		
+		event.Skip();
 	}
 }

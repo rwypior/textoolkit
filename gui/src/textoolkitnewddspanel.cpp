@@ -1,7 +1,14 @@
 #include "gui/textoolkitnewddspanel.hpp"
+#include "gui/dialogchoices.hpp"
 #include "dds/dds.hpp"
 #include "common/threadpool.hpp"
 #include "texture/textureloader.hpp"
+
+namespace
+{
+	constexpr char WidthId[] = "newdlgwidth";
+	constexpr char HeightId[] = "newdlgheight";
+}
 
 namespace textoolkit
 {
@@ -10,6 +17,8 @@ namespace textoolkit
 		, batchImportCubemap(Image::TextureType::TextureCube, 0, 6, 0, this)
 		, batchImport2DArray(Image::TextureType::Texture2DArray, 0, 0, 0, this)
 	{
+		DialogChoices choices;
+
 		this->typeChoice->Append("2D Texture", reinterpret_cast<void*>(Image::TextureType::Texture2D));
 		this->typeChoice->Append("3D Texture", reinterpret_cast<void*>(Image::TextureType::Texture3D));
 		this->typeChoice->Append("Cube map", reinterpret_cast<void*>(Image::TextureType::TextureCube));
@@ -25,6 +34,9 @@ namespace textoolkit
 		this->compressionChoice->Append("DXT3", reinterpret_cast<void*>(Image::CompressionType::DXT3));
 		this->compressionChoice->Append("DXT5", reinterpret_cast<void*>(Image::CompressionType::DXT5));
 		this->compressionChoice->Select(0);
+
+		this->widthEdit->SetValue(choices.getChoice(WidthId, this->widthEdit->GetTextValue().ToStdString()));
+		this->heightEdit->SetValue(choices.getChoice(HeightId, this->heightEdit->GetTextValue().ToStdString()));
 
 		this->updateWidgetStates();
 

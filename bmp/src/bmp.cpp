@@ -372,12 +372,12 @@ namespace textoolkit
 	bool Bmp::setPixel(Pixel pixel, unsigned int x, unsigned int y, unsigned int /*z*/, unsigned int /*slayer*/, unsigned int /*face*/, unsigned int /*level*/, DataOption mode)
 	{
 		auto idx = this->getIndex(x, y, mode);
-		if (!idx || *idx + 2 < this->bytes.size())
+		if (!idx || *idx + 2 >= this->bytes.size())
 			return false;
 
-		this->bytes.at(*idx + 0) = pixel.r;
+		this->bytes.at(*idx + 2) = pixel.r;
 		this->bytes.at(*idx + 1) = pixel.g;
-		this->bytes.at(*idx + 2) = pixel.b;
+		this->bytes.at(*idx + 0) = pixel.b;
 
 		return true;
 	}

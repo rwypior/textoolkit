@@ -110,6 +110,22 @@ namespace textoolkit
 		return this->save(path);
 	}
 
+	bool GuiTexture::save(const std::string& path)
+	{
+		this->modified = false;
+		return Texture::save(path);
+	}
+
+	void GuiTexture::markAsModified()
+	{
+		this->modified = true;
+	}
+
+	bool GuiTexture::isModified() const
+	{
+		return this->modified;
+	}
+
 	// GUI subtexture
 
 	GuiSubTexture::GuiSubTexture()

@@ -1,12 +1,22 @@
 #include "gui/textoolkitnewbmppanel.hpp"
+#include "gui/dialogchoices.hpp"
 #include "bmp/bmp.hpp"
+
+namespace
+{
+	constexpr char WidthId[] = "newdlgwidth";
+	constexpr char HeightId[] = "newdlgheight";
+}
 
 namespace textoolkit
 {
 	TexToolkitnewBmpPanel::TexToolkitnewBmpPanel(wxWindow* parent)
-		:
-		newBmpPanel(parent)
+		: newBmpPanel(parent)
 	{
+		DialogChoices choices;
+
+		this->widthEdit->SetValue(choices.getChoice(WidthId, this->widthEdit->GetTextValue().ToStdString()));
+		this->heightEdit->SetValue(choices.getChoice(HeightId, this->heightEdit->GetTextValue().ToStdString()));
 	}
 
 	std::unique_ptr<textoolkit::GuiTexture> TexToolkitnewBmpPanel::createTexture()

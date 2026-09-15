@@ -37,6 +37,7 @@ namespace textoolkit
 	std::vector<std::string> split(const std::string& string, const std::string& delimiter);
 
 	bool isNumber(const std::string& str);
+	int getNumber(const std::string& str, int default = 0);
 
 	bool startsWith(const std::string& haystack, const std::string& needle);
 

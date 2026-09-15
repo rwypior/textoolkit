@@ -188,7 +188,7 @@ namespace textoolkit
 
 		public:
 
-			NewDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 667,391 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
+			NewDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Create new texture"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 667,391 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
 
 			~NewDialog();
 
@@ -365,6 +365,31 @@ namespace textoolkit
 			BatchImportDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Batch import"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 456,576 ), long style = wxDEFAULT_DIALOG_STYLE|wxMINIMIZE_BOX|wxRESIZE_BORDER );
 
 			~BatchImportDialog();
+
+	};
+
+	///////////////////////////////////////////////////////////////////////////////
+	/// Class ConfirmDialog
+	///////////////////////////////////////////////////////////////////////////////
+	class ConfirmDialog : public wxDialog
+	{
+		private:
+
+		protected:
+			wxPanel* m_panel49;
+			textoolkit::AutowrapLabel* label;
+			wxPanel* m_panel50;
+			wxPanel* m_panel53;
+			wxCheckBox* applyforallcheckbox;
+			wxButton* yesbutton;
+			wxButton* nobutton;
+			wxButton* cancelbutton;
+
+		public:
+
+			ConfirmDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 432,130 ), long style = wxDEFAULT_DIALOG_STYLE );
+
+			~ConfirmDialog();
 
 	};
 

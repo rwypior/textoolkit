@@ -4,6 +4,7 @@
 #include "gui/texture.hpp"
 #include "gui/util.hpp"
 #include "gui/importdlg.hpp"
+#include "gui/dialogchoices.hpp"
 #include "common/image.hpp"
 #include "common/logger.hpp"
 #include "texture/textureloader.hpp"
@@ -18,6 +19,9 @@
 
 namespace
 {
+	constexpr char ImportDlgId[] = "import";
+	constexpr char ImportDlgFilterId[] = "importfilter";
+
 	template<typename T>
 	T getProperty(wxPGProperty* prop)
 	{
@@ -33,14 +37,29 @@ namespace
 
 namespace textoolkit
 {
+	// Event
+
+	TexToolkitTextureViewEvent::TexToolkitTextureViewEvent(wxEventType eventType, TexToolkitTextureView* view)
+		: wxCommandEvent(eventType, wxID_ANY)
+		, view(view)
+	{
+	}
+
+	TexToolkitTextureViewEvent* TexToolkitTextureViewEvent::Clone() const
+	{
+		return new TexToolkitTextureViewEvent(*this);
+	}
+
+	wxDEFINE_EVENT(texEVT_TEXTUREVIEW_MODIFIED, TexToolkitTextureViewEvent);
+
+	// View
+
 	TexToolkitTextureView::TexToolkitTextureView(std::unique_ptr<GuiTexture>&& texture, renderer::ModelDatabase& modelDatabase, wxWindow* parent)
 		: TextureView(parent)
 		, texture(std::move(texture))
 		, progressNotifier(progressNotifier)
 		, modelDatabase(modelDatabase)
 	{
-		auto asd = this->texture->getImage().getTextureType();
-
 		this->object = this->canvas->addObject(std::make_unique<renderer::Object>(mainObjectName));
 		this->canvas->setImage(this->texture->getImage());
 
@@ -173,7 +192,6 @@ namespace textoolkit
 	TexToolkitTextureView::SubTextureContainer TexToolkitTextureView::createLevels(ProgressNotifier progressNotifier) const
 	{
 		auto& image = this->texture->getImage();
-		//unsigned int levels = image.getLevels();
 		unsigned int levels = this->getLevels(image);
 		FiniteThreadpool threadpool(progressNotifier);
 		TexToolkitTextureView::SubTextureContainer subtextures;
@@ -198,22 +216,12 @@ namespace textoolkit
 	unsigned int TexToolkitTextureView::getLevels(const Image& image) const
 	{
 		auto levels = image.getLevels();
-		/*auto depth = image.getDepth();
-
-		if (this->currentDepth == 0)
-			return levels;*/
-
-		// GLI_ASSERT(glm::all(glm::lessThan(TexelCoord, this->extent(Level))));
-
 		unsigned int count = 0;
 		for (unsigned int i = 0; i < levels; i++)
 		{
 			count += this->currentDepth < image.getDepth(i);
 		}
 		return count;
-			//levels = std::min(levels, depth - this->currentDepth);
-			//levels = std::min(levels, static_cast<unsigned int>(std::log2(depth - this->currentDepth)) + 1);
-		//return levels;
 	}
 
 	TexToolkitSubimageEntry* TexToolkitTextureView::getLayer(unsigned int layer)
@@ -653,16 +661,20 @@ namespace textoolkit
 	void TexToolkitTextureView::importImage(SubTexture::Type type, unsigned int layer, unsigned int face, unsigned int level)
 	{
 		TextureLoader loader;
+		DialogChoices choices;
 
 		const auto picturesDir = wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir_Pictures);
 		std::string wildcard = loader.getWildcardString();
 
-		ImportDlg dlg(this, "Open image", picturesDir, wxEmptyString, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-		dlg.SetFilterIndex(loader.getFilterIndexAll());
+		ImportDlg dlg(this, "Open image", choices.getChoice(ImportDlgId, picturesDir.ToStdString()), wxEmptyString, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		dlg.SetFilterIndex(choices.getChoiceInt(ImportDlgFilterId, loader.getFilterIndexAll()));
 
 		auto res = dlg.ShowModal();
 		if (res == wxID_CANCEL)
 			return;
+
+		choices.saveChoice(ImportDlgId, dlg.GetDirectory().ToStdString());
+		choices.saveChoiceInt(ImportDlgFilterId, dlg.GetFilterIndex());
 
 		auto interpolation = dlg.getInterpolation();
 
@@ -682,6 +694,8 @@ namespace textoolkit
 
 		this->updateFlatView(layer, face, level, this->currentDepth);
 		this->updateSubimages();
+
+
 	}
 
 	void TexToolkitTextureView::importImage()
@@ -715,6 +729,8 @@ namespace textoolkit
 
 		if (reupload)
 			this->canvas->reuploadTexture();
+
+		this->reportModified();
 	}
 
 	void TexToolkitTextureView::importFace(GuiTexture& texture, unsigned int layer, unsigned int face, InterpolationMinMag interpolation, bool performUpdate, bool reupload)
@@ -736,6 +752,8 @@ namespace textoolkit
 
 		if (reupload)
 			this->canvas->reuploadTexture();
+
+		this->reportModified();
 	}
 
 	void TexToolkitTextureView::importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, InterpolationMinMag interpolation, bool performUpdate, bool reupload)
@@ -750,6 +768,15 @@ namespace textoolkit
 
 		if (reupload)
 			this->canvas->reuploadTexture();
+
+		this->reportModified();
+	}
+
+	void TexToolkitTextureView::reportModified()
+	{
+		this->texture->markAsModified();
+		TexToolkitTextureViewEvent event(texEVT_TEXTUREVIEW_MODIFIED, this);
+		this->ProcessEvent(event);
 	}
 
 	void TexToolkitTextureView::deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry)

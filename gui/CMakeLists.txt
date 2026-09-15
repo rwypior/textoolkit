@@ -37,10 +37,10 @@ add_subdirectory("src")
 
 # Copy generated files
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.h")
-    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.h" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/include/gui")
+    file(RENAME "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.h" "${CMAKE_CURRENT_SOURCE_DIR}/include/gui/mainwindow.h")
 endif()
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.cpp")
-    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.cpp"  DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    file(RENAME "${CMAKE_CURRENT_SOURCE_DIR}/generated/mainwindow.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/mainwindow.cpp")
 endif()
 
 # Copy DLLs to exe directory

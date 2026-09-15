@@ -47,6 +47,12 @@ namespace textoolkit
 		return path.GetFullPath().ToStdString();
 	}
 
+	std::string getDialogChoicesPath()
+	{
+		wxFileName path(wxStandardPaths::Get().GetUserLocalDataDir(), "dlg.xml");
+		return path.GetFullPath().ToStdString();
+	}
+
 	wxArrayString getModels()
 	{
 		WildcardFileTraverser trav("*.obj");

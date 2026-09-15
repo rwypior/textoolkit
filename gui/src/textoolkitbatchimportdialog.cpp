@@ -1,5 +1,6 @@
 #include "gui/textoolkitbatchimportdialog.hpp"
 #include "gui/autowraplabel.hpp"
+#include "gui/dialogchoices.hpp"
 #include "gui/util.hpp"
 #include "common/util.hpp"
 #include "texture/textureloader.hpp"
@@ -63,6 +64,10 @@ namespace
 	static constexpr unsigned int ColumnPath = 0;
 	static constexpr unsigned int ColumnImport = 1;
 	static constexpr unsigned int ColumnTarget = 2;
+
+	static constexpr char openImagesDlgId[] = "openimages";
+	static constexpr char openImagesDlgFilterId[] = "openimagesfilter";
+	static constexpr char openImageDirDlgId[] = "openimagedir";
 }
 
 namespace textoolkit
@@ -362,13 +367,16 @@ namespace textoolkit
 
 	void TexToolkitBatchImportDialog::importFolderEvent(wxCommandEvent& event)
 	{
+		DialogChoices choices;
 		const auto picturesDir = wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir_Pictures);
-
-		wxDirDialog dlg(this, "Open image", picturesDir, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+		
+		wxDirDialog dlg(this, "Open image directory", choices.getChoice(openImageDirDlgId, picturesDir.ToStdString()), wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
 
 		auto res = dlg.ShowModal();
 		if (res == wxID_CANCEL)
 			return;
+
+		choices.saveChoice(openImageDirDlgId, dlg.GetPath().ToStdString());
 
 		TextureLoader loader;
 
@@ -380,17 +388,21 @@ namespace textoolkit
 
 	void TexToolkitBatchImportDialog::importFilesEvent(wxCommandEvent& event)
 	{
+		DialogChoices choices;
 		TextureLoader loader;
 
 		const auto picturesDir = wxStandardPaths::Get().GetUserDir(wxStandardPaths::Dir_Pictures);
 		std::string wildcard = loader.getWildcardString();
 
-		wxFileDialog dlg(this, "Open image", picturesDir, wxEmptyString, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
-		dlg.SetFilterIndex(loader.getFilterIndexAll());
+		wxFileDialog dlg(this, "Open images", choices.getChoice(openImagesDlgId, picturesDir.ToStdString()), wxEmptyString, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
+		dlg.SetFilterIndex(choices.getChoiceInt(openImagesDlgFilterId, loader.getFilterIndexAll()));
 
 		auto res = dlg.ShowModal();
 		if (res == wxID_CANCEL)
 			return;
+
+		choices.saveChoice(openImagesDlgId, dlg.GetPath().ToStdString());
+		choices.saveChoiceInt(openImagesDlgFilterId, dlg.GetFilterIndex());
 
 		wxArrayString paths;
 		dlg.GetPaths(paths);

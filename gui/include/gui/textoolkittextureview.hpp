@@ -17,12 +17,23 @@ namespace textoolkit
 {
 	class GuiTexture;
 	class GuiSubTexture;
+	class TexToolkitTextureView;
 
 	namespace renderer
 	{
 		class ModelDatabase;
 		class Object;
 	}
+
+	class TexToolkitTextureViewEvent : public wxCommandEvent
+	{
+	public:
+		TexToolkitTextureView* view;
+
+		TexToolkitTextureViewEvent(wxEventType eventType, TexToolkitTextureView* view);
+		TexToolkitTextureViewEvent* Clone() const;
+	};
+	wxDECLARE_EVENT(texEVT_TEXTUREVIEW_MODIFIED, TexToolkitTextureViewEvent);
 
 	class TexToolkitTextureView : public TextureView
 	{
@@ -99,6 +110,8 @@ namespace textoolkit
 		void importLevel(GuiTexture& texture, unsigned int layer, unsigned int face, unsigned int level, InterpolationMinMag interpolation, bool performUpdate = true, bool reupload = true);
 
 	private:
+		void reportModified();
+
 		void deselectOthers(wxScrolledWindow* scroller, TexToolkitSubimageEntry* entry);
 		void updateUserProperties();
 		void selectDepth(unsigned int depth);

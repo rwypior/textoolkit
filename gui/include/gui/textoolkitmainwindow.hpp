@@ -4,12 +4,14 @@
 #include "mainwindow.h"
 
 #include <memory>
+#include <vector>
 
 namespace textoolkit
 {
 	class GuiTexture;
 	class TexToolkitTextureView;
 	class Texture;
+	class TexToolkitTextureViewEvent;
 
 	namespace renderer
 	{
@@ -33,15 +35,18 @@ namespace textoolkit
 		void openTexture(const std::string& path);
 		TexToolkitTextureView* getCurrentTextureView();
 
+		std::vector<TexToolkitTextureView*> getModifiedTextureViews();
+
 	private:
 		std::unique_ptr<Texture> loadTexture(const std::string& path);
 		void updateMenus();
+		wxString getPageTitle(const GuiTexture& texture);
 
 		void loadRecent();
 		void addRecent(const std::string& path);
-		void saveAs(GuiTexture& texture);
-		void save(GuiTexture& texture);
-		void save(GuiTexture& texture, const std::string& path);
+		bool saveAs(GuiTexture& texture);
+		bool save(GuiTexture& texture);
+		bool save(GuiTexture& texture, const std::string& path);
 
 		void eventNew(wxCommandEvent& event);
 		void eventOpen(wxCommandEvent& event);
@@ -52,6 +57,10 @@ namespace textoolkit
 		void eventBatchImport(wxCommandEvent& event);
 		void eventExit(wxCommandEvent& event);
 		void eventAbout(wxCommandEvent& event);
+
+		void eventModified(TexToolkitTextureViewEvent& event);
+		void eventTabClose(wxAuiNotebookEvent& event);
+		void eventWindowClose(wxCloseEvent& event);
 
 		renderer::ModelDatabase& modelDatabase;
 	};

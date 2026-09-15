@@ -144,7 +144,7 @@ namespace textoolkit
 
 		virtual unsigned int getWidth(unsigned int level = 0) const = 0;
 		virtual unsigned int getHeight(unsigned int level = 0) const = 0;
-		virtual unsigned int getDepth(unsigned int level = 0) const { return 0; };
+		virtual unsigned int getDepth(unsigned int level = 0) const { return 1; };
 		virtual size_t getSize(unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0) const = 0;
 		virtual unsigned int getBytesPerPixel() const = 0;
 		virtual unsigned int getLayers() const;

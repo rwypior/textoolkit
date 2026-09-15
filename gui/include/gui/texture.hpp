@@ -32,11 +32,16 @@ namespace textoolkit
 		virtual void updateBitmap(); // Update wxBitmap with data from texture
 		virtual void commit(); // Copy data from bitmap to image
 		virtual bool commitAndSave(const std::string& path);
+		
+		virtual bool save(const std::string& path);
+		void markAsModified();
+		bool isModified() const;
 
 	private:
 		void setBitmapData(wxBitmap& bmp, unsigned int layer = 0, unsigned int face = 0, unsigned int level = 0, unsigned int depth = 0);
 
 		wxBitmap bitmap;
+		bool modified = false;
 	};
 
 	class GuiSubTexture : public SubTexture

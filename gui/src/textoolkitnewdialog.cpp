@@ -2,7 +2,9 @@
 #include "gui/textoolkitnewbmppanel.hpp"
 #include "gui/textoolkitnewddspanel.hpp"
 #include "gui/texture.hpp"
+#include "gui/dialogchoices.hpp"
 #include "common/image.hpp"
+#include "common/util.hpp"
 #include "bmp/bmp.hpp"
 #include "dds/dds.hpp"
 
@@ -45,14 +47,19 @@ namespace
 		{ textoolkit::Image::Type::BMP, {"Bitmap (.bmp)", createBmpPanel, createBmp} },
 		{ textoolkit::Image::Type::DDS, {"Direct Draw Surface (.dds)", createDdsPanel, createDds} }
 	};
+
+	constexpr char TypeListId[] = "newdlgtype";
+	constexpr char WidthId[] = "newdlgwidth";
+	constexpr char HeightId[] = "newdlgheight";
 }
 
 namespace textoolkit
 {
 	TexToolkitNewDialog::TexToolkitNewDialog(wxWindow* parent)
-		:
-		NewDialog(parent)
+		: NewDialog(parent)
 	{
+		DialogChoices choices;
+
 		for (auto& [type, tuple] : imageTypes)
 		{
 			auto name = std::get<0>(tuple);
@@ -63,7 +70,8 @@ namespace textoolkit
 		this->okButton->Bind(wxEVT_BUTTON, &TexToolkitNewDialog::okEvent, this);
 		this->cancelButton->Bind(wxEVT_BUTTON, &TexToolkitNewDialog::cancelEvent, this);
 
-		this->typeList->Select(0);
+		std::string defaultIndex = choices.getChoice(TypeListId, "0");
+		this->typeList->Select(getNumber(defaultIndex, 0));
 		this->updatePropertiesWidget();
 	}
 
@@ -91,7 +99,7 @@ namespace textoolkit
 		auto children = this->propertiesPanel->GetChildren();
 		assert(children.size() == 1 && "Must contain exactly one child");
 
-		auto panel = dynamic_cast<NewImagePanel*>(children.front());
+		auto panel = this->getImagePanel();
 		if (!panel)
 		{
 			assert(!"Invalid new texture panel");
@@ -129,6 +137,18 @@ namespace textoolkit
 		this->propertiesPanel->Thaw();
 	}
 
+	NewImagePanel* TexToolkitNewDialog::getImagePanel()
+	{
+		auto children = this->propertiesPanel->GetChildren();
+		assert(children.size() == 1 && "Must contain exactly one child");
+		return dynamic_cast<NewImagePanel*>(children.front());
+	}
+
+	const NewImagePanel* TexToolkitNewDialog::getImagePanel() const
+	{
+		return const_cast<const NewImagePanel*>(const_cast<TexToolkitNewDialog*>(this)->getImagePanel());
+	}
+
 	void TexToolkitNewDialog::typeChangedEvent(wxCommandEvent& /*event*/)
 	{
 		this->updatePropertiesWidget();
@@ -136,6 +156,13 @@ namespace textoolkit
 
 	void TexToolkitNewDialog::okEvent(wxCommandEvent& event)
 	{
+		auto panel = this->getImagePanel();
+
+		DialogChoices choices;
+		choices.saveChoice(TypeListId, std::to_string(this->typeList->GetSelection()));
+		choices.saveChoice(WidthId, std::to_string(panel->getTextureWidth()));
+		choices.saveChoice(HeightId, std::to_string(panel->getTextureHeight()));
+
 		this->EndModal(wxID_OK);
 	}
 

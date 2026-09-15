@@ -8,6 +8,8 @@
 
 namespace textoolkit
 {
+	class NewImagePanel;
+
 	class TexToolkitNewDialog : public NewDialog
 	{
 	public:
@@ -19,6 +21,8 @@ namespace textoolkit
 
 	private:
 		void updatePropertiesWidget();
+		NewImagePanel* getImagePanel();
+		const NewImagePanel* getImagePanel() const;
 
 		void typeChangedEvent(wxCommandEvent& event);
 		void okEvent(wxCommandEvent& event);

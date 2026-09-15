@@ -7,7 +7,7 @@
 
 #include "gui/autowraplabel.hpp"
 
-#include "mainwindow.h"
+#include "gui/mainwindow.h"
 
 ///////////////////////////////////////////////////////////////////////////
 using namespace textoolkit;
@@ -1128,5 +1128,81 @@ BatchImportDialog::BatchImportDialog( wxWindow* parent, wxWindowID id, const wxS
 }
 
 BatchImportDialog::~BatchImportDialog()
+{
+}
+
+ConfirmDialog::ConfirmDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+
+	wxBoxSizer* bSizer53;
+	bSizer53 = new wxBoxSizer( wxVERTICAL );
+
+	m_panel49 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer58;
+	bSizer58 = new wxBoxSizer( wxVERTICAL );
+
+
+	bSizer58->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	label = new textoolkit::AutowrapLabel( m_panel49, wxID_ANY, _("Confirm action"), wxDefaultPosition, wxDefaultSize, 0 );
+	label->Wrap( -1 );
+	bSizer58->Add( label, 0, wxALL, 5 );
+
+
+	bSizer58->Add( 0, 0, 1, wxEXPAND, 5 );
+
+
+	m_panel49->SetSizer( bSizer58 );
+	m_panel49->Layout();
+	bSizer58->Fit( m_panel49 );
+	bSizer53->Add( m_panel49, 1, wxALL|wxEXPAND, 5 );
+
+	m_panel50 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	m_panel50->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_WINDOW ) );
+
+	wxBoxSizer* bSizer54;
+	bSizer54 = new wxBoxSizer( wxHORIZONTAL );
+
+	m_panel53 = new wxPanel( m_panel50, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer57;
+	bSizer57 = new wxBoxSizer( wxHORIZONTAL );
+
+	applyforallcheckbox = new wxCheckBox( m_panel53, wxID_ANY, _("Apply for all"), wxDefaultPosition, wxDefaultSize, 0 );
+	applyforallcheckbox->SetValue(true);
+	bSizer57->Add( applyforallcheckbox, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+
+	bSizer57->Add( 0, 0, 1, wxEXPAND, 5 );
+
+	yesbutton = new wxButton( m_panel53, wxID_ANY, _("Yes"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer57->Add( yesbutton, 0, wxALL, 5 );
+
+	nobutton = new wxButton( m_panel53, wxID_ANY, _("No"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer57->Add( nobutton, 0, wxALL, 5 );
+
+	cancelbutton = new wxButton( m_panel53, wxID_ANY, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer57->Add( cancelbutton, 0, wxALL, 5 );
+
+
+	m_panel53->SetSizer( bSizer57 );
+	m_panel53->Layout();
+	bSizer57->Fit( m_panel53 );
+	bSizer54->Add( m_panel53, 1, wxEXPAND | wxALL, 5 );
+
+
+	m_panel50->SetSizer( bSizer54 );
+	m_panel50->Layout();
+	bSizer54->Fit( m_panel50 );
+	bSizer53->Add( m_panel50, 0, wxEXPAND | wxALL, 0 );
+
+
+	this->SetSizer( bSizer53 );
+	this->Layout();
+
+	this->Centre( wxBOTH );
+}
+
+ConfirmDialog::~ConfirmDialog()
 {
 }

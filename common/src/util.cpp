@@ -140,6 +140,11 @@ namespace textoolkit
 			std::find_if(str.begin(), str.end(), [](unsigned char c) { return !std::isdigit(c); }) == str.end();
 	}
 
+	int getNumber(const std::string& str, int default)
+	{
+		return isNumber(str) ? std::stoi(str) : default;
+	}
+
 	bool startsWith(const std::string& haystack, const std::string& needle)
 	{
 		return haystack.compare(0, needle.length(), needle) == 0;
